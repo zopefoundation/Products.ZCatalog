@@ -546,6 +546,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             else:
                 cr.stop_split(i, result=None, limit=limit_result)
 
+        # Try to deduce the sort limit from batching arguments
+        if limit is None:
+            if 'b_start' in query and 'b_size' in query:
+                limit = int(query['b_start']) + int(query['b_size'])
+
         if rs is None:
             # None of the indexes found anything to do with the query
             # We take this to mean that the query was empty (an empty filter)

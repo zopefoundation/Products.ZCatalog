@@ -4,7 +4,11 @@ Changelog
 2.13.1 (unreleased)
 -------------------
 
-- Avoid pre-allocation of marker items in `LazyMap.
+- Added automatic sorting limit calculation based on batch arguments. If the
+  query contains a `b_start` and `b_size` argument and no explicit `sort_limit`
+  is provided, the sort limit will be calculated as `b_start + b_size`.
+
+- Avoid pre-allocation of marker items in `LazyMap`.
 
 2.13.0 (2010-12-25)
 -------------------

@@ -348,6 +348,24 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, self.upper - 1)
 
+    def testSortLimitViaBatchingArgsStart(self):
+        query = dict(att1='att1', sort_on='num', b_start=0, b_size=5)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(5))
+
+    def testSortLimitViaBatchingArgsMiddle(self):
+        query = dict(att1='att1', sort_on='num', b_start=11, b_size=17)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(28))
+
+    def testSortLimitViaBatchingArgsEnd(self):
+        query = dict(att1='att1', sort_on='num', b_start=90, b_size=15)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(100))
+
     # _get_sort_attr
     # _getSortIndex
     # searchResults
