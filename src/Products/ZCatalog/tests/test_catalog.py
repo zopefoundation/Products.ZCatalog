@@ -413,12 +413,6 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         a = self._catalog(att1='att1', sort_on='att1')
         self.assertEqual(len(a), self.upper)
 
-    def testBadSortLimits(self):
-        self.assertRaises(AssertionError,
-            self._catalog, att1='att1', sort_on='num', sort_limit=0)
-        self.assertRaises(AssertionError,
-            self._catalog, att1='att1', sort_on='num', sort_limit=-10)
-
     def testSortLimit(self):
         full = self._catalog(att1='att1', sort_on='num')
         a = self._catalog(att1='att1', sort_on='num', sort_limit=10)
