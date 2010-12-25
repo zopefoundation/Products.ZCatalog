@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.1 (unreleased)
+2.13.1 (2010-12-25)
 -------------------
 
 - Added automatic sorting limit calculation based on batch arguments. If the
