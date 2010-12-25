@@ -14,32 +14,13 @@
 """
 
 import unittest
-import Zope2
-Zope2.startup()
 
 from AccessControl.SecurityManagement import setSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
 from AccessControl import Unauthorized
 from Acquisition import Implicit
 import ExtensionClass
-import OFS.Application
 from OFS.Folder import Folder as OFS_Folder
-from ZODB.DB import DB
-from ZODB.DemoStorage import DemoStorage
-import transaction
-
-
-def createDatabase():
-    # Create a DemoStorage and put an Application in it
-    db = DB(DemoStorage())
-    conn = db.open()
-    root = conn.root()
-    app = OFS.Application.Application()
-    root['Application'] = app
-    transaction.commit()
-    return app
-
-app = createDatabase()
 
 
 class Folder(OFS_Folder):
@@ -122,6 +103,10 @@ class ZCatalogBase(object):
         from Products.ZCatalog.ZCatalog import ZCatalog
         return ZCatalog('Catalog')
 
+    def _makeOneIndex(self, name):
+        from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
+        return FieldIndex(name)
+
     def setUp(self):
         self._catalog = self._makeOne()
 
@@ -133,8 +118,12 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
     def setUp(self):
         ZCatalogBase.setUp(self)
+
         self._catalog.resolve_path = self._resolve_num
-        self._catalog.addIndex('title', 'KeywordIndex')
+        from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
+            KeywordIndex
+        title = KeywordIndex('title')
+        self._catalog.addIndex('title', title)
         self._catalog.addColumn('title')
 
         self.upper = 10
@@ -303,17 +292,17 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
 
     def testAddIndex(self):
-        self._catalog.addIndex('id', 'FieldIndex')
+        self._catalog.addIndex('id', self._makeOneIndex('id'))
         self.assert_('id' in self._catalog.indexes())
 
     def testDelIndex(self):
-        self._catalog.addIndex('title', 'FieldIndex')
+        self._catalog.addIndex('title', self._makeOneIndex('title'))
         self.assert_('title' in self._catalog.indexes())
         self._catalog.delIndex('title')
         self.assert_('title' not in self._catalog.indexes())
 
     def testClearIndex(self):
-        self._catalog.addIndex('title', 'FieldIndex')
+        self._catalog.addIndex('title', self._makeOneIndex('title'))
         idx = self._catalog._catalog.getIndex('title')
         for x in range(10):
             ob = zdummy(x)
@@ -337,7 +326,7 @@ class TestZCatalogGetObject(ZCatalogBase, unittest.TestCase):
 
     def setUp(self):
         ZCatalogBase.setUp(self)
-        self._catalog.addIndex('id', 'FieldIndex')
+        self._catalog.addIndex('id', self._makeOneIndex('id'))
         root = Folder('')
         root.getPhysicalRoot = lambda: root
         self.root = root

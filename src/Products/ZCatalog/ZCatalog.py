@@ -831,9 +831,12 @@ class ZCatalog(Folder, Persistent, Implicit):
     # Indexing methods
 
     def addIndex(self, name, type, extra=None):
+        if IPluggableIndex.providedBy(type):
+            self._catalog.addIndex(name, type)
+            return
+
         # Convert the type by finding an appropriate product which supports
         # this interface by that name.  Bleah
-
         products = ObjectManager.all_meta_types(self,
                                                 interfaces=(IPluggableIndex, ))
 

@@ -15,35 +15,16 @@
 
 import unittest
 from Testing.ZopeTestCase.warnhook import WarningsHook
-import Zope2
-Zope2.startup()
 
 from itertools import chain
 import random
 
 import ExtensionClass
-import OFS.Application
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.ZCTextIndex.OkapiIndex import OkapiIndex
 from Products.ZCTextIndex.ZCTextIndex import PLexicon
 from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex
-from ZODB.DB import DB
-from ZODB.DemoStorage import DemoStorage
-import transaction
-
-
-def createDatabase():
-    # Create a DemoStorage and put an Application in it
-    db = DB(DemoStorage())
-    conn = db.open()
-    root = conn.root()
-    app = OFS.Application.Application()
-    root['Application'] = app
-    transaction.commit()
-    return app
-
-app = createDatabase()
 
 
 def sort(iterable, reverse=False):

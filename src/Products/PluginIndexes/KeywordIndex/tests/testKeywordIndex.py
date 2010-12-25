@@ -14,8 +14,6 @@
 """
 
 import unittest
-import Zope2
-Zope2.startup()
 
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
