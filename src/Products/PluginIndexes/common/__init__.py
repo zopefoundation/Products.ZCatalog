@@ -11,18 +11,12 @@
 #
 #############################################################################
 
-# This code is duplicated here from Products/ZCatalog/Catalog.py to avoid a
-# unnecessary dependency on ZCatalog.
 import types
-try:
-    from DocumentTemplate.cDocumentTemplate import safe_callable
-except ImportError:
-    def safe_callable(ob):
-        # Works with ExtensionClasses and Acquisition.
-        if hasattr(ob, '__class__'):
-            if hasattr(ob, '__call__'):
-                return 1
-            else:
-                return isinstance(ob, types.ClassType)
-        else:
-            return callable(ob)
+
+
+def safe_callable(ob):
+    # Works with ExtensionClasses and Acquisition.
+    if hasattr(ob, '__class__'):
+        return hasattr(ob, '__call__') or isinstance(ob, types.ClassType)
+    else:
+        return callable(ob)
