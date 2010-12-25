@@ -320,6 +320,34 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         expected = list(reversed(range(90, 100)))
         self.assertEqual([r.num for r in result], expected)
 
+    def testLargeSortedResultSetWithSmallIndex(self):
+        # This exercises the optimization in the catalog that iterates
+        # over the sort index rather than the result set when the result
+        # set is much larger than the sort index.
+        a = self._catalog(att1='att1', sort_on='att1')
+        self.assertEqual(len(a), self.upper)
+
+    def testSortLimit(self):
+        full = self._catalog(att1='att1', sort_on='num')
+        a = self._catalog(att1='att1', sort_on='num', sort_limit=10)
+        self.assertEqual([r.num for r in a], [r.num for r in full[:10]])
+        self.assertEqual(a.actual_result_count, self.upper)
+        a = self._catalog(att1='att1', sort_on='num',
+                          sort_limit=10, sort_order='reverse')
+        rev = [r.num for r in full[-10:]]
+        rev.reverse()
+        self.assertEqual([r.num for r in a], rev)
+        self.assertEqual(a.actual_result_count, self.upper)
+
+    def testBigSortLimit(self):
+        a = self._catalog(att1='att1', sort_on='num', sort_limit=self.upper*3)
+        self.assertEqual(a.actual_result_count, self.upper)
+        self.assertEqual(a[0].num, 0)
+        a = self._catalog(att1='att1',
+            sort_on='num', sort_limit=self.upper*3, sort_order='reverse')
+        self.assertEqual(a.actual_result_count, self.upper)
+        self.assertEqual(a[0].num, self.upper - 1)
+
     # _get_sort_attr
     # _getSortIndex
     # searchResults
@@ -405,34 +433,6 @@ class TestCatalog(CatalogBase, unittest.TestCase):
     def testCombinedTextandKeywordQuery(self):
         a = self._catalog(att3='att3', att2='att2')
         self.assertEqual(len(a), self.upper)
-
-    def testLargeSortedResultSetWithSmallIndex(self):
-        # This exercises the optimization in the catalog that iterates
-        # over the sort index rather than the result set when the result
-        # set is much larger than the sort index.
-        a = self._catalog(att1='att1', sort_on='att1')
-        self.assertEqual(len(a), self.upper)
-
-    def testSortLimit(self):
-        full = self._catalog(att1='att1', sort_on='num')
-        a = self._catalog(att1='att1', sort_on='num', sort_limit=10)
-        self.assertEqual([r.num for r in a], [r.num for r in full[:10]])
-        self.assertEqual(a.actual_result_count, self.upper)
-        a = self._catalog(att1='att1', sort_on='num',
-                          sort_limit=10, sort_order='reverse')
-        rev = [r.num for r in full[-10:]]
-        rev.reverse()
-        self.assertEqual([r.num for r in a], rev)
-        self.assertEqual(a.actual_result_count, self.upper)
-
-    def testBigSortLimit(self):
-        a = self._catalog(att1='att1', sort_on='num', sort_limit=self.upper*3)
-        self.assertEqual(a.actual_result_count, self.upper)
-        self.assertEqual(a[0].num, 0)
-        a = self._catalog(att1='att1',
-            sort_on='num', sort_limit=self.upper*3, sort_order='reverse')
-        self.assertEqual(a.actual_result_count, self.upper)
-        self.assertEqual(a[0].num, self.upper - 1)
 
 
 class TestRangeSearch(CatalogBase, unittest.TestCase):
