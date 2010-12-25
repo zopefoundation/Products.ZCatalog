@@ -19,6 +19,7 @@ from Testing.ZopeTestCase.warnhook import WarningsHook
 from itertools import chain
 import random
 
+from BTrees.IIBTree import IISet
 import ExtensionClass
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
@@ -285,7 +286,40 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEquals(result.index('att1'), 2)
 
     # search
-    # sortResults
+
+    def test_sortResults(self):
+        brains = self._catalog({'att1': 'att1'})
+        rs = IISet([b.getRID() for b in brains])
+        si = self._catalog.getIndex('num')
+        result = self._catalog.sortResults(rs, si)
+        self.assertEqual([r.num for r in result], range(100))
+
+    def test_sortResults_reversed(self):
+        brains = self._catalog({'att1': 'att1'})
+        rs = IISet([b.getRID() for b in brains])
+        si = self._catalog.getIndex('num')
+        result = self._catalog.sortResults(rs, si, reverse=True)
+        self.assertEqual([r.num for r in result], list(reversed(range(100))))
+
+    def test_sortResults_limit(self):
+        brains = self._catalog({'att1': 'att1'})
+        rs = IISet([b.getRID() for b in brains])
+        si = self._catalog.getIndex('num')
+        result = self._catalog.sortResults(rs, si, limit=10)
+        self.assertEqual(len(result), 10)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(10))
+
+    def test_sortResults_limit_reversed(self):
+        brains = self._catalog({'att1': 'att1'})
+        rs = IISet([b.getRID() for b in brains])
+        si = self._catalog.getIndex('num')
+        result = self._catalog.sortResults(rs, si, reverse=True, limit=10)
+        self.assertEqual(len(result), 10)
+        self.assertEqual(result.actual_result_count, 100)
+        expected = list(reversed(range(90, 100)))
+        self.assertEqual([r.num for r in result], expected)
+
     # _get_sort_attr
     # _getSortIndex
     # searchResults

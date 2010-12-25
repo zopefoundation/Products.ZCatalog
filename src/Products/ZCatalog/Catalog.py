@@ -634,7 +634,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # proportion of the time to perform an indexed search.
         # Try to avoid all non-local attribute lookup inside
         # those loops.
-        assert limit is None or limit > 0, 'Limit value must be 1 or greater'
         _intersection = intersection
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()

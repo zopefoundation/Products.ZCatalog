@@ -151,6 +151,7 @@ class LazyMap(Lazy):
             self._len=length
         else:
             self._len = len(seq)
+        self.actual_result_count = self._len
         self._marker = object()
         self._data = [self._marker] * self._len
 
