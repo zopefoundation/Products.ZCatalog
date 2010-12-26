@@ -326,6 +326,7 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         # set is much larger than the sort index.
         a = self._catalog(att1='att1', sort_on='att1')
         self.assertEqual(len(a), self.upper)
+        self.assertEqual(a.actual_result_count, self.upper)
 
     def testSortLimit(self):
         full = self._catalog(att1='att1', sort_on='num')

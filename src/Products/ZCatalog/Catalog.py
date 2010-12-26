@@ -561,18 +561,22 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                           'to be returned.' % repr(make_key(self, query)),
                           DeprecationWarning, stacklevel=3)
 
+            rlen = len(self)
             if sort_index is None:
-                result = LazyMap(self.instantiate, self.data.items(), len(self))
+                result = LazyMap(self.instantiate, self.data.items(), rlen,
+                    actual_result_count=rlen)
             else:
                 cr.start_split('sort_on')
                 result = self.sortResults(
-                    self.data, sort_index, reverse, limit, merge)
+                    self.data, sort_index, reverse, limit, merge,
+                        actual_result_count=rlen)
                 cr.stop_split('sort_on', None)
         elif rs:
             # We got some results from the indexes.
             # Sort and convert to sequences.
             # XXX: The check for 'values' is really stupid since we call
             # items() and *not* values()
+            rlen = len(rs)
             if sort_index is None and hasattr(rs, 'values'):
                 # having a 'values' means we have a data structure with
                 # scores.  Build a new result set, sort it by score, reverse
@@ -608,21 +612,24 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         r.data_record_normalized_score_ = int(100. * score / max)
                         return r
 
-                    result = LazyMap(getScoredResult, rs, len(rs))
+                    result = LazyMap(getScoredResult, rs, rlen,
+                        actual_result_count=rlen)
                     cr.stop_split('sort_on', None)
 
             elif sort_index is None and not hasattr(rs, 'values'):
                 # no scores
                 if hasattr(rs, 'keys'):
                     rs = rs.keys()
-                result = LazyMap(self.__getitem__, rs, len(rs))
+                result = LazyMap(self.__getitem__, rs, rlen,
+                    actual_result_count=rlen)
             else:
                 # sort.  If there are scores, then this block is not
                 # reached, therefore 'sort-on' does not happen in the
                 # context of a text index query.  This should probably
                 # sort by relevance first, then the 'sort-on' attribute.
                 cr.start_split('sort_on')
-                result = self.sortResults(rs, sort_index, reverse, limit, merge)
+                result = self.sortResults(rs, sort_index, reverse, limit,
+                    merge, actual_result_count=rlen)
                 cr.stop_split('sort_on', None)
         else:
             # Empty result set
@@ -630,7 +637,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         cr.stop()
         return result
 
-    def sortResults(self, rs, sort_index, reverse=0, limit=None, merge=1):
+    def sortResults(self, rs, sort_index, reverse=0, limit=None, merge=1,
+                    actual_result_count=None):
         # Sort a result set using a sort index. Return a lazy
         # result set in sorted order if merge is true otherwise
         # returns a list of (sortkey, uid, getter_function) tuples
@@ -648,7 +656,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         append = result.append
         if hasattr(rs, 'keys'):
             rs = rs.keys()
-        rlen = len(rs)
+        if actual_result_count is None:
+            rlen = len(rs)
+            actual_result_count = rlen
+        else:
+            rlen = actual_result_count
 
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
@@ -683,7 +695,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 result.sort(reverse=True)
             else:
                 result.sort()
-            result = LazyCat(LazyValues(result), length)
+            result = LazyCat(LazyValues(result), length, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index
             for did in rs:
@@ -706,6 +718,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 if limit is not None:
                     result = result[:limit]
                 result = LazyValues(result)
+                result.actual_result_count = actual_result_count
             else:
                 return result
         elif reverse:
@@ -735,6 +748,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result.reverse()
             if merge:
                 result = LazyValues(result)
+                result.actual_result_count = actual_result_count
             else:
                 return result
         elif not reverse:
@@ -761,12 +775,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     best = keys[-1]
             if merge:
                 result = LazyValues(result)
+                result.actual_result_count = actual_result_count
             else:
                 return result
 
-        result = LazyMap(self.__getitem__, result, len(result))
-        result.actual_result_count = rlen
-        return result
+        return LazyMap(self.__getitem__, result, len(result),
+            actual_result_count=actual_result_count)
 
     def _get_sort_attr(self, attr, kw):
         """Helper function to find sort-on or sort-order."""
