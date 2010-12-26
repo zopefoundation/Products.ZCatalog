@@ -4,6 +4,8 @@ Changelog
 2.13.2 (unreleased)
 -------------------
 
+- Optimized length calculation of Lazy classes.
+  [hannosch]
 
 2.13.1 (2010-12-25)
 -------------------

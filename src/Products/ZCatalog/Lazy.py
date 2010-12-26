@@ -13,22 +13,22 @@
 
 from itertools import islice, count
 
+_marker = object()
+
 
 class Lazy(object):
 
     # Allow (reluctantly) access to unprotected attributes
     __allow_access_to_unprotected_subobjects__=1
+    _len = _marker
 
     def __repr__(self):
         return repr(list(self))
 
     def __len__(self):
         # This is a worst-case len, subclasses should try to do better
-        try:
+        if self._len is not _marker:
             return self._len
-        except AttributeError:
-            pass
-
         l = len(self._data)
         while 1:
             try:
@@ -127,17 +127,16 @@ class LazyCat(Lazy):
     def __len__(self):
         # Make len of LazyCat only as expensive as the lens
         # of its underlying sequences
-        try:
+        if self._len is not _marker:
             return self._len
-        except Exception:
-            try:
-                l = 0
-                for s in self._seq:
-                    l += len(s)
-            except AttributeError:
-                l = len(self._data)
-            self._len = l
-            return l
+        l = 0
+        try:
+            for s in self._seq:
+                l += len(s)
+        except AttributeError:
+            l = len(self._data)
+        self._len = l
+        return l
 
 
 class LazyMap(Lazy):
@@ -267,7 +266,10 @@ class LazyValues(Lazy):
         self._seq = seq
 
     def __len__(self):
-        return len(self._seq)
+        if self._len is not _marker:
+            return self._len
+        self._len = len(self._seq)
+        return self._len
 
     def __getitem__(self, index):
         return self._seq[index][1]
