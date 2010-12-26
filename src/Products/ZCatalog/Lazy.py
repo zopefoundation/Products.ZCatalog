@@ -19,7 +19,7 @@ _marker = object()
 class Lazy(object):
 
     # Allow (reluctantly) access to unprotected attributes
-    __allow_access_to_unprotected_subobjects__=1
+    __allow_access_to_unprotected_subobjects__ = True
     _len = _marker
 
     def __repr__(self):
@@ -57,8 +57,9 @@ class Lazy(object):
 
 
 class LazyCat(Lazy):
-    # Lazy concatenation of one or more sequences. Should be handy
-    # for accessing small parts of big searches.
+    """Lazy concatenation of one or more sequences. Should be handy
+    for accessing small parts of big searches.
+    """
 
     def __init__(self, sequences, length=None):
         if len(sequences) < 100:
@@ -140,8 +141,9 @@ class LazyCat(Lazy):
 
 
 class LazyMap(Lazy):
-    # Act like a sequence, but get data from a filtering process.
-    # Don't access data until necessary
+    """Act like a sequence, but get data from a filtering process.
+    Don't access data until necessary
+    """
 
     def __init__(self, func, seq, length=None):
         self._seq = seq
@@ -162,9 +164,10 @@ class LazyMap(Lazy):
 
 
 class LazyFilter(Lazy):
-    # Act like a sequence, but get data from a filtering process.
-    # Don't access data until necessary. Only data for which test(data)
-    # returns true will be considered part of the set.
+    """Act like a sequence, but get data from a filtering process.
+    Don't access data until necessary. Only data for which test(data)
+    returns true will be considered part of the set.
+    """
 
     def __init__(self, test, seq):
         self._seq = seq
@@ -209,9 +212,10 @@ class LazyFilter(Lazy):
 
 
 class LazyMop(Lazy):
-    # Act like a sequence, but get data from a filtering process.
-    # Don't access data until necessary. If the filter raises an exception
-    # for a given item, then that item isn't included in the sequence.
+    """Act like a sequence, but get data from a filtering process.
+    Don't access data until necessary. If the filter raises an exception
+    for a given item, then that item isn't included in the sequence.
+    """
 
     def __init__(self, test, seq):
         self._seq = seq
