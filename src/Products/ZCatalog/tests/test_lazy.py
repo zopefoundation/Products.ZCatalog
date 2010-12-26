@@ -22,6 +22,15 @@ class BaseSequenceTest(unittest.TestCase):
         self.assertEqual(len(lseq), len(seq))
         self.assertEqual(list(lseq), seq)
 
+    def test_actual_result_count(self):
+        lcat = self._createLSeq(range(10))
+        self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 10)
+
+        lcat.actual_result_count = 20
+        self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 20)
+
 
 class TestLazyCat(BaseSequenceTest):
 
@@ -32,6 +41,7 @@ class TestLazyCat(BaseSequenceTest):
     def test_empty(self):
         lcat = self._createLSeq([])
         self._compare(lcat, [])
+        self.assertEqual(lcat.actual_result_count, 0)
 
     def test_repr(self):
         lcat = self._createLSeq([0, 1])
@@ -41,6 +51,7 @@ class TestLazyCat(BaseSequenceTest):
         seq = range(10)
         lcat = self._createLSeq(seq)
         self._compare(lcat, seq)
+        self.assertEqual(lcat.actual_result_count, 10)
 
     def test_add(self):
         seq1 = range(10)
@@ -49,6 +60,7 @@ class TestLazyCat(BaseSequenceTest):
         lcat2 = self._createLSeq(seq2)
         lcat = lcat1 + lcat2
         self._compare(lcat, range(20))
+        self.assertEqual(lcat.actual_result_count, 20)
 
     def test_init_multiple(self):
         from string import hexdigits, letters
@@ -80,16 +92,19 @@ class TestLazyCat(BaseSequenceTest):
         # Unaccessed length
         lcat = self._createLSeq(range(10))
         self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 10)
 
         # Accessed in the middle
         lcat = self._createLSeq(range(10))
         lcat[4]
         self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 10)
 
         # Accessed after the lcat is accessed over the whole range
         lcat = self._createLSeq(range(10))
         lcat[:]
         self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 10)
 
 
 class TestLazyMap(TestLazyCat):
@@ -213,24 +228,24 @@ class TestLazyMop(TestLazyCat):
 
 class TestLazyValues(BaseSequenceTest):
 
-    def _createLValues(self, seq):
+    def _createLSeq(self, seq):
         from Products.ZCatalog.Lazy import LazyValues
         return LazyValues(seq)
 
     def test_empty(self):
-        lvals = self._createLValues([])
+        lvals = self._createLSeq([])
         self._compare(lvals, [])
 
     def test_values(self):
         from string import letters
         seq = zip(letters, range(10))
-        lvals = self._createLValues(seq)
+        lvals = self._createLSeq(seq)
         self._compare(lvals, range(10))
 
     def test_slicing(self):
         from string import letters
         seq = zip(letters, range(10))
-        lvals = self._createLValues(seq)
+        lvals = self._createLSeq(seq)
         self._compare(lvals[2:-2], range(2, 8))
 
 

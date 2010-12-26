@@ -21,6 +21,18 @@ class Lazy(object):
     # Allow (reluctantly) access to unprotected attributes
     __allow_access_to_unprotected_subobjects__ = True
     _len = _marker
+    _rlen = _marker
+
+    @property
+    def actual_result_count(self):
+        if self._rlen is not _marker:
+            return self._rlen
+        self._rlen = len(self)
+        return self._rlen
+
+    @actual_result_count.setter
+    def actual_result_count(self, value):
+        self._rlen = value
 
     def __repr__(self):
         return repr(list(self))
@@ -61,7 +73,7 @@ class LazyCat(Lazy):
     for accessing small parts of big searches.
     """
 
-    def __init__(self, sequences, length=None):
+    def __init__(self, sequences, length=None, actual_result_count=None):
         if len(sequences) < 100:
             # Optimize structure of LazyCats to avoid nesting
             # We don't do this for large numbers of input sequences
@@ -81,6 +93,8 @@ class LazyCat(Lazy):
         self._eindex = -1
         if length is not None:
             self._len = length
+        if actual_result_count is not None:
+            self.actual_result_count = actual_result_count
 
     def __getitem__(self, index):
         data = self._data
@@ -145,7 +159,7 @@ class LazyMap(Lazy):
     Don't access data until necessary
     """
 
-    def __init__(self, func, seq, length=None):
+    def __init__(self, func, seq, length=None, actual_result_count=None):
         self._seq = seq
         self._data = {}
         self._func = func
@@ -153,7 +167,10 @@ class LazyMap(Lazy):
             self._len = length
         else:
             self._len = len(seq)
-        self.actual_result_count = self._len
+        if actual_result_count is not None:
+            self.actual_result_count = actual_result_count
+        else:
+            self.actual_result_count = self._len
 
     def __getitem__(self, index):
         data = self._data

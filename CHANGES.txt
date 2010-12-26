@@ -4,8 +4,10 @@ Changelog
 2.13.2 (unreleased)
 -------------------
 
+- Made sure `actual_result_count` is available on all lazy classes and falls
+  back to `__len__` if not explicitly provided.
+
 - Optimized length calculation of Lazy classes.
-  [hannosch]
 
 2.13.1 (2010-12-25)
 -------------------
