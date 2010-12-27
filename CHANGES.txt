@@ -4,6 +4,8 @@ Changelog
 2.13.2 (unreleased)
 -------------------
 
+- Preserve `actual_result_count` on flattening nested LazyCat's.
+
 - Preserve the `actual_result_count` on all lazy return values. This allows
   to get proper batching information from catalog results which have been
   restricted by `sort_limit`.

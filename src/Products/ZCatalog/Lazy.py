@@ -74,6 +74,7 @@ class LazyCat(Lazy):
     """
 
     def __init__(self, sequences, length=None, actual_result_count=None):
+        flattened_count = 0
         if len(sequences) < 100:
             # Optimize structure of LazyCats to avoid nesting
             # We don't do this for large numbers of input sequences
@@ -84,8 +85,13 @@ class LazyCat(Lazy):
                     # If one of the sequences passed is itself a LazyCat, add
                     # its base sequences rather than nest LazyCats
                     flattened_seq.extend(s._seq)
+                    flattened_count += s.actual_result_count
+                elif isinstance(s, Lazy):
+                    flattened_seq.append(s)
+                    flattened_count += s.actual_result_count
                 else:
                     flattened_seq.append(s)
+                    flattened_count += len(s)
             sequences = flattened_seq
         self._seq = sequences
         self._data = []
@@ -95,6 +101,8 @@ class LazyCat(Lazy):
             self._len = length
         if actual_result_count is not None:
             self.actual_result_count = actual_result_count
+        else:
+            self.actual_result_count = flattened_count
 
     def __getitem__(self, index):
         data = self._data

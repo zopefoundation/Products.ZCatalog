@@ -38,6 +38,10 @@ class TestLazyCat(BaseSequenceTest):
         from Products.ZCatalog.Lazy import LazyCat
         return LazyCat(sequences)
 
+    def _createLValues(self, seq):
+        from Products.ZCatalog.Lazy import LazyValues
+        return LazyValues(seq)
+
     def test_empty(self):
         lcat = self._createLSeq([])
         self._compare(lcat, [])
@@ -105,6 +109,25 @@ class TestLazyCat(BaseSequenceTest):
         lcat[:]
         self.assertEqual(len(lcat), 10)
         self.assertEqual(lcat.actual_result_count, 10)
+
+    def test_actual_result_count(self):
+        # specify up-front
+        lcat = self._createLSeq(range(10))
+        lcat.actual_result_count = 100
+
+        self.assertEqual(len(lcat), 10)
+        self.assertEqual(lcat.actual_result_count, 100)
+
+        lvalues = self._createLValues([])
+        self.assertEqual(len(lvalues), 0)
+        self.assertEqual(lvalues.actual_result_count, 0)
+
+        combined = lvalues + lcat
+        self.assertEqual(len(combined), 10)
+        self.assertEqual(combined.actual_result_count, 100)
+
+        combined.actual_result_count = 5
+        self.assertEqual(combined.actual_result_count, 5)
 
 
 class TestLazyMap(TestLazyCat):
