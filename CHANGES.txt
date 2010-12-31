@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.2 (unreleased)
+2.13.2 (2010-12-31)
 -------------------
 
 - Preserve `actual_result_count` on flattening nested LazyCat's.
