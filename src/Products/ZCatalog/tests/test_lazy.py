@@ -185,20 +185,21 @@ class TestLazyFilter(TestLazyCat):
 
     def test_length_with_filter(self):
         from string import letters
+        lower_length = len([x for x in letters if x.islower()])
 
         # Unaccessed length
         lfilter = self._createLFilter(lambda x: x.islower(), list(letters))
-        self.assertEqual(len(lfilter), 26)
+        self.assertEqual(len(lfilter), lower_length)
 
         # Accessed in the middle
         lfilter = self._createLFilter(lambda x: x.islower(), list(letters))
         lfilter[13]
-        self.assertEqual(len(lfilter), 26)
+        self.assertEqual(len(lfilter), lower_length)
 
         # Accessed after the lcat is accessed over the whole range
         lfilter = self._createLFilter(lambda x: x.islower(), list(letters))
         lfilter[:]
-        self.assertEqual(len(lfilter), 26)
+        self.assertEqual(len(lfilter), lower_length)
 
 
 class TestLazyMop(TestLazyCat):
@@ -227,6 +228,7 @@ class TestLazyMop(TestLazyCat):
 
     def test_length_with_filter(self):
         from string import letters
+        letter_length = len(letters)
 
         seq = range(10) + list(letters)
         def filter(x):
@@ -236,17 +238,17 @@ class TestLazyMop(TestLazyCat):
 
         # Unaccessed length
         lmop = self._createLMop(filter, seq)
-        self.assertEqual(len(lmop), 52)
+        self.assertEqual(len(lmop), letter_length)
 
         # Accessed in the middle
         lmop = self._createLMop(filter, seq)
         lmop[26]
-        self.assertEqual(len(lmop), 52)
+        self.assertEqual(len(lmop), letter_length)
 
         # Accessed after the lcat is accessed over the whole range
         lmop = self._createLMop(filter, letters)
         lmop[:]
-        self.assertEqual(len(lmop), 52)
+        self.assertEqual(len(lmop), letter_length)
 
 
 class TestLazyValues(BaseSequenceTest):

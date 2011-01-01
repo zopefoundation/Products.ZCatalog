@@ -4,6 +4,7 @@ Changelog
 2.13.3 (unreleased)
 -------------------
 
+- Avoid locale-dependent test condition in `test_length_with_filter`.
 
 2.13.2 (2010-12-31)
 -------------------
