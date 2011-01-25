@@ -342,49 +342,42 @@ class DateRangeIndex(UnIndex):
             'datum'.
         """
         if since is None and until is None:
-
-            self._always.insert( documentId )
-
+            self._always.insert(documentId)
         elif since is None:
-
-            set = self._until_only.get( until, None )
+            set = self._until_only.get(until, None)
             if set is None:
-                self._until_only[ until ] = documentId
+                self._until_only[until] = documentId
             else:
                 if isinstance(set, (int, IISet)):
                     set = self._until_only[until] = IITreeSet((set, documentId))
                 else:
-                    set.insert( documentId )
+                    set.insert(documentId)
         elif until is None:
-
-            set = self._since_only.get( since, None )
+            set = self._since_only.get(since, None)
             if set is None:
-                self._since_only[ since ] = documentId
+                self._since_only[since] = documentId
             else:
                 if isinstance(set, (int, IISet)):
                     set = self._since_only[since] = IITreeSet((set, documentId))
                 else:
-                    set.insert( documentId )
-
+                    set.insert(documentId)
         else:
-
-            set = self._since.get( since, None )
+            set = self._since.get(since, None)
             if set is None:
-                self._since[ since ] = documentId
+                self._since[since] = documentId
             else:
                 if isinstance(set, (int, IISet)):
                     set = self._since[since] = IITreeSet((set, documentId))
                 else:
-                    set.insert( documentId )
-
-            set = self._until.get( until, None )
+                    set.insert(documentId)
+            set = self._until.get(until, None)
             if set is None:
-                self._until[ until ] = documentId
+                self._until[until] = documentId
             else:
                 if isinstance(set, (int, IISet)):
                     set = self._until[until] = IITreeSet((set, documentId))
                 else:
-                    set.insert( documentId )
+                    set.insert(documentId)
 
     def _removeForwardIndexEntry( self, since, until, documentId ):
         """
@@ -392,58 +385,42 @@ class DateRangeIndex(UnIndex):
             'datum'.
         """
         if since is None and until is None:
-
-            self._always.remove( documentId )
-
+            self._always.remove(documentId)
         elif since is None:
-
-            set = self._until_only.get( until, None )
+            set = self._until_only.get(until, None)
             if set is not None:
-
                 if isinstance(set, int):
                     del self._until_only[until]
                 else:
                     set.remove( documentId )
-
                     if not set:
-                        del self._until_only[ until ]
-
+                        del self._until_only[until]
         elif until is None:
-
-            set = self._since_only.get( since, None )
+            set = self._since_only.get(since, None)
             if set is not None:
-
                 if isinstance(set, int):
-                    del self._since_only[ since ]
+                    del self._since_only[since]
                 else:
-                    set.remove( documentId )
-
+                    set.remove(documentId)
                     if not set:
-                        del self._since_only[ since ]
-
+                        del self._since_only[since]
         else:
-
-            set = self._since.get( since, None )
+            set = self._since.get(since, None)
             if set is not None:
-
                 if isinstance(set, int):
-                    del self._since[ since ]
+                    del self._since[since]
                 else:
-                    set.remove( documentId )
-
+                    set.remove(documentId)
                     if not set:
-                        del self._since[ since ]
-
-            set = self._until.get( until, None )
+                        del self._since[since]
+            set = self._until.get(until, None)
             if set is not None:
-
                 if isinstance(set, int):
-                    del self._until[ until ]
+                    del self._until[until]
                 else:
-                    set.remove( documentId )
-
+                    set.remove(documentId)
                     if not set:
-                        del self._until[ until ]
+                        del self._until[until]
 
     def _convertDateTime( self, value ):
         if value is None:
