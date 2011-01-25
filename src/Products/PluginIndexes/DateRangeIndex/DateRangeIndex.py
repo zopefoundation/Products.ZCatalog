@@ -192,12 +192,10 @@ class DateRangeIndex(UnIndex):
             Remove the object corresponding to 'documentId' from the index.
         """
         datum = self._unindex.get(documentId, None)
-
         if datum is None:
             return
 
         since, until = datum
-
         self._removeForwardIndexEntry(since, until, documentId)
         del self._unindex[documentId]
 
@@ -212,24 +210,17 @@ class DateRangeIndex(UnIndex):
             return []
 
         if name == self._since_field:
-
             t1 = self._since
             t2 = self._since_only
-
         else:
-
             t1 = self._until
             t2 = self._until_only
 
         result = []
-
         if not withLengths:
-
             result.extend(t1.keys())
             result.extend(t2.keys())
-
         else:
-
             for key in t1.keys():
                 set = t1[key]
                 if isinstance(set, int):
@@ -237,7 +228,6 @@ class DateRangeIndex(UnIndex):
                 else:
                     length = len(set)
                 result.append((key, length))
-
             for key in t2.keys():
                 set = t2[key]
                 if isinstance(set, int):
@@ -245,7 +235,6 @@ class DateRangeIndex(UnIndex):
                 else:
                     length = len(set)
                 result.append((key, length))
-
         return tuple(result)
 
     def _cache_key(self, catalog):
@@ -274,7 +263,6 @@ class DateRangeIndex(UnIndex):
             return None
 
         term = self._convertDateTime(record.keys[0])
-
         REQUEST = aq_get(self, 'REQUEST', None)
         if REQUEST is not None:
             catalog = aq_parent(aq_parent(aq_inner(self)))
