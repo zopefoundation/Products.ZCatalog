@@ -347,48 +347,28 @@ class DateRangeIndex(UnIndex):
             self._insert_migrate(self._since, since, documentId)
             self._insert_migrate(self._until, until, documentId)
 
+    def _remove_delete(self, tree, key, value):
+        treeset = tree.get(key, None)
+        if treeset is not None:
+            if isinstance(treeset, int):
+                del tree[key]
+            else:
+                treeset.remove(value)
+                if not treeset:
+                    del tree[key]
+
     def _removeForwardIndexEntry(self, since, until, documentId):
-        """
-            Remove 'documentId' from the appropriate set based on
-            'datum'.
+        """Remove 'documentId' from the appropriate set based on 'datum'.
         """
         if since is None and until is None:
             self._always.remove(documentId)
         elif since is None:
-            set = self._until_only.get(until, None)
-            if set is not None:
-                if isinstance(set, int):
-                    del self._until_only[until]
-                else:
-                    set.remove(documentId)
-                    if not set:
-                        del self._until_only[until]
+            self._remove_delete(self._until_only, until, documentId)
         elif until is None:
-            set = self._since_only.get(since, None)
-            if set is not None:
-                if isinstance(set, int):
-                    del self._since_only[since]
-                else:
-                    set.remove(documentId)
-                    if not set:
-                        del self._since_only[since]
+            self._remove_delete(self._since_only, since, documentId)
         else:
-            set = self._since.get(since, None)
-            if set is not None:
-                if isinstance(set, int):
-                    del self._since[since]
-                else:
-                    set.remove(documentId)
-                    if not set:
-                        del self._since[since]
-            set = self._until.get(until, None)
-            if set is not None:
-                if isinstance(set, int):
-                    del self._until[until]
-                else:
-                    set.remove(documentId)
-                    if not set:
-                        del self._until[until]
+            self._remove_delete(self._since, since, documentId)
+            self._remove_delete(self._until, until, documentId)
 
     def _convertDateTime(self, value):
         if value is None:
