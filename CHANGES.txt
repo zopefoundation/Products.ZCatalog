@@ -4,6 +4,8 @@ Changelog
 2.13.4 (unreleased)
 -------------------
 
+- Fixed inline `IISet` to `IITreeSet` conversion code inside DateRangeIndex'
+  `_insertForwardIndexEntry` method.
 
 2.13.3 (2011-01-01)
 -------------------

@@ -326,8 +326,11 @@ class DateRangeIndex(UnIndex):
         if treeset is None:
             tree[key] = value
         else:
-            if isinstance(treeset, (int, IISet)):
+            if isinstance(treeset, int):
                 tree[key] = IITreeSet((treeset, value))
+            elif isinstance(treeset, IISet):
+                tree[key] = IITreeSet(treeset)
+                tree[key].insert(value)
             else:
                 treeset.insert(value)
 
