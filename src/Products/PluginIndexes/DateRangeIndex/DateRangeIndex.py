@@ -321,48 +321,28 @@ class DateRangeIndex(UnIndex):
             return (difference(resultset, result),
                     (self._since_field, self._until_field))
 
+    def _insert_migrate(self, tree, key, value):
+        treeset = tree.get(key, None)
+        if treeset is None:
+            tree[key] = value
+        else:
+            if isinstance(treeset, (int, IISet)):
+                tree[key] = IITreeSet((treeset, value))
+            else:
+                treeset.insert(value)
+
     def _insertForwardIndexEntry(self, since, until, documentId):
-        """
-            Insert 'documentId' into the appropriate set based on
-            'datum'.
+        """Insert 'documentId' into the appropriate set based on 'datum'.
         """
         if since is None and until is None:
             self._always.insert(documentId)
         elif since is None:
-            set = self._until_only.get(until, None)
-            if set is None:
-                self._until_only[until] = documentId
-            else:
-                if isinstance(set, (int, IISet)):
-                    set = self._until_only[until] = IITreeSet((set, documentId))
-                else:
-                    set.insert(documentId)
+            self._insert_migrate(self._until_only, until, documentId)
         elif until is None:
-            set = self._since_only.get(since, None)
-            if set is None:
-                self._since_only[since] = documentId
-            else:
-                if isinstance(set, (int, IISet)):
-                    set = self._since_only[since] = IITreeSet((set, documentId))
-                else:
-                    set.insert(documentId)
+            self._insert_migrate(self._since_only, since, documentId)
         else:
-            set = self._since.get(since, None)
-            if set is None:
-                self._since[since] = documentId
-            else:
-                if isinstance(set, (int, IISet)):
-                    set = self._since[since] = IITreeSet((set, documentId))
-                else:
-                    set.insert(documentId)
-            set = self._until.get(until, None)
-            if set is None:
-                self._until[until] = documentId
-            else:
-                if isinstance(set, (int, IISet)):
-                    set = self._until[until] = IITreeSet((set, documentId))
-                else:
-                    set.insert(documentId)
+            self._insert_migrate(self._since, since, documentId)
+            self._insert_migrate(self._until, until, documentId)
 
     def _removeForwardIndexEntry(self, since, until, documentId):
         """
