@@ -41,7 +41,7 @@ from Products.PluginIndexes.common.UnIndex import UnIndex
 from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 
-_dtmldir = os.path.join( package_home( globals() ), 'dtml' )
+_dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2**31 - 1)
 
 
@@ -76,12 +76,10 @@ class DateRangeIndex(UnIndex):
     security = ClassSecurityInfo()
 
     meta_type = "DateRangeIndex"
-    query_options = ('query',)
+    query_options = ('query', )
 
-    manage_options= ( { 'label'     : 'Properties'
-                      , 'action'    : 'manage_indexProperties'
-                      }
-                    ,
+    manage_options= ({'label': 'Properties',
+                      'action': 'manage_indexProperties'},
                     )
 
     since_field = until_field = None
@@ -109,20 +107,19 @@ class DateRangeIndex(UnIndex):
         """
         return self._until_field
 
-    manage_indexProperties = DTMLFile( 'manageDateRangeIndex', _dtmldir )
+    manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
 
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
-    def manage_edit( self, since_field, until_field, REQUEST ):
+    def manage_edit(self, since_field, until_field, REQUEST):
         """
         """
-        self._edit( since_field, until_field )
-        REQUEST[ 'RESPONSE' ].redirect( '%s/manage_main'
-                                        '?manage_tabs_message=Updated'
-                                      % REQUEST.get('URL2')
-                                      )
+        self._edit(since_field, until_field)
+        REQUEST['RESPONSE'].redirect('%s/manage_main'
+                                     '?manage_tabs_message=Updated'
+                                     % REQUEST.get('URL2'))
 
     security.declarePrivate('_edit')
-    def _edit( self, since_field, until_field ):
+    def _edit(self, since_field, until_field):
         """
             Update the fields used to compute the range.
         """
@@ -130,7 +127,7 @@ class DateRangeIndex(UnIndex):
         self._until_field = until_field
 
     security.declareProtected(manage_zcatalog_indexes, 'clear')
-    def clear( self ):
+    def clear(self):
         """
             Start over fresh.
         """
@@ -145,14 +142,14 @@ class DateRangeIndex(UnIndex):
     #
     #   PluggableIndexInterface implementation (XXX inherit assertions?)
     #
-    def getEntryForObject( self, documentId, default=None ):
+    def getEntryForObject(self, documentId, default=None):
         """
             Get all information contained for the specific object
             identified by 'documentId'.  Return 'default' if not found.
         """
-        return self._unindex.get( documentId, default )
+        return self._unindex.get(documentId, default)
 
-    def index_object( self, documentId, obj, threshold=None ):
+    def index_object(self, documentId, obj, threshold=None):
         """
             Index an object:
 
@@ -165,53 +162,53 @@ class DateRangeIndex(UnIndex):
         if self._since_field is None:
             return 0
 
-        since = getattr( obj, self._since_field, None )
-        if safe_callable( since ):
+        since = getattr(obj, self._since_field, None)
+        if safe_callable(since):
             since = since()
-        since = self._convertDateTime( since )
+        since = self._convertDateTime(since)
 
-        until = getattr( obj, self._until_field, None )
-        if safe_callable( until ):
+        until = getattr(obj, self._until_field, None)
+        if safe_callable(until):
             until = until()
-        until = self._convertDateTime( until )
+        until = self._convertDateTime(until)
 
-        datum = ( since, until )
+        datum = (since, until)
 
-        old_datum = self._unindex.get( documentId, None )
+        old_datum = self._unindex.get(documentId, None)
         if datum == old_datum: # No change?  bail out!
             return 0
 
         if old_datum is not None:
             old_since, old_until = old_datum
-            self._removeForwardIndexEntry( old_since, old_until, documentId )
+            self._removeForwardIndexEntry(old_since, old_until, documentId)
 
-        self._insertForwardIndexEntry( since, until, documentId )
-        self._unindex[ documentId ] = datum
+        self._insertForwardIndexEntry(since, until, documentId)
+        self._unindex[documentId] = datum
 
         return 1
 
-    def unindex_object( self, documentId ):
+    def unindex_object(self, documentId):
         """
             Remove the object corresponding to 'documentId' from the index.
         """
-        datum = self._unindex.get( documentId, None )
+        datum = self._unindex.get(documentId, None)
 
         if datum is None:
             return
 
         since, until = datum
 
-        self._removeForwardIndexEntry( since, until, documentId )
-        del self._unindex[ documentId ]
+        self._removeForwardIndexEntry(since, until, documentId)
+        del self._unindex[documentId]
 
-    def uniqueValues( self, name=None, withLengths=0 ):
+    def uniqueValues(self, name=None, withLengths=0):
         """
             Return a list of unique values for 'name'.
 
             If 'withLengths' is true, return a sequence of tuples, in
-            the form '( value, length )'.
+            the form '(value, length)'.
         """
-        if not name in ( self._since_field, self._until_field ):
+        if not name in (self._since_field, self._until_field):
             return []
 
         if name == self._since_field:
@@ -228,28 +225,28 @@ class DateRangeIndex(UnIndex):
 
         if not withLengths:
 
-            result.extend( t1.keys() )
-            result.extend( t2.keys() )
+            result.extend(t1.keys())
+            result.extend(t2.keys())
 
         else:
 
             for key in t1.keys():
-                set = t1[ key ]
+                set = t1[key]
                 if isinstance(set, int):
                     length = 1
                 else:
-                    length = len( set )
-                result.append( ( key, length) )
+                    length = len(set)
+                result.append((key, length))
 
             for key in t2.keys():
-                set = t2[ key ]
+                set = t2[key]
                 if isinstance(set, int):
                     length = 1
                 else:
-                    length = len( set )
-                result.append( ( key, length) )
+                    length = len(set)
+                result.append((key, length))
 
-        return tuple( result )
+        return tuple(result)
 
     def _cache_key(self, catalog):
         cid = catalog.getId()
@@ -329,14 +326,14 @@ class DateRangeIndex(UnIndex):
             until = multiunion(self._until.values(None, term))
             since = multiunion(self._since.values(term))
 
-            result = multiunion([until_only, since_only, until,since])
+            result = multiunion([until_only, since_only, until, since])
             if REQUEST is not None and catalog is not None:
                 cache[cachekey] = result
 
             return (difference(resultset, result),
                     (self._since_field, self._until_field))
 
-    def _insertForwardIndexEntry( self, since, until, documentId ):
+    def _insertForwardIndexEntry(self, since, until, documentId):
         """
             Insert 'documentId' into the appropriate set based on
             'datum'.
@@ -379,7 +376,7 @@ class DateRangeIndex(UnIndex):
                 else:
                     set.insert(documentId)
 
-    def _removeForwardIndexEntry( self, since, until, documentId ):
+    def _removeForwardIndexEntry(self, since, until, documentId):
         """
             Remove 'documentId' from the appropriate set based on
             'datum'.
@@ -392,7 +389,7 @@ class DateRangeIndex(UnIndex):
                 if isinstance(set, int):
                     del self._until_only[until]
                 else:
-                    set.remove( documentId )
+                    set.remove(documentId)
                     if not set:
                         del self._until_only[until]
         elif until is None:
@@ -422,7 +419,7 @@ class DateRangeIndex(UnIndex):
                     if not set:
                         del self._until[until]
 
-    def _convertDateTime( self, value ):
+    def _convertDateTime(self, value):
         if value is None:
             return value
         if isinstance(value, (str, datetime)):
@@ -430,16 +427,17 @@ class DateRangeIndex(UnIndex):
             value = dt_obj.millis() / 1000 / 60 # flatten to minutes
         elif isinstance(value, DateTime):
             value = value.millis() / 1000 / 60 # flatten to minutes
-        result = int( value )
+        result = int(value)
         if result > MAX32:
             # t_val must be integer fitting in the 32bit range
-            raise OverflowError( '%s is not within the range of dates allowed'
-                              'by a DateRangeIndex' % value)
+            raise OverflowError('%s is not within the range of dates allowed'
+                                'by a DateRangeIndex' % value)
         return result
 
-InitializeClass( DateRangeIndex )
+InitializeClass(DateRangeIndex)
 
-manage_addDateRangeIndexForm = DTMLFile( 'addDateRangeIndex', _dtmldir )
+manage_addDateRangeIndexForm = DTMLFile('addDateRangeIndex', _dtmldir)
+
 
 def manage_addDateRangeIndex(self, id, extra=None,
         REQUEST=None, RESPONSE=None, URL3=None):
