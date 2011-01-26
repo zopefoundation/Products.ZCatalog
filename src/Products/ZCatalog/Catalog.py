@@ -683,6 +683,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         else:
             rlen = actual_result_count
 
+        # don't limit to more than what we have
+        if limit is not None and limit >= rlen:
+            limit = rlen
+
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
