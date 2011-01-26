@@ -359,13 +359,13 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         query = dict(att1='att1', sort_on='num', b_start=11, b_size=17)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(28))
+        self.assertEqual([r.num for r in result], range(11, 28))
 
     def testSortLimitViaBatchingArgsEnd(self):
         query = dict(att1='att1', sort_on='num', b_start=90, b_size=15)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(100))
+        self.assertEqual([r.num for r in result], range(90, 100))
 
     # _get_sort_attr
     # _getSortIndex

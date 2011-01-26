@@ -4,6 +4,10 @@ Changelog
 2.13.4 (unreleased)
 -------------------
 
+- If batching arguments are provided, limit the returned lazy sequence to the
+  items in the required batch instead of returning trailing items falling
+  outside of the requested batch.
+
 - Fixed inline `IISet` to `IITreeSet` conversion code inside DateRangeIndex'
   `_insertForwardIndexEntry` method.
 
