@@ -480,11 +480,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         order.sort()
         return [i[1] for i in order]
 
-    def _limit_sequence(self, sequence, slen, b_start=0, b_size=None):
+    def _limit_sequence(self, sequence, slen, b_start=0, b_size=None,
+                        switched_reverse=False):
         if b_size is not None:
             sequence = sequence[b_start:b_start + b_size]
             if slen:
                 slen = len(sequence)
+        if switched_reverse:
+            sequence.reverse()
         return (sequence, slen)
 
     def search(self, query, sort_index=None, reverse=0, limit=None, merge=1):
@@ -687,6 +690,25 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if limit is not None and limit >= rlen:
             limit = rlen
 
+        # if we want a batch from the end of the resultset, reverse sorting
+        # order and limit it, then reverse the resultset again
+        switched_reverse = False
+        if b_start and b_start > rlen / 2:
+            reverse = not reverse
+            switched_reverse = True
+            b_end = b_start + b_size
+            if b_end >= rlen:
+                overrun = rlen - b_end
+                if b_start >= rlen:
+                    # bail out, we are outside the possible range
+                    return LazyCat([], 0, actual_result_count)
+                else:
+                    b_size += overrun
+                b_start = 0
+            else:
+                b_start = b_end - b_start
+            limit = b_start + b_size
+
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
@@ -721,7 +743,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             else:
                 result.sort()
             sequence, slen = self._limit_sequence(result, length, b_start,
-                b_size)
+                b_size, switched_reverse)
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index
@@ -744,11 +766,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     result.sort()
                 if limit is not None:
                     result = result[:limit]
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 return sequence
         elif reverse:
             # Limit/sort results using N-Best algorithm
@@ -776,11 +800,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     worst = keys[0]
             result.reverse()
             if merge:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 return sequence
         elif not reverse:
             # Limit/sort results using N-Best algorithm in reverse (N-Worst?)
@@ -805,11 +831,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         n += 1
                     best = keys[-1]
             if merge:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size)
+                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                    switched_reverse)
                 return sequence
 
         return LazyMap(self.__getitem__, result, len(result),

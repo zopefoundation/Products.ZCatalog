@@ -361,11 +361,29 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(11, 28))
 
+    def testSortLimitViaBatchingArgsSecondHalf(self):
+        query = dict(att1='att1', sort_on='num', b_start=70, b_size=15)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(70, 85))
+
     def testSortLimitViaBatchingArgsEnd(self):
+        query = dict(att1='att1', sort_on='num', b_start=90, b_size=10)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(90, 100))
+
+    def testSortLimitViaBatchingArgsOverEnd(self):
         query = dict(att1='att1', sort_on='num', b_start=90, b_size=15)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(90, 100))
+
+    def testSortLimitViaBatchingArgsOutside(self):
+        query = dict(att1='att1', sort_on='num', b_start=110, b_size=10)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], [])
 
     # _get_sort_attr
     # _getSortIndex

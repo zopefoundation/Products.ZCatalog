@@ -4,8 +4,15 @@ Changelog
 2.13.4 (unreleased)
 -------------------
 
+- Optimize sorting in presence of batching arguments. If a batch from the end
+  of the result set is requested, we internally reverse the sorting order and
+  at the end reverse the lazy sequence again. In a sequence with 100 entries,
+  if we request the batch with items 80 to 90, we now reverse sort 20 items
+  (100 to 80), slice of the first ten items and then reverse them. Before we
+  would had to sort the first 90 items and then slice of the last 10.
+
 - If batching arguments are provided, limit the returned lazy sequence to the
-  items in the required batch instead of returning trailing items falling
+  items in the required batch instead of returning leading items falling
   outside of the requested batch.
 
 - Fixed inline `IISet` to `IITreeSet` conversion code inside DateRangeIndex'
