@@ -32,7 +32,7 @@ class UUIDIndex(UnIndex):
     For each datum only one documentId can exist.
     """
 
-    meta_type= " UUIDIndex"
+    meta_type= "UUIDIndex"
 
     manage_options= (
         {'label': 'Settings', 'action': 'manage_main'},
