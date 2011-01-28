@@ -11,6 +11,8 @@
 #
 ##############################################################################
 
+from logging import getLogger
+
 from App.special_dtml import DTMLFile
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
@@ -19,6 +21,7 @@ from BTrees.OIBTree import OIBTree
 from Products.PluginIndexes.common.UnIndex import UnIndex
 
 _marker = []
+logger = getLogger('Products.ZCatalog')
 
 
 class UUIDIndex(UnIndex):
@@ -84,7 +87,7 @@ class UUIDIndex(UnIndex):
             self._index[entry] = documentId
             self._length.change(1)
         elif old_docid != documentId:
-            raise ValueError("A different document with value '%s' already "
+            logger.exception("A different document with value '%s' already "
                 "exists in the index.'")
 
     def removeForwardIndexEntry(self, entry, documentId):

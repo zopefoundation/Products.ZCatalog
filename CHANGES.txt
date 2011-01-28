@@ -6,9 +6,9 @@ Changelog
 
 - Added a new UUIDIndex, based on the common UnIndex. It behaves like a
   FieldIndex, but can only store one document id per value, so there's a 1:1
-  mapping from value to document id. A ValueError is raised if a different
-  document id is indexed for an already taken value. The internal data
-  structures are optimized for this and avoid storing one IITreeSet per value.
+  mapping from value to document id. An error is logged if a different document
+  id is indexed for an already taken value. The internal data structures are
+  optimized for this and avoid storing one IITreeSet per value.
 
 - Optimize sorting in presence of batching arguments. If a batch from the end
   of the result set is requested, we internally reverse the sorting order and
