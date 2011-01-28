@@ -56,6 +56,22 @@ class UUIDIndex(UnIndex):
         """
         return self.indexSize()
 
+    def uniqueValues(self, name=None, withLengths=0):
+        """returns the unique values for name
+
+        if withLengths is true, returns a sequence of
+        tuples of (value, length)
+        """
+        if name is None:
+            name = self.id
+        elif name != self.id:
+            return []
+
+        if not withLengths:
+            return tuple(self._index.keys())
+        # We know the length for each value is one
+        return [(k, 1) for k in self._index.keys()]
+
     def insertForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and put it in the correct place
         in the forward index.
