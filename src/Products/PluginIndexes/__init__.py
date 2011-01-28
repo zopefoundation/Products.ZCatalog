@@ -105,3 +105,17 @@ def initialize(context):
                           icon='www/index.gif',
                           visibility=None,
                          )
+
+    from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
+    from Products.PluginIndexes.UUIDIndex.UUIDIndex import \
+        manage_addUUIDIndex
+    from Products.PluginIndexes.UUIDIndex.UUIDIndex import \
+        manage_addUUIDIndexForm
+
+    context.registerClass(UUIDIndex,
+                          permission='Add Pluggable Index',
+                          constructors=(manage_addUUIDIndexForm,
+                                        manage_addUUIDIndex),
+                          icon='www/index.gif',
+                          visibility=None,
+                         )
