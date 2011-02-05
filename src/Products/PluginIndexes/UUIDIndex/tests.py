@@ -126,8 +126,11 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply(query, values[10:21])
 
     def test_non_unique(self):
-        self._index.index_object(0, Dummy('a'))
-        self.assertRaises(ValueError, self._index.index_object, 1, Dummy('a'))
+        obj = Dummy('a')
+        self._index.index_object(0, obj)
+        # second index call fails and logs
+        self._index.index_object(1, obj)
+        self._checkApply({'foo': 'a'}, [(0, obj)])
 
 
 def test_suite():
