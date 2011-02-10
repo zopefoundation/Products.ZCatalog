@@ -4,6 +4,7 @@ Changelog
 2.13.6 (unreleased)
 -------------------
 
+- Remove docstrings from various methods, as they shouldn't be web-publishable.
 
 2.13.5 (2011-02-05)
 -------------------
