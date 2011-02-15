@@ -19,13 +19,13 @@ from datetime import date, datetime
 from datetime import tzinfo, timedelta
 
 from App.special_dtml import DTMLFile
+from BTrees.IIBTree import IIBTree
 from BTrees.IIBTree import IISet
 from BTrees.IIBTree import union
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
-from BTrees.OIBTree import OIBTree
 from DateTime.DateTime import DateTime
 from OFS.PropertyManager import PropertyManager
 from ZODB.POSException import ConflictError
@@ -112,7 +112,7 @@ class DateIndex(UnIndex, PropertyManager):
     def clear( self ):
         """ Complete reset """
         self._index = IOBTree()
-        self._unindex = OIBTree()
+        self._unindex = IIBTree()
         self._length = Length()
 
     def index_object( self, documentId, obj, threshold=None ):

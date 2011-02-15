@@ -4,6 +4,8 @@ Changelog
 2.13.7 (unreleased)
 -------------------
 
+- Fixed the `DateIndex._unindex` to be of type `IIBTree` instead of `OIBTree`.
+  It stores document ids as keys, which can only be ints.
 
 2.13.6 (2011-02-10)
 -------------------
