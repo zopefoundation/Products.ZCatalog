@@ -20,9 +20,9 @@ import BTrees.Length
 from ZODB.POSException import ConflictError
 
 from Products.PluginIndexes.common.util import parseIndexRequest
+from Products.PluginIndexes.common.UnIndex import _marker
 from Products.PluginIndexes.common.UnIndex import UnIndex
 
-_marker = object()
 LOG = getLogger('BooleanIndex.UnIndex')
 
 
@@ -86,7 +86,8 @@ class BooleanIndex(UnIndex):
         datum = self._get_object_datum(obj, attr)
 
         # Make it boolean, int as an optimization
-        datum = int(bool(datum))
+        if datum is not _marker:
+            datum = int(bool(datum))
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.

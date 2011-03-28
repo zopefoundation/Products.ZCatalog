@@ -46,6 +46,13 @@ class TestBooleanIndex(unittest.TestCase):
         self.failUnless(1 in index._unindex)
         self.failIf(1 in index._index)
 
+    def test_index_missing_attribute(self):
+        index = self._makeOne()
+        obj = Dummy(1, True)
+        index._index_object(obj.id, obj, attr='missing')
+        self.assertFalse(1 in index._unindex)
+        self.assertFalse(1 in index._index)
+
     def test_search_true(self):
         index = self._makeOne()
         obj = Dummy(1, True)
