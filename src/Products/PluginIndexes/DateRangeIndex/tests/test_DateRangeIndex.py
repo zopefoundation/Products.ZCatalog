@@ -190,6 +190,40 @@ class DRI_Tests(unittest.TestCase):
         results, used = index._apply_index({'work': after})
         self.assertEqual(len(results), 0)
 
+    def test_resultset(self):
+        from BTrees.IIBTree import IISet
+
+        index = self._makeOne('work', 'start', 'stop')
+        for i in range(len(dummies)):
+            index.index_object(i, dummies[i])
+
+        results, used = index._apply_index({'work': 20})
+        self.assertEqual(set(results), set([0, 1, 2, 3]))
+
+        # a resultset with everything doesn't actually limit
+        results, used = index._apply_index({'work': 20},
+            resultset=IISet(range(len(dummies))))
+        self.assertEqual(set(results), set([0, 1, 2, 3]))
+
+        # a small resultset limits
+        results, used = index._apply_index({'work': 20},
+            resultset=IISet([1, 2]))
+        self.assertEqual(set(results), set([1, 2]))
+
+        # the specified value is included
+        results, used = index._apply_index({'work': 11})
+        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+
+        # the specified value is included with a large resultset
+        results, used = index._apply_index({'work': 11},
+            resultset=IISet(range(len(dummies))))
+        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+
+        # the specified value is included with a small resultset
+        results, used = index._apply_index({'work': 11},
+            resultset=IISet([0, 5, 7]))
+        self.assertEqual(set(results), set([0, 5]))
+
 
 def test_suite():
     suite = unittest.TestSuite()
