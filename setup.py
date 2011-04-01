@@ -15,7 +15,7 @@
 from setuptools import setup, find_packages
 
 setup(name='Products.ZCatalog',
-      version = '2.13.8dev',
+      version = '2.13.8',
       url='http://pypi.python.org/pypi/Products.ZCatalog',
       license='ZPL 2.1',
       description="Zope 2's indexing and search solution.",

@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.8 (unreleased)
+2.13.8 (2011-04-01)
 -------------------
 
 - Fixed bug in date range index, which would omit objects exactly matching the
