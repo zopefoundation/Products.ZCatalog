@@ -10,34 +10,29 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""DateRangeIndex unit tests.
-"""
 
 import unittest
 
-class Dummy:
 
-    def __init__( self, name, start, stop ):
+class Dummy(object):
 
+    def __init__(self, name, start, stop):
         self._name  = name
         self._start = start
         self._stop  = stop
 
-    def name( self ):
-
+    def name(self):
         return self._name
 
-    def start( self ):
-
+    def start(self):
         return self._start
 
-    def stop( self ):
-
+    def stop(self):
         return self._stop
 
-    def datum( self ):
+    def datum(self):
+        return (self._start, self._stop)
 
-        return ( self._start, self._stop )
 
 dummies = [ Dummy( 'a', None,   None )
           , Dummy( 'b', None,   None )
@@ -49,37 +44,27 @@ dummies = [ Dummy( 'a', None,   None )
           , Dummy( 'h', 2,      9    )
           ]
 
-def matchingDummies( value ):
+
+def matchingDummies(value):
     result = []
-
     for dummy in dummies:
-
-        if ( ( dummy.start() is None or dummy.start() <= value )
-         and ( dummy.stop() is None or dummy.stop() >= value )
-           ):
-            result.append( dummy )
-
+        if ((dummy.start() is None or dummy.start() <= value)
+            and (dummy.stop() is None or dummy.stop() >= value)):
+            result.append(dummy)
     return result
 
 
-class DRI_Tests( unittest.TestCase ):
-
+class DRI_Tests(unittest.TestCase):
 
     def _getTargetClass(self):
         from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
             import DateRangeIndex
         return DateRangeIndex
 
-    def _makeOne(self,
-                 id,
-                 since_field=None,
-                 until_field=None,
-                 caller=None,
-                 extra=None,
-                ):
+    def _makeOne(self, id, since_field=None, until_field=None, caller=None,
+                 extra=None):
         klass = self._getTargetClass()
         return klass(id, since_field, until_field, caller, extra)
-
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IDateRangeIndex
@@ -93,54 +78,48 @@ class DRI_Tests( unittest.TestCase ):
         verifyClass(ISortIndex, self._getTargetClass())
         verifyClass(IUniqueValueIndex, self._getTargetClass())
 
-    def test_empty( self ):
+    def test_empty(self):
+        empty = self._makeOne('empty')
 
-        empty = self._makeOne( 'empty' )
+        self.assertTrue(empty.getEntryForObject(1234) is None)
+        empty.unindex_object(1234) # shouldn't throw
 
-        self.assertTrue(empty.getEntryForObject( 1234 ) is None)
-        empty.unindex_object( 1234 ) # shouldn't throw
+        self.assertFalse(empty.uniqueValues('foo'))
+        self.assertFalse(empty.uniqueValues('foo', 1))
+        self.assertTrue(empty._apply_index({'zed': 12345}) is None)
 
-        self.assertFalse(empty.uniqueValues( 'foo' ))
-        self.assertFalse(empty.uniqueValues( 'foo', 1 ))
-
-        self.assertTrue(empty._apply_index( { 'zed' : 12345 } ) is None)
-
-        result, used = empty._apply_index( { 'empty' : 12345 } )
-
+        result, used = empty._apply_index({'empty': 12345})
         self.assertFalse(result)
-        self.assertEqual(used, ( None, None ))
+        self.assertEqual(used, (None, None))
 
-    def test_retrieval( self ):
+    def test_retrieval(self):
+        index = self._makeOne('work', 'start', 'stop')
 
-        index = self._makeOne( 'work', 'start', 'stop' )
+        for i in range(len(dummies)):
+            index.index_object(i, dummies[i])
 
-        for i in range( len( dummies ) ):
-            index.index_object( i, dummies[i] )
+        for i in range(len(dummies)):
+            self.assertEqual(index.getEntryForObject(i), dummies[i].datum())
 
-        for i in range( len( dummies ) ):
-            self.assertEqual(index.getEntryForObject( i ), dummies[i].datum())
+        for value in range(-1, 15):
+            matches = matchingDummies(value)
+            results, used = index._apply_index({'work': value})
+            self.assertEqual(used, ('start', 'stop'))
+            self.assertEqual(len(matches), len(results))
 
-        for value in range( -1, 15 ):
+            matches.sort(lambda x, y: cmp(x.name(), y.name()))
 
-            matches = matchingDummies( value )
-            results, used = index._apply_index( { 'work' : value } )
-            self.assertEqual(used, ( 'start', 'stop' ))
-
-            self.assertEqual(len( matches ), len( results ))
-
-            matches.sort( lambda x, y: cmp( x.name(), y.name() ) )
-
-            for result, match in map( None, results, matches ):
+            for result, match in map(None, results, matches):
                 self.assertEqual(index.getEntryForObject(result), match.datum())
 
-    def test_longdates( self ):
-        self.assertRaises(OverflowError, self._badlong )
+    def test_longdates(self):
+        self.assertRaises(OverflowError, self._badlong)
 
     def _badlong(self):
         import sys
-        index = self._makeOne ('work', 'start', 'stop' )
-        bad = Dummy( 'bad', long(sys.maxint) + 1, long(sys.maxint) + 1 )
-        index.index_object( 0, bad )
+        index = self._makeOne('work', 'start', 'stop')
+        bad = Dummy('bad', long(sys.maxint) + 1, long(sys.maxint) + 1)
+        index.index_object(0, bad)
 
     def test_datetime(self):
         from datetime import datetime
@@ -154,26 +133,26 @@ class DRI_Tests( unittest.TestCase ):
         after = datetime(2009, 7, 14, 0, 0, tzinfo=_getEastern())
 
         dummy = Dummy('test', start, stop)
-        index = self._makeOne( 'work', 'start', 'stop' )
+        index = self._makeOne('work', 'start', 'stop')
         index.index_object(0, dummy)
 
         self.assertEqual(index.getEntryForObject(0),
                         (DateTime(start).millis() / 60000,
                          DateTime(stop).millis() / 60000))
 
-        results, used = index._apply_index( { 'work' : before } )
+        results, used = index._apply_index({'work': before})
         self.assertEqual(len(results), 0)
 
-        results, used = index._apply_index( { 'work' : start } )
+        results, used = index._apply_index({'work': start})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : between } )
+        results, used = index._apply_index({'work': between})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : stop } )
+        results, used = index._apply_index({'work': stop})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : after } )
+        results, used = index._apply_index({'work': after})
         self.assertEqual(len(results), 0)
 
     def test_datetime_naive_timezone(self):
@@ -189,30 +168,30 @@ class DRI_Tests( unittest.TestCase ):
         after = datetime(2009, 7, 14, 0, 0)
 
         dummy = Dummy('test', start, stop)
-        index = self._makeOne( 'work', 'start', 'stop' )
+        index = self._makeOne('work', 'start', 'stop')
         index.index_object(0, dummy)
 
         self.assertEqual(index.getEntryForObject(0),
                         (DateTime(start_local).millis() / 60000,
                          DateTime(stop_local).millis() / 60000))
 
-        results, used = index._apply_index( { 'work' : before } )
+        results, used = index._apply_index({'work': before})
         self.assertEqual(len(results), 0)
 
-        results, used = index._apply_index( { 'work' : start } )
+        results, used = index._apply_index({'work': start})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : between } )
+        results, used = index._apply_index({'work': between})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : stop } )
+        results, used = index._apply_index({'work': stop})
         self.assertEqual(len(results), 1)
 
-        results, used = index._apply_index( { 'work' : after } )
+        results, used = index._apply_index({'work': after})
         self.assertEqual(len(results), 0)
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest( unittest.makeSuite( DRI_Tests ) )
+    suite.addTest(unittest.makeSuite(DRI_Tests))
     return suite

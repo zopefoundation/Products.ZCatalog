@@ -131,13 +131,13 @@ class DateRangeIndex(UnIndex):
         """
             Start over fresh.
         """
-        self._always        = IITreeSet()
-        self._since_only    = IOBTree()
-        self._until_only    = IOBTree()
-        self._since         = IOBTree()
-        self._until         = IOBTree()
-        self._unindex       = IOBTree() # 'datum' will be a tuple of date ints
-        self._length        = Length()
+        self._always = IITreeSet()
+        self._since_only = IOBTree()
+        self._until_only = IOBTree()
+        self._since = IOBTree()
+        self._until = IOBTree()
+        self._unindex = IOBTree() # 'datum' will be a tuple of date ints
+        self._length = Length()
 
     #
     #   PluggableIndexInterface implementation (XXX inherit assertions?)
