@@ -214,8 +214,17 @@ class DRI_Tests(unittest.TestCase):
         results, used = index._apply_index({'work': 11})
         self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
 
+        # also for _since_only
+        results, used = index._apply_index({'work': 10})
+        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+
         # the specified value is included with a large resultset
         results, used = index._apply_index({'work': 11},
+            resultset=IISet(range(len(dummies))))
+        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+
+        # this also works for _since_only
+        results, used = index._apply_index({'work': 10},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
 

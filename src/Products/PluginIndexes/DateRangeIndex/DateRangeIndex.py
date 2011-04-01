@@ -309,10 +309,10 @@ class DateRangeIndex(UnIndex):
             return (result, (self._since_field, self._until_field))
         else:
             # Compute the inverse and subtract from res
-            until_only = multiunion(self._until_only.values(None, term))
-            since_only = multiunion(self._since_only.values(term))
-            until = multiunion(self._until.values(None, term))
-            since = multiunion(self._since.values(term))
+            until_only = multiunion(self._until_only.values(None, term - 1))
+            since_only = multiunion(self._since_only.values(term + 1))
+            until = multiunion(self._until.values(None, term - 1))
+            since = multiunion(self._since.values(term + 1))
 
             result = multiunion([until_only, since_only, until, since])
             if REQUEST is not None and catalog is not None:

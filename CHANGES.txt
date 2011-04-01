@@ -4,6 +4,9 @@ Changelog
 2.13.8 (unreleased)
 -------------------
 
+- Fixed bug in date range index, which would omit objects exactly matching the
+  query term if a resultset was provided.
+
 - Fixed the BooleanIndex to not index objects without the cataloged attribute.
 
 2.13.7 (2011-02-15)
