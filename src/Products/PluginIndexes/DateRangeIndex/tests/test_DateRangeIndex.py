@@ -113,13 +113,27 @@ class DRI_Tests(unittest.TestCase):
                 self.assertEqual(index.getEntryForObject(result), match.datum())
 
     def test_longdates(self):
-        self.assertRaises(OverflowError, self._badlong)
-
-    def _badlong(self):
-        import sys
+        too_large = long(2**31)
+        too_small = - long(2**31)
         index = self._makeOne('work', 'start', 'stop')
-        bad = Dummy('bad', long(sys.maxint) + 1, long(sys.maxint) + 1)
+        bad = Dummy('bad', too_large, too_large)
+        self.assertRaises(OverflowError, index.index_object, 0, bad)
+        bad = Dummy('bad', too_small, too_small)
+        self.assertRaises(OverflowError, index.index_object, 0, bad)
+
+    def test_floor_date(self):
+        index = self._makeOne('work', 'start', 'stop')
+        floor = index.floor_value - 1
+        bad = Dummy('bad', floor, None)
         index.index_object(0, bad)
+        self.assertTrue(0 in index._always.keys())
+
+    def test_ceiling_date(self):
+        index = self._makeOne('work', 'start', 'stop')
+        ceiling = index.ceiling_value + 1
+        bad = Dummy('bad', None, ceiling)
+        index.index_object(1, bad)
+        self.assertTrue(1 in index._always.keys())
 
     def test_datetime(self):
         from datetime import datetime

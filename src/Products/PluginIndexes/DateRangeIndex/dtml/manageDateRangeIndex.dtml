@@ -22,8 +22,8 @@ Distinct values: <dtml-var indexSize>
   <td align="left" valign="top">
    <input name="since_field" value="&dtml-getSinceField;" size="40" />
   </td>
- </tr>
-
+</tr>
+<tr>
   <td align="left" valign="top">
   <div class="form-label">
   Until field
@@ -31,8 +31,25 @@ Distinct values: <dtml-var indexSize>
   <td align="left" valign="top">
    <input name="until_field" value="&dtml-getUntilField;" />
   </td>
- </tr>
-
+</tr>
+<tr>
+  <td align="left" valign="top">
+  <div class="form-label">
+  Floor value
+  </td>
+  <td align="left" valign="top">
+   <input name="floor_value" value="&dtml-getFloorValue;" />
+  </td>
+</tr>
+<tr>
+  <td align="left" valign="top">
+  <div class="form-label">
+  Ceiling value
+  </td>
+  <td align="left" valign="top">
+   <input name="ceiling_value" value="&dtml-getCeilingValue;" />
+  </td>
+</tr>
 <tr>
   <td></td>
   <td align="left" valign="top">

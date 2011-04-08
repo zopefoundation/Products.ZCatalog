@@ -4,6 +4,12 @@ Changelog
 2.13.9 (unreleased)
 -------------------
 
+- Added a floor and ceiling value to the date range index. Values outside the
+  specified range will be interpreted the same way as passing `None`, i.e.
+  `since the beginning of time` and `until the end of it`. This allows the
+  index to apply its optimizations, while objects with values outside this
+  range can still be stored in a normal date index, which omits explicitly
+  passed in `None` values.
 
 2.13.8 (2011-04-01)
 -------------------

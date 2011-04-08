@@ -42,6 +42,26 @@ objects for those where a given date falls within the range.
    <input type="text" name="extra.until_field:record" size="40" />
   </td>
  </tr>
+ <tr>
+  <td align="left" valign="top">
+  <div class="form-label"> 
+  Floor value
+  </div>
+  </td>
+  <td align="left" valign="top">
+   <input type="text" name="extra.floor_value:record" size="15" />
+  </td>
+ </tr>
+ <tr>
+  <td align="left" valign="top">
+  <div class="form-label"> 
+  Ceiling value
+  </div>
+  </td>
+  <td align="left" valign="top">
+   <input type="text" name="extra.ceiling_value:record" size="15" />
+  </td>
+ </tr>
   <tr>
     <td align="left" valign="top">
     </td>

@@ -84,15 +84,22 @@ class DateRangeIndex(UnIndex):
 
     since_field = until_field = None
 
+    # int(DateTime('1000/1/1 0:00 GMT-12').millis() / 1000 / 60)
+    floor_value = -510162480
+    # int(DateTime('2499/12/31 0:00 GMT+12').millis() / 1000 / 60)
+    ceiling_value = 278751600
+
     def __init__(self, id, since_field=None, until_field=None,
-            caller=None, extra=None):
+            caller=None, extra=None, floor_value=None, ceiling_value=None):
 
         if extra:
             since_field = extra.since_field
             until_field = extra.until_field
+            floor_value = getattr(extra, 'floor_value', None)
+            ceiling_value = getattr(extra, 'ceiling_value', None)
 
         self._setId(id)
-        self._edit(since_field, until_field)
+        self._edit(since_field, until_field, floor_value, ceiling_value)
         self.clear()
 
     security.declareProtected(view, 'getSinceField')
@@ -107,24 +114,39 @@ class DateRangeIndex(UnIndex):
         """
         return self._until_field
 
+    security.declareProtected(view, 'getFloorValue')
+    def getFloorValue(self):
+        """"""
+        return self.floor_value
+
+    security.declareProtected(view, 'getCeilingValue')
+    def getCeilingValue(self):
+        """"""
+        return self.ceiling_value
+
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
 
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
-    def manage_edit(self, since_field, until_field, REQUEST):
+    def manage_edit(self, since_field, until_field, floor_value,
+                    ceiling_value, REQUEST):
         """
         """
-        self._edit(since_field, until_field)
+        self._edit(since_field, until_field, floor_value, ceiling_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
                                      % REQUEST.get('URL2'))
 
     security.declarePrivate('_edit')
-    def _edit(self, since_field, until_field):
-        """
-            Update the fields used to compute the range.
+    def _edit(self, since_field, until_field, floor_value=None,
+              ceiling_value=None):
+        """Update the fields used to compute the range.
         """
         self._since_field = since_field
         self._until_field = until_field
+        if floor_value is not None:
+            self.floor_value = int(floor_value)
+        if ceiling_value is not None:
+            self.ceiling_value = int(ceiling_value)
 
     security.declareProtected(manage_zcatalog_indexes, 'clear')
     def clear(self):
@@ -269,7 +291,7 @@ class DateRangeIndex(UnIndex):
             if catalog is not None:
                 key = self._cache_key(catalog)
                 cache = REQUEST.get(key, None)
-                tid = term / 10
+                tid = isinstance(term, int) and term / 10 or 'None'
                 if resultset is None:
                     cachekey = '_daterangeindex_%s_%s' % (iid, tid)
                 else:
@@ -378,12 +400,18 @@ class DateRangeIndex(UnIndex):
             value = dt_obj.millis() / 1000 / 60 # flatten to minutes
         elif isinstance(value, DateTime):
             value = value.millis() / 1000 / 60 # flatten to minutes
-        result = int(value)
-        if result > MAX32:
+        if value > MAX32 or value < -MAX32:
             # t_val must be integer fitting in the 32bit range
             raise OverflowError('%s is not within the range of dates allowed'
                                 'by a DateRangeIndex' % value)
-        return result
+        value = int(value)
+        # handle values outside our specified range
+        import pdb; pdb.set_trace( )
+        if value > self.ceiling_value:
+            return None
+        elif value < self.floor_value:
+            return None
+        return value
 
 InitializeClass(DateRangeIndex)
 
