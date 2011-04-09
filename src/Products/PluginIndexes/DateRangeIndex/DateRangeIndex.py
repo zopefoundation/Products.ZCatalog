@@ -406,7 +406,6 @@ class DateRangeIndex(UnIndex):
                                 'by a DateRangeIndex' % value)
         value = int(value)
         # handle values outside our specified range
-        import pdb; pdb.set_trace( )
         if value > self.ceiling_value:
             return None
         elif value < self.floor_value:
