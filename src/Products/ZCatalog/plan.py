@@ -27,8 +27,8 @@ REFRESH_RATE = 100
 
 Duration = namedtuple('Duration', ['start', 'end'])
 IndexMeasurement = namedtuple('IndexMeasurement',
-                              ['name', 'duration', 'num', 'limit'])
-Benchmark = namedtuple('Benchmark', ['num', 'duration', 'hits', 'limit'])
+                              ['name', 'duration', 'limit'])
+Benchmark = namedtuple('Benchmark', ['duration', 'hits', 'limit'])
 RecentQuery = namedtuple('RecentQuery', ['duration', 'details'])
 Report = namedtuple('Report', ['hits', 'duration', 'last'])
 
@@ -241,8 +241,9 @@ class CatalogPlan(object):
         if not benchmark:
             return None
 
-        # sort indexes on (mean result length, mean search time)
-        ranking = [((value.limit, value.num, value.duration), name)
+        # sort indexes on (limited result index, mean search time)
+        # skip internal ('#') bookkeeping records
+        ranking = [((value.limit, value.duration), name)
                    for name, value in benchmark.items()]
         ranking.sort()
         return [r[1] for r in ranking]
@@ -257,14 +258,10 @@ class CatalogPlan(object):
     def stop_split(self, name, result=None, limit=False):
         current = time.time()
         start_time, stop_time = self.interim.get(name, Duration(None, None))
-        length = 0
-        if result is not None:
-            # TODO: calculating the length can be expensive
-            length = len(result)
         self.interim[name] = Duration(start_time, current)
         dt = current - start_time
         self.res.append(IndexMeasurement(
-            name=name, duration=dt, num=length, limit=limit))
+            name=name, duration=dt, limit=limit))
 
         if name == 'sort_on':
             # sort_on isn't an index. We only do time reporting on it
@@ -273,17 +270,16 @@ class CatalogPlan(object):
         # remember index's hits, search time and calls
         benchmark = self.benchmark
         if name not in benchmark:
-            benchmark[name] = Benchmark(num=length, duration=dt,
+            benchmark[name] = Benchmark(duration=dt,
                                         hits=1, limit=limit)
         else:
-            num, duration, hits, limit = benchmark[name]
-            num = int(((num * hits) + length) / float(hits + 1))
+            duration, hits, limit = benchmark[name]
             duration = ((duration * hits) + dt) / float(hits + 1)
             # reset adaption
             if hits % REFRESH_RATE == 0:
                 hits = 0
             hits += 1
-            benchmark[name] = Benchmark(num, duration, hits, limit)
+            benchmark[name] = Benchmark(duration, hits, limit)
 
     def stop(self):
         self.end_time = time.time()
@@ -291,7 +287,7 @@ class CatalogPlan(object):
         # Make absolutely sure we never omit query keys from the plan
         for key in self.query.keys():
             if key not in self.benchmark.keys():
-                self.benchmark[key] = Benchmark(0, 0, 0, False)
+                self.benchmark[key] = Benchmark(0, 0, False)
         PriorityMap.set_entry(self.cid, self.key, self.benchmark)
         self.log()
 
@@ -328,8 +324,7 @@ class CatalogPlan(object):
                 'duration': report.duration * 1000,
                 'last': {'duration': last.duration * 1000,
                          'details': [dict(id=d.name,
-                                          duration=d.duration * 1000,
-                                          length=d.num)
+                                          duration=d.duration * 1000)
                                      for d in last.details],
                         },
                 }

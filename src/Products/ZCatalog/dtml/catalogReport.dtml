@@ -56,8 +56,7 @@
                             <dtml-var expr="'%3.2f' % last['duration']">ms
                             [<dtml-in expr="last['details']" sort mapping>
                             &dtml-id;:
-                            <dtml-var expr="'%3.2f' % duration">ms /
-                            &dtml-length; objects,
+                            <dtml-var expr="'%3.2f' % duration">ms,
                             </dtml-in>]
                         </div>
                     </td>

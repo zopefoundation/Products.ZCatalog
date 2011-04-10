@@ -33,8 +33,8 @@ class dummy(object):
 TESTMAP = {
     '/folder/catalog': {
         'index1 index2': {
-            'index1': (10, 2.0, 3, True),
-            'index2': (15, 1.5, 2, False),
+            'index1': (2.0, 3, True),
+            'index2': (1.5, 2, False),
         }
     }
 }
@@ -128,8 +128,8 @@ class TestPriorityMapDefault(unittest.TestCase):
                 'Products.ZCatalog.tests.test_plan.TESTMAP'
             self.pmap.load_default()
             expected = {'/folder/catalog': {'index1 index2': {
-                'index1': Benchmark(num=10, duration=2.0, hits=3, limit=True),
-                'index2': Benchmark(num=15, duration=1.5, hits=2, limit=False),
+                'index1': Benchmark(duration=2.0, hits=3, limit=True),
+                'index2': Benchmark(duration=1.5, hits=2, limit=False),
             }}}
             self.assertEquals(self.pmap.get_value(), expected)
         finally:
