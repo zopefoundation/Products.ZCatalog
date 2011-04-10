@@ -4,6 +4,10 @@ Changelog
 2.13.10 (unreleased)
 --------------------
 
+- Added reporting of the intersection time of each index' result with the
+  result set of the other indexes and consider this time to be part of each
+  index time for prioritizing the index.
+
 - Removed tracking of result length from the query plan. The calculation of the
   length of an intermediate index result can itself be expensive.
 

@@ -2,8 +2,12 @@
 <dtml-var manage_tabs>
 
 <p class="form-help"> 
-   The <strong>query report</strong> shows catalog queries that
-   perform slowly.
+   The <strong>query report</strong> shows catalog queries that perform slowly.
+   For each index there's an additional entry for the time the intersection of
+   the index result with the result by the other indexes took. These are marked
+   with a <i>#intersection</i> postfix. The time reported for the index is the
+   sum of the intersection time and the time the index itself took. Subtract
+   the intersection time, if you want to know the pure index time.
 </p>
 
 <table width="100%" cellspacing="0" cellpadding="2" border="0">

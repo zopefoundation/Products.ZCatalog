@@ -549,8 +549,15 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     cr.stop_split(i, result=None, limit=limit_result)
                     return LazyCat([])
 
-                cr.stop_split(i, result=r, limit=limit_result)
+                # provide detailed info about the pure intersection time
+                intersect_id = i + '#intersection'
+                cr.start_split(intersect_id)
                 w, rs = weightedIntersection(rs, r)
+                cr.stop_split(intersect_id)
+
+                # consider the time it takes to intersect the index result with
+                # the total resultset to be part of the index time
+                cr.stop_split(i, result=r, limit=limit_result)
                 if not rs:
                     break
             else:

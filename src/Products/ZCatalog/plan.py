@@ -244,7 +244,7 @@ class CatalogPlan(object):
         # sort indexes on (limited result index, mean search time)
         # skip internal ('#') bookkeeping records
         ranking = [((value.limit, value.duration), name)
-                   for name, value in benchmark.items()]
+                   for name, value in benchmark.items() if '#' not in name]
         ranking.sort()
         return [r[1] for r in ranking]
 
