@@ -4,6 +4,11 @@ Changelog
 2.13.10 (unreleased)
 --------------------
 
+- Handle `TypeErrors` in the KeywordIndex if an indexed attribute is a method
+  with required arguments.
+
+- Protect against implicitly acquiring attributes for indexes.
+
 - Added reporting of the intersection time of each index' result with the
   result set of the other indexes and consider this time to be part of each
   index time for prioritizing the index.
@@ -13,11 +18,6 @@ Changelog
 
 2.13.9 (2011-04-10)
 -------------------
-
-- Handle `TypeErrors` in the KeywordIndex if an indexed attribute is a method
-  with required arguments.
-
-- Protect against implicitly acquiring attributes for indexes.
 
 - Added a floor and ceiling value to the date range index. Values outside the
   specified range will be interpreted the same way as passing `None`, i.e.
