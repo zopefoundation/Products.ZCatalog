@@ -15,15 +15,13 @@
 
 from logging import getLogger
 
-from Acquisition import aq_base
-from App.special_dtml import DTMLFile
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
+from App.special_dtml import DTMLFile
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
 
-_marker = []
 LOG = getLogger('Zope.KeywordIndex')
 
 
@@ -92,9 +90,6 @@ class KeywordIndex(UnIndex):
         return 1
 
     def _get_object_keywords(self, obj, attr):
-        has_attr = getattr(aq_base(obj), attr, _marker)
-        if has_attr is _marker:
-            return ()
         newKeywords = getattr(obj, attr, ())
         if safe_callable(newKeywords):
             try:

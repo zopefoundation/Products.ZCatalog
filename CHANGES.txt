@@ -11,8 +11,6 @@ Changelog
 - Handle `TypeErrors` in the KeywordIndex if an indexed attribute is a method
   with required arguments.
 
-- Protect against implicitly acquiring attributes for indexes.
-
 - Added reporting of the intersection time of each index' result with the
   result set of the other indexes and consider this time to be part of each
   index time for prioritizing the index.
