@@ -17,6 +17,7 @@ from cgi import escape
 from logging import getLogger
 import sys
 
+from Acquisition import aq_base
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import IISet
@@ -264,6 +265,9 @@ class UnIndex(SimpleItem):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
+        has_attr = getattr(aq_base(obj), attr, _marker)
+        if has_attr is _marker:
+            return _marker
         try:
             datum = getattr(obj, attr)
             if safe_callable(datum):

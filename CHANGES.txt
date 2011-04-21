@@ -14,6 +14,11 @@ Changelog
 2.13.9 (2011-04-10)
 -------------------
 
+- Handle `TypeErrors` in the KeywordIndex if an indexed attribute is a method
+  with required arguments.
+
+- Protect against implicitly acquiring attributes for indexes.
+
 - Added a floor and ceiling value to the date range index. Values outside the
   specified range will be interpreted the same way as passing `None`, i.e.
   `since the beginning of time` and `until the end of it`. This allows the

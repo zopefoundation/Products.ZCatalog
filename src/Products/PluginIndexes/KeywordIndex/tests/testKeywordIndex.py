@@ -253,8 +253,16 @@ class TestKeywordIndex( unittest.TestCase ):
         self.assertFalse(self._index._unindex.get(10))
         self.assertFalse(self._index.getEntryForObject(10))
 
+    def test_noindexing_when_raising_typeeror(self):
+        class FauxObject:
+            def foo(self, name):
+                return 'foo'
+        to_index = FauxObject()
+        self._index._index_object(10, to_index, attr='foo')
+        self.assertFalse(self._index._unindex.get(10))
+        self.assertFalse(self._index.getEntryForObject(10))
+
     def test_value_removes(self):
-        
         to_index = Dummy(['hello'])
         self._index._index_object(10, to_index, attr='foo')
         self.assertTrue(self._index._unindex.get(10))
