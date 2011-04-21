@@ -13,14 +13,15 @@
 
 from logging import getLogger
 
+from Acquisition import aq_base
 from App.special_dtml import DTMLFile
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OIBTree import OIBTree
 
+from Products.PluginIndexes.common.UnIndex import _marker
 from Products.PluginIndexes.common.UnIndex import UnIndex
 
-_marker = []
 logger = getLogger('Products.ZCatalog')
 
 
@@ -98,6 +99,15 @@ class UUIDIndex(UnIndex):
         if old_docid is not _marker:
             del self._index[entry]
             self._length.change(-1)
+
+    def _get_object_datum(self, obj, attr):
+        # for a uuid it never makes sense to acquire a parent value via
+        # Acquisition
+        has_attr = getattr(aq_base(obj), attr, _marker)
+        if has_attr is _marker:
+            return _marker
+        return super(UUIDIndex, self)._get_object_datum(obj, attr)
+
 
 manage_addUUIDIndexForm = DTMLFile('dtml/addUUIDIndex', globals())
 

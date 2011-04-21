@@ -4,6 +4,7 @@ Changelog
 2.13.11 (unreleased)
 --------------------
 
+- Prevent the new UUIDIndex from acquiring attributes via Acquisition.
 
 2.13.10 (2011-04-21)
 --------------------
