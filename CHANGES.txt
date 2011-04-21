@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.10 (unreleased)
+2.13.10 (2011-04-21)
 --------------------
 
 - Handle `TypeErrors` in the KeywordIndex if an indexed attribute is a method
