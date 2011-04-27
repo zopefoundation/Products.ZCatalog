@@ -4,6 +4,9 @@ Changelog
 2.13.11 (unreleased)
 --------------------
 
+- Fix possible TypeError in `sortResults` method if only b_start but not b_size
+  has been provided.
+
 - Prevent the new UUIDIndex from acquiring attributes via Acquisition.
 
 2.13.10 (2011-04-21)

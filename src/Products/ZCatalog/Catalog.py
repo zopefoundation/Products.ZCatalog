@@ -700,7 +700,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # if we want a batch from the end of the resultset, reverse sorting
         # order and limit it, then reverse the resultset again
         switched_reverse = False
-        if b_start and b_start > rlen / 2:
+        if b_size and b_start and b_start > rlen / 2:
             reverse = not reverse
             switched_reverse = True
             b_end = b_start + b_size
