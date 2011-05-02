@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.11 (unreleased)
+2.13.11 (2011-05-02)
 --------------------
 
 - Fix possible TypeError in `sortResults` method if only b_start but not b_size
