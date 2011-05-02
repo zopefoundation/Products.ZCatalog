@@ -4,6 +4,12 @@ Changelog
 2.13.12 (unreleased)
 --------------------
 
+- Optimize DateRangeIndex for better conflict resolution handling. It always
+  starts out with storing an IITreeSet of the value instead of special casing
+  storing an int for a single value. The `single value as int` optimization
+  should be provided via a separate API to be called periodically outside the
+  context of a normal request.
+
 - Replaced `weightedIntersection` and `weightedUnion` calls with their
   non-weighted version, as we didn't pass in weights.
 

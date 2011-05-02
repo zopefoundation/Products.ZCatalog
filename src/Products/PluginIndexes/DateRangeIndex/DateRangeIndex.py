@@ -26,7 +26,6 @@ from Acquisition import aq_inner
 from Acquisition import aq_parent
 from App.Common import package_home
 from App.special_dtml import DTMLFile
-from BTrees.IIBTree import IISet
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
@@ -346,15 +345,15 @@ class DateRangeIndex(UnIndex):
     def _insert_migrate(self, tree, key, value):
         treeset = tree.get(key, None)
         if treeset is None:
-            tree[key] = value
+            tree[key] = IITreeSet((value, ))
         else:
-            if isinstance(treeset, int):
+            if isinstance(treeset, IITreeSet):
+                treeset.insert(value)
+            elif isinstance(treeset, int):
                 tree[key] = IITreeSet((treeset, value))
-            elif isinstance(treeset, IISet):
+            else:
                 tree[key] = IITreeSet(treeset)
                 tree[key].insert(value)
-            else:
-                treeset.insert(value)
 
     def _insertForwardIndexEntry(self, since, until, documentId):
         """Insert 'documentId' into the appropriate set based on 'datum'.
