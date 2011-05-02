@@ -13,8 +13,8 @@
 
 from BTrees.IIBTree import difference
 from BTrees.IIBTree import IIBucket
-from BTrees.IIBTree import weightedIntersection
-from BTrees.IIBTree import weightedUnion
+from BTrees.IIBTree import intersection
+from BTrees.IIBTree import union as ii_union
 from BTrees.OOBTree import OOSet
 from BTrees.OOBTree import union
 
@@ -55,7 +55,7 @@ class ResultList:
 
     def __and__(self, x):
         return self.__class__(
-            weightedIntersection(self._dict, x._dict)[1],
+            intersection(self._dict, x._dict),
             union(self._words, x._words),
             self._index,
             )
@@ -69,7 +69,7 @@ class ResultList:
 
     def __or__(self, x):
         return self.__class__(
-            weightedUnion(self._dict, x._dict)[1],
+            ii_union(self._dict, x._dict),
             union(self._words, x._words),
             self._index,
             )

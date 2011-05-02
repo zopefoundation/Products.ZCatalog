@@ -26,7 +26,7 @@ from Persistence import Persistent
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 
 import BTrees.Length
-from BTrees.IIBTree import intersection, weightedIntersection, IISet
+from BTrees.IIBTree import intersection, IISet
 from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOBTree
 from Lazy import LazyMap, LazyCat, LazyValues
@@ -552,7 +552,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # provide detailed info about the pure intersection time
                 intersect_id = i + '#intersection'
                 cr.start_split(intersect_id)
-                w, rs = weightedIntersection(rs, r)
+                rs = intersection(rs, r)
                 cr.stop_split(intersect_id)
 
                 # consider the time it takes to intersect the index result with
