@@ -112,7 +112,11 @@ class PathIndex(Persistent, SimpleItem):
 
         comps = filter(None, path.split('/'))
 
-        if not self._unindex.has_key(docid):
+        old_value = self._unindex.get(docid, None)
+        if old_value == path:
+            return 0
+
+        if old_value is None:
             self._length.change(1)
 
         for i in range(len(comps)):

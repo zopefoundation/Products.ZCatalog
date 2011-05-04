@@ -4,6 +4,7 @@ Changelog
 2.13.13 (unreleased)
 --------------------
 
+- In the path index, don't update data if the value hasn't changed.
 
 2.13.12 (2011-05-02)
 --------------------
