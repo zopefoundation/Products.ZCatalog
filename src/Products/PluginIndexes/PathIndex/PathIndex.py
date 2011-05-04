@@ -108,7 +108,7 @@ class PathIndex(Persistent, SimpleItem):
                 return 0
 
         if isinstance(path, (list, tuple)):
-            path = '/'+ '/'.join(path[1:])
+            path = '/' + '/'.join(path[1:])
 
         comps = filter(None, path.split('/'))
 
@@ -132,14 +132,12 @@ class PathIndex(Persistent, SimpleItem):
                       % docid)
             return
 
-        comps =  self._unindex[docid].split('/')
+        comps = self._unindex[docid].split('/')
 
         for level in range(len(comps[1:])):
             comp = comps[level+1]
-
             try:
                 self._index[comp][level].remove(docid)
-
                 if not self._index[comp][level]:
                     del self._index[comp][level]
 
