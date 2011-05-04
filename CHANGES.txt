@@ -4,6 +4,9 @@ Changelog
 2.13.13 (unreleased)
 --------------------
 
+- Optimize `Catalog.updateMetadata` avoiding a `self.uids` lookup and removing
+  inline migration code for converting `self.data` from non-IOBTree types.
+
 - In the path index, don't update data if the value hasn't changed.
 
 2.13.12 (2011-05-02)

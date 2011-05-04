@@ -264,40 +264,28 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         """ get an index wrapped in the catalog """
         return self.indexes[name].__of__(self)
 
-    def updateMetadata(self, object, uid):
+    def updateMetadata(self, object, uid, index):
         """ Given an object and a uid, update the column data for the
         uid with the object data iff the object has changed """
         data = self.data
-        index = self.uids.get(uid, None)
         newDataRecord = self.recordify(object)
 
         if index is None:
-            if type(data) is IOBTree:
-                # New style, get random id
+            index = getattr(self, '_v_nextid', 0)
+            if index % 4000 == 0:
+                index = randint(-2000000000, 2000000000)
+            while not data.insert(index, newDataRecord):
+                index = randint(-2000000000, 2000000000)
 
-                index=getattr(self, '_v_nextid', 0)
-                if index % 4000 == 0:
-                    index = randint(-2000000000, 2000000000)
-                while not data.insert(index, newDataRecord):
-                    index = randint(-2000000000, 2000000000)
-
-                # We want ids to be somewhat random, but there are
-                # advantages for having some ids generated
-                # sequentially when many catalog updates are done at
-                # once, such as when reindexing or bulk indexing.
-                # We allocate ids sequentially using a volatile base,
-                # so different threads get different bases. This
-                # further reduces conflict and reduces churn in
-                # here and it result sets when bulk indexing.
-                self._v_nextid=index+1
-            else:
-                if data:
-                    # find the next available unique id
-                    index = data.keys()[-1] + 1
-                else:
-                    index=0
-                # meta_data is stored as a tuple for efficiency
-                data[index] = newDataRecord
+            # We want ids to be somewhat random, but there are
+            # advantages for having some ids generated
+            # sequentially when many catalog updates are done at
+            # once, such as when reindexing or bulk indexing.
+            # We allocate ids sequentially using a volatile base,
+            # so different threads get different bases. This
+            # further reduces conflict and reduces churn in
+            # here and it result sets when bulk indexing.
+            self._v_nextid = index + 1
         else:
             if data.get(index, 0) != newDataRecord:
                 data[index] = newDataRecord
@@ -330,13 +318,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         index = self.uids.get(uid, None)
 
         if index is None:  # we are inserting new data
-            index = self.updateMetadata(object, uid)
+            index = self.updateMetadata(object, uid, None)
             self._length.change(1)
             self.uids[uid] = index
             self.paths[index] = uid
 
         elif update_metadata:  # we are updating and we need to update metadata
-            self.updateMetadata(object, uid)
+            self.updateMetadata(object, uid, index)
 
         # do indexing
         total = 0
