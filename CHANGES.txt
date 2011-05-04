@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.13 (unreleased)
+2.13.13 (2011-05-04)
 --------------------
 
 - Optimize `Catalog.updateMetadata` avoiding a `self.uids` lookup and removing
