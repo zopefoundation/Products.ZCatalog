@@ -89,7 +89,7 @@ class UUIDIndex(UnIndex):
             self._length.change(1)
         elif old_docid != documentId:
             logger.exception("A different document with value '%s' already "
-                "exists in the index.'")
+                "exists in the index.'" % entry)
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId

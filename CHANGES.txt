@@ -4,6 +4,7 @@ Changelog
 2.13.14 (unreleased)
 --------------------
 
+- Substitute catalog entry in UUIDIndex error message.
 
 2.13.13 (2011-05-04)
 --------------------
