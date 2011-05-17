@@ -58,10 +58,6 @@ class UnIndex(SimpleItem):
         self._index = {datum:[documentId1, documentId2]}
         self._unindex = {documentId:datum}
 
-        If any item in self._index has a length-one value, the value is an
-        integer, and not a set.  There are special cases in the code to deal
-        with this.
-
         The arguments are:
 
           'id' -- the name of the item attribute to index.  This is
@@ -110,7 +106,6 @@ class UnIndex(SimpleItem):
         if not self.indexed_attrs:
             self.indexed_attrs = [id]
 
-        self._length = Length()
         self.clear()
 
     def __len__(self):
