@@ -4,6 +4,13 @@ Changelog
 2.13.14 (unreleased)
 --------------------
 
+- Extend BooleanIndex by making the indexed value variable instead of
+  hardcoding it to `True`. The indexed value will determine the smaller set
+  automatically and choose its best value. An inline switch is done once the
+  indexed value set grows larger than 60% of the total length. 60% was chosen
+  to avoid constant switching for indexes that have an almost equal
+  distribution of `True/False`.
+
 - Substitute catalog entry in UUIDIndex error message.
 
 2.13.13 (2011-05-04)

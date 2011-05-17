@@ -32,6 +32,9 @@ class BooleanIndex(UnIndex):
        self._index = set([documentId1, documentId2])
        self._unindex = {documentId:[True/False]}
 
+       self._length is the length of the unindex
+       self._index_length is the length of the index
+
        False doesn't have actual entries in _index.
     """
 
@@ -50,33 +53,93 @@ class BooleanIndex(UnIndex):
     manage_main._setName('manage_main')
     manage_browse = DTMLFile('../dtml/browseIndex', globals())
 
+    _index_value = 1
+    _index_length = None
+
     def clear(self):
-        self._length = BTrees.Length.Length()
         self._index = IITreeSet()
+        self._index_length = BTrees.Length.Length()
+        self._index_value = 1
         self._unindex = IIBTree()
+        self._length = BTrees.Length.Length()
+
+    def histogram(self):
+        """Return a mapping which provides a histogram of the number of
+        elements found at each point in the index.
+        """
+        histogram = {}
+        indexed = bool(self._index_value)
+        histogram[indexed] = self._index_length.value
+        histogram[not indexed] = self._length.value - self._index_length.value
+        return histogram
+
+    def _invert_index(self, documentId):
+        self._index_value = indexed = int(not self._index_value)
+        self._index.clear()
+        length = 0
+        for rid, value in self._unindex.iteritems():
+            # documentId is the rid of the currently processed object that
+            # triggered the invert. in the case of unindexing, the rid hasn't
+            # been removed from the unindex yet. While indexing, the rid will
+            # be added to the index and unindex after this method is done
+            if value == indexed and rid != documentId:
+                self._index.add(rid)
+                length += 1
+        self._index_length = BTrees.Length.Length(length)
 
     def insertForwardIndexEntry(self, entry, documentId):
-        """If True, insert directly into treeset
+        """If the value matches the indexed one, insert into treeset
         """
-        if entry:
-            self._index.insert(documentId)
-            self._length.change(1)
+        # when we get the first entry, decide to index the opposite of what
+        # we got, as indexing zero items is fewer than one
+        length = self._length.value
+        index_length = self._index_length.value
+        if length == 0:
+            self._index_value = int(not bool(entry))
 
-    def removeForwardIndexEntry(self, entry, documentId):
+        if bool(entry) is bool(self._index_value):
+            # is the index (after adding the current entry) larger than 60%
+            # of the total length? than switch the indexed value
+            if (index_length + 1) >= ((length + 1) * 0.6):
+                self._invert_index(documentId)
+                return
+
+            self._index.insert(documentId)
+            # BBB inline migration
+            length = self._index_length
+            if length is None:
+                self._index_length = BTrees.Length.Length(len(self._index))
+            else:
+                length.change(1)
+
+    def removeForwardIndexEntry(self, entry, documentId, check=True):
         """Take the entry provided and remove any reference to documentId
         in its entry in the index.
         """
-        try:
-            if entry:
+        if bool(entry) is bool(self._index_value):
+            try:
                 self._index.remove(documentId)
-                self._length.change(-1)
-        except ConflictError:
-            raise
-        except Exception:
-            LOG.exception('%s: unindex_object could not remove '
-                          'documentId %s from index %s. This '
-                          'should not happen.' % (self.__class__.__name__,
-                          str(documentId), str(self.id)))
+                # BBB inline migration
+                length = self._index_length
+                if length is None:
+                    self._index_length = BTrees.Length.Length(len(self._index))
+                else:
+                    length.change(-1)
+            except ConflictError:
+                raise
+            except Exception:
+                LOG.exception('%s: unindex_object could not remove '
+                              'documentId %s from index %s. This '
+                              'should not happen.' % (self.__class__.__name__,
+                              str(documentId), str(self.id)))
+        elif check:
+            length = self._length.value
+            index_length = self._index_length.value
+            # is the index (after removing the current entry) larger than
+            # 60% of the total length? than switch the indexed value
+            if (index_length) <= ((length - 1) * 0.6):
+                self._invert_index(documentId)
+                return
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
         """ index and object 'obj' with integer id 'documentId'"""
@@ -94,10 +157,11 @@ class BooleanIndex(UnIndex):
         oldDatum = self._unindex.get(documentId, _marker)
         if datum != oldDatum:
             if oldDatum is not _marker:
-                self.removeForwardIndexEntry(oldDatum, documentId)
+                self.removeForwardIndexEntry(oldDatum, documentId, check=False)
                 if datum is _marker:
                     try:
                         del self._unindex[documentId]
+                        self._length.change(-1)
                     except ConflictError:
                         raise
                     except Exception:
@@ -106,13 +170,32 @@ class BooleanIndex(UnIndex):
                                   documentId)
 
             if datum is not _marker:
-                if datum:
-                    self.insertForwardIndexEntry(datum, documentId)
+                self.insertForwardIndexEntry(datum, documentId)
                 self._unindex[documentId] = datum
+                self._length.change(1)
 
             returnStatus = 1
 
         return returnStatus
+
+    def unindex_object(self, documentId):
+        """ Unindex the object with integer id 'documentId' and don't
+        raise an exception if we fail
+        """
+        unindexRecord = self._unindex.get(documentId, _marker)
+        if unindexRecord is _marker:
+            return None
+
+        self.removeForwardIndexEntry(unindexRecord, documentId)
+
+        try:
+            del self._unindex[documentId]
+            self._length.change(-1)
+        except ConflictError:
+            raise
+        except:
+            LOG.debug('Attempt to unindex nonexistent document'
+                      ' with id %s' % documentId,exc_info=True)
 
     def _apply_index(self, request, resultset=None):
         record = parseIndexRequest(request, self.id, self.query_options)
@@ -120,10 +203,11 @@ class BooleanIndex(UnIndex):
             return None
 
         index = self._index
+        indexed = self._index_value
 
         for key in record.keys:
-            if key:
-                # If True, check index
+            if bool(key) is bool(indexed):
+                # If we match the indexed value, check index
                 return (intersection(index, resultset), (self.id, ))
             else:
                 # Otherwise, remove from resultset or _unindex
@@ -139,11 +223,14 @@ class BooleanIndex(UnIndex):
         return 2
 
     def items(self):
-        items = []
-        for v, k in self._unindex.items():
-            if isinstance(v, int):
-                v = IISet((v, ))
-            items.append((k, v))
+        # return a list of value to int set of rid tuples
+        indexed = self._index_value
+        items = [(bool(indexed), self._index.keys())]
+        false = IISet()
+        for rid, value in self._unindex.iteritems():
+            if value != indexed:
+                false.add(rid)
+        items.append((not bool(indexed), false))
         return items
 
 manage_addBooleanIndexForm = DTMLFile('dtml/addBooleanIndex', globals())
