@@ -197,6 +197,26 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertEqual(hist[True], 5)
         self.assertEqual(hist[False], 15)
 
+    def test_migration(self):
+        index = self._makeOne()
+        for i in range(0, 100):
+            obj = Dummy(i, i < 80 and True or False)
+            index._index_object(obj.id, obj, attr='truth')
+        # now hack the state to match what we had before
+        delattr(index, '_index_length')
+        delattr(index, '_index_value')
+        # we had True values in _index even though there was more of them
+        index._index.clear()
+        index._index.update(range(0, 80))
+        # the length only kept track of the _index
+        index._length.change(-20)
+        # remove one to trigger migration
+        index.unindex_object(99)
+        self.assertEqual(index._length.value, 99)
+        self.assertEqual(index._index_value, 0)
+        self.assertEqual(index._index_length.value, 19)
+        self.assertEqual(list(index._index), range(80, 99))
+
 
 def test_suite():
     from unittest import TestSuite, makeSuite

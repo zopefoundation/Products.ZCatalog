@@ -73,58 +73,70 @@ class BooleanIndex(UnIndex):
         histogram[not indexed] = self._length.value - self._index_length.value
         return histogram
 
-    def _invert_index(self, documentId):
+    def _invert_index(self, documentId=None):
         self._index_value = indexed = int(not self._index_value)
         self._index.clear()
         length = 0
         for rid, value in self._unindex.iteritems():
-            # documentId is the rid of the currently processed object that
-            # triggered the invert. in the case of unindexing, the rid hasn't
-            # been removed from the unindex yet. While indexing, the rid will
-            # be added to the index and unindex after this method is done
-            if value == indexed and rid != documentId:
+            if value == indexed:
                 self._index.add(rid)
                 length += 1
+        # documentId is the rid of the currently processed object that
+        # triggered the invert. in the case of unindexing, the rid hasn't
+        # been removed from the unindex yet. While indexing, the rid will
+        # be added to the index and unindex after this method is done
+        if documentId is not None:
+            self._index.remove(documentId)
+            length -= 1
         self._index_length = BTrees.Length.Length(length)
+
+    def _inline_migration(self):
+        self._length = BTrees.Length.Length(len(self._unindex.keys()))
+        self._index_length = BTrees.Length.Length(len(self._index))
+        if self._index_length.value > (self._length.value / 2):
+            self._index_value = 1
+            self._invert_index()
+        else:
+            # set an instance variable
+            self._index_value = 1
 
     def insertForwardIndexEntry(self, entry, documentId):
         """If the value matches the indexed one, insert into treeset
         """
         # when we get the first entry, decide to index the opposite of what
         # we got, as indexing zero items is fewer than one
-        length = self._length.value
-        index_length = self._index_length.value
-        if length == 0:
+        length = self._length
+        index_length = self._index_length
+        # BBB inline migration
+        if index_length is None:
+            self._inline_migration()
+        if length.value == 0:
             self._index_value = int(not bool(entry))
 
         if bool(entry) is bool(self._index_value):
             # is the index (after adding the current entry) larger than 60%
             # of the total length? than switch the indexed value
-            if (index_length + 1) >= ((length + 1) * 0.6):
-                self._invert_index(documentId)
+            if (index_length.value + 1) >= ((length.value + 1) * 0.6):
+                self._invert_index()
                 return
 
             self._index.insert(documentId)
-            # BBB inline migration
-            length = self._index_length
-            if length is None:
-                self._index_length = BTrees.Length.Length(len(self._index))
-            else:
-                length.change(1)
+            index_length.change(1)
 
     def removeForwardIndexEntry(self, entry, documentId, check=True):
         """Take the entry provided and remove any reference to documentId
         in its entry in the index.
         """
+        index_length = self._index_length
+        if index_length is None:
+            self._inline_migration()
+
         if bool(entry) is bool(self._index_value):
             try:
                 self._index.remove(documentId)
                 # BBB inline migration
                 length = self._index_length
-                if length is None:
-                    self._index_length = BTrees.Length.Length(len(self._index))
-                else:
-                    length.change(-1)
+                length.change(-1)
             except ConflictError:
                 raise
             except Exception:
