@@ -4,6 +4,8 @@ Changelog
 2.13.14 (unreleased)
 --------------------
 
+- Fixed addition of two LazyCat's if any of them was already flattened.
+
 - Extend BooleanIndex by making the indexed value variable instead of
   hardcoding it to `True`. The indexed value will determine the smaller set
   automatically and choose its best value. An inline switch is done once the

@@ -84,7 +84,10 @@ class LazyCat(Lazy):
                 if isinstance(s, LazyCat):
                     # If one of the sequences passed is itself a LazyCat, add
                     # its base sequences rather than nest LazyCats
-                    flattened_seq.extend(s._seq)
+                    if getattr(s, '_seq', None) is None:
+                        flattened_seq.extend([s._data])
+                    else:
+                        flattened_seq.extend(s._seq)
                     flattened_count += s.actual_result_count
                 elif isinstance(s, Lazy):
                     flattened_seq.append(s)

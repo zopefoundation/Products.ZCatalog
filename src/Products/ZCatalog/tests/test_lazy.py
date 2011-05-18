@@ -66,6 +66,17 @@ class TestLazyCat(BaseSequenceTest):
         self._compare(lcat, range(20))
         self.assertEqual(lcat.actual_result_count, 20)
 
+    def test_add_after_getitem(self):
+        seq1 = range(10)
+        seq2 = range(10, 20)
+        lcat1 = self._createLSeq(seq1)
+        lcat2 = self._createLSeq(seq2)
+        # turning lcat1 into a list will flatten it into _data and remove _seq
+        list(lcat1)
+        lcat = lcat1 + lcat2
+        self._compare(lcat, range(20))
+        self.assertEqual(lcat.actual_result_count, 20)
+
     def test_init_multiple(self):
         from string import hexdigits, letters
         seq1 = range(10)
