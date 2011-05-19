@@ -237,7 +237,7 @@ class BooleanIndex(UnIndex):
     def items(self):
         # return a list of value to int set of rid tuples
         indexed = self._index_value
-        items = [(bool(indexed), self._index.keys())]
+        items = [(bool(indexed), self._index)]
         false = IISet()
         for rid, value in self._unindex.iteritems():
             if value != indexed:

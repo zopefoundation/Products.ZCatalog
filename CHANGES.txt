@@ -4,6 +4,7 @@ Changelog
 2.13.15 (unreleased)
 --------------------
 
+- Fixed BooleanIndex' items method so the ZMI browse view works.
 
 2.13.14 (2011-05-19)
 --------------------
