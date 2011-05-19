@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.14 (unreleased)
+2.13.14 (2011-05-19)
 --------------------
 
 - Fixed addition of two LazyCat's if any of them was already flattened.
