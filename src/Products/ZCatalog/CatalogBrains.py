@@ -32,6 +32,10 @@ class AbstractCatalogBrain(Record.Record, Acquisition.Implicit):
 
     def __contains__(self, name):
         return name in self.__record_schema__
+        
+    def __eq__(self, other):
+        """If two records have the same rid they are the same"""
+        return self.getRID() == other.getRID()
 
     def getPath(self):
         """Get the physical path for this record"""

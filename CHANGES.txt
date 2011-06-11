@@ -5,6 +5,8 @@ Changelog
 --------------------
 
 - Fixed BooleanIndex' items method so the ZMI browse view works.
+- Added eq comparison for brains (completely convenience) 
+  [eleddy]
 
 2.13.14 (2011-05-19)
 --------------------
