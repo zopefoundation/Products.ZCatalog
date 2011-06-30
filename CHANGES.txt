@@ -4,6 +4,8 @@ Changelog
 2.13.15 (unreleased)
 --------------------
 
+- Fixed undefined variables in BooleanIndex inline migration code.
+
 - Fixed BooleanIndex' items method so the ZMI browse view works.
 
 2.13.14 (2011-05-19)

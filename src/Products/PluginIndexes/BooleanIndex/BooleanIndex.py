@@ -110,6 +110,8 @@ class BooleanIndex(UnIndex):
         # BBB inline migration
         if index_length is None:
             self._inline_migration()
+            length = self._length
+            index_length = self._index_length
         if length.value == 0:
             self._index_value = int(not bool(entry))
 
