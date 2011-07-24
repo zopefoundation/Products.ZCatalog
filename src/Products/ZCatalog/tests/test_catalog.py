@@ -662,6 +662,51 @@ class TestMergeResults(CatalogBase, unittest.TestCase):
         self.assertEqual(merged_rids, expected)
 
 
+class TestScoring(CatalogBase, unittest.TestCase):
+
+    def _get_catalog(self):
+        return self._catalog.__of__(zdummy(16336))
+
+    def setUp(self):
+        self._catalog = self._makeOne()
+        self._catalog.lexicon = PLexicon('lexicon')
+        idx = ZCTextIndex('title', caller=self._catalog,
+                          index_factory=OkapiIndex, lexicon_id='lexicon')
+        self._catalog.addIndex('title', idx)
+        self._catalog.addIndex('true', FieldIndex('true'))
+        self._catalog.addColumn('title')
+        cat = self._get_catalog()
+        for i in (1, 2, 3, 10, 11, 110, 111):
+            obj = zdummy(i)
+            obj.true = True
+            if i == 110:
+                obj.true = False
+            cat.catalogObject(obj, str(i))
+
+    def test_simple_search(self):
+        cat = self._get_catalog()
+        brains = cat(title='10')
+        self.assertEqual(len(brains), 1)
+        self.assertEqual(brains[0].title, '10')
+
+    def test_or_search(self):
+        cat = self._get_catalog()
+        brains = cat(title='2 OR 3')
+        self.assertEqual(len(brains), 2)
+
+    def test_scored_search(self):
+        cat = self._get_catalog()
+        brains = cat(title='1*')
+        self.assertEqual(len(brains), 5)
+        self.assertEqual(brains[0].title, '111')
+
+    def test_combined_scored_search(self):
+        cat = self._get_catalog()
+        brains = cat(title='1*', true=True)
+        self.assertEqual(len(brains), 4)
+        self.assertEqual(brains[0].title, '111')
+
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestAddDelColumn))
@@ -671,4 +716,5 @@ def test_suite():
     suite.addTest(unittest.makeSuite(TestCatalogReturnAll))
     suite.addTest(unittest.makeSuite(TestCatalogSearchArgumentsMap))
     suite.addTest(unittest.makeSuite(TestMergeResults))
+    suite.addTest(unittest.makeSuite(TestScoring))
     return suite

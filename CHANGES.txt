@@ -4,6 +4,8 @@ Changelog
 2.13.16 (unreleased)
 --------------------
 
+- Restored preserving score values from ZCTextIndex indices.
+  https://bugs.launchpad.net/zope2/+bug/815469
 
 2.13.15 (2011-06-30)
 --------------------
