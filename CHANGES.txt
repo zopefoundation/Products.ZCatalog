@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.16 (unreleased)
+2.13.16 (2011-07-24)
 --------------------
 
 - Restored preserving score values from ZCTextIndex indices.
