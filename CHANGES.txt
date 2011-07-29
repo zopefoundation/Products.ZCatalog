@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.17 (unreleased)
+2.13.17 (2011-07-29)
 --------------------
 
 - Put back the `weightedIntersection` optimization but guard against results
