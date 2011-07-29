@@ -901,7 +901,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             for querykey, details in sorted(plan.items()):
                 output.append('    %s: {' % repr(querykey))
                 for indexname, benchmark in sorted(details.items()):
-                    tuplebench = (round(benchmark[0], 2), ) + benchmark[1:]
+                    tuplebench = (round(benchmark[0], 4), ) + benchmark[1:]
                     output.append('      %r:\n      %r,' % (indexname, tuplebench))
                 output.append('    },')
             output.append('  },')
