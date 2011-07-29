@@ -4,6 +4,8 @@ Changelog
 2.13.18 (unreleased)
 --------------------
 
+- In the string representation of a catalog plan, round the times to at most
+  two digits after the comma.
 
 2.13.17 (2011-07-29)
 --------------------

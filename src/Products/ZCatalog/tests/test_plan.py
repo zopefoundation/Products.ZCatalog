@@ -214,6 +214,32 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan = self._makeOne(zcat._catalog)
         self.assertEquals(plan.get_id(), ('catalog',))
 
+    def test_getCatalogPlan_empty(self):
+        from Products.ZCatalog.ZCatalog import ZCatalog
+        zcat = ZCatalog('catalog')
+        self._makeOne(zcat._catalog)
+        plan_str = zcat.getCatalogPlan()
+        self.assertTrue('queryplan = {' in plan_str)
+
+    def test_getCatalogPlan_full(self):
+        from Products.ZCatalog.ZCatalog import ZCatalog
+        zcat = ZCatalog('catalog')
+        plan = self._makeOne(zcat._catalog, query={'index1': 1, 'index2': 2})
+        plan.start()
+        plan.start_split('index1')
+        time.sleep(0.1111)
+        plan.stop_split('index1')
+        plan.start_split('index2')
+        time.sleep(0.2222)
+        plan.stop_split('index2')
+        plan.stop()
+        plan_str = zcat.getCatalogPlan()
+        self.assertTrue('queryplan = {' in plan_str)
+        self.assertTrue('index1' in plan_str)
+        # test rounding worked
+        self.assertTrue('(0.11, 1, False),' in plan_str)
+        self.assertTrue('(0.22, 1, False),' in plan_str)
+
     def test_plan_empty(self):
         plan = self._makeOne()
         self.assertEquals(plan.plan(), None)
