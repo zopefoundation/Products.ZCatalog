@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.18 (unreleased)
+2.13.18 (2011-07-29)
 --------------------
 
 - In the string representation of a catalog plan, round the times to at most
