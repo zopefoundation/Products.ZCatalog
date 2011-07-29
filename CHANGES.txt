@@ -4,6 +4,8 @@ Changelog
 2.13.17 (unreleased)
 --------------------
 
+- Put back the `weightedIntersection` optimization but guard against results
+  with values and do the appropriate fallback to the weighted version.
 
 2.13.16 (2011-07-24)
 --------------------

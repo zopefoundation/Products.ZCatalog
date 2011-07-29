@@ -543,7 +543,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 cr.start_split(intersect_id)
                 # weightedIntersection preserves the values from any mappings
                 # we get, as some indexes don't return simple sets
-                _, rs = weightedIntersection(rs, r)
+                if hasattr(rs, 'items'):
+                    _, rs = weightedIntersection(rs, r)
+                else:
+                    rs = intersection(rs, r)
+
                 cr.stop_split(intersect_id)
 
                 # consider the time it takes to intersect the index result with
@@ -594,8 +598,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             # XXX: The check for 'values' is really stupid since we call
             # items() and *not* values()
             rlen = len(rs)
-            if sort_index is None and hasattr(rs, 'values'):
-                # having a 'values' means we have a data structure with
+            if sort_index is None and hasattr(rs, 'items'):
+                # having a 'items' means we have a data structure with
                 # scores.  Build a new result set, sort it by score, reverse
                 # it, compute the normalized score, and Lazify it.
 
