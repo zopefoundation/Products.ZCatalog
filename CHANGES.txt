@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.19 (unreleased)
+2.13.19 (2011-08-20)
 --------------------
 
 - Increase plan precision to 4 digits in its string representation.
