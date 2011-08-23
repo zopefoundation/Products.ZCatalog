@@ -4,7 +4,7 @@ Changelog
 2.13.20 (unreleased)
 --------------------
 
-- Fixed incorrect calculation of batches in the second half of the resultset
+- Fixed incorrect calculation of batches in the second half of the result set
   in sortResults.
 
 2.13.19 (2011-08-20)

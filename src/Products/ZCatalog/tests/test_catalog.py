@@ -349,29 +349,53 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, self.upper - 1)
 
+    def testSortLimitViaBatchingArgsBeforeStart(self):
+        query = dict(att1='att1', sort_on='num', b_start=-5, b_size=8)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(0, 3))
+
     def testSortLimitViaBatchingArgsStart(self):
         query = dict(att1='att1', sort_on='num', b_start=0, b_size=5)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(5))
+        self.assertEqual([r.num for r in result], range(0, 5))
 
-    def testSortLimitViaBatchingArgsMiddle(self):
+    def testSortLimitViaBatchingEarlyFirstHalf(self):
         query = dict(att1='att1', sort_on='num', b_start=11, b_size=17)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(11, 28))
+
+    def testSortLimitViaBatchingArgsLateFirstHalf(self):
+        query = dict(att1='att1', sort_on='num', b_start=30, b_size=15)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(30, 45))
+
+    def testSortLimitViaBatchingArgsLeftMiddle(self):
+        query = dict(att1='att1', sort_on='num', b_start=45, b_size=8)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(45, 53))
+
+    def testSortLimitViaBatchingArgsRightMiddle(self):
+        query = dict(att1='att1', sort_on='num', b_start=48, b_size=8)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(48, 56))
+
+    def testSortLimitViaBatchingArgsEarlySecondHalf(self):
+        query = dict(att1='att1', sort_on='num', b_start=55, b_size=15)
+        result = self._catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(55, 70))
 
     def testSortLimitViaBatchingArgsSecondHalf(self):
         query = dict(att1='att1', sort_on='num', b_start=70, b_size=15)
         result = self._catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(70, 85))
-    
-    def testSortLimitViaBatchingArgsEarlySecondHalf(self):
-        query = dict(att1='att1', sort_on='num', b_start=55, b_size=15)
-        result = self._catalog(query)
-        self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(55, 70))
 
     def testSortLimitViaBatchingArgsEnd(self):
         query = dict(att1='att1', sort_on='num', b_start=90, b_size=10)
