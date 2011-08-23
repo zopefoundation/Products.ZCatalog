@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.20 (unreleased)
+2.13.20 (2011-08-23)
 --------------------
 
 - Fixed incorrect calculation of batches in the second half of the result set
