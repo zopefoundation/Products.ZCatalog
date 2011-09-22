@@ -7,20 +7,34 @@
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
-# FOR A PARTICULAR PURPOSE
+# FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
+"""Catalog brain implementation.
+"""
 
-from zope.interface import implements
+from pkg_resources import DistributionNotFound
+from pkg_resources import get_distribution
 
-import Acquisition
+try:
+    get_distribution('five.globalrequest')
+except DistributionNotFound:
+    _GLOBALREQUEST_INSTALLED = False
+else:
+    _GLOBALREQUEST_INSTALLED = True
+
+from .interfaces import ICatalogBrain
+from Acquisition import aq_base
 from Acquisition import aq_parent
-import Record
+from Acquisition import Implicit
+from Record import Record
+if _GLOBALREQUEST_INSTALLED:
+    from zope.globalrequest import getRequest
+from zope.interface import implements
+from ZPublisher.BaseRequest import RequestContainer
 
-from interfaces import ICatalogBrain
 
-
-class AbstractCatalogBrain(Record.Record, Acquisition.Implicit):
+class AbstractCatalogBrain(Record, Implicit):
     """Abstract base brain that handles looking up attributes as
     required, and provides just enough smarts to let us get the URL, path,
     and cataloged object without having to ask the catalog directly.
@@ -39,14 +53,27 @@ class AbstractCatalogBrain(Record.Record, Acquisition.Implicit):
 
     def getURL(self, relative=0):
         """Generate a URL for this record"""
-        return self.REQUEST.physicalPathToURL(self.getPath(), relative)
+        request = getattr(self, 'REQUEST', None)
+        if request is None:
+            if _GLOBALREQUEST_INSTALLED:
+                request = getRequest()
+        return request.physicalPathToURL(self.getPath(), relative)
 
     def _unrestrictedGetObject(self):
         """Return the object for this record
 
         Same as getObject, but does not do security checks.
         """
-        return aq_parent(self).unrestrictedTraverse(self.getPath())
+        parent = aq_parent(self)
+        if getattr(parent, 'REQUEST', None) is None:
+            if _GLOBALREQUEST_INSTALLED:
+                request = getRequest()
+                if request is not None:
+                    # path should be absolute, starting at the physical root
+                    parent = self.getPhysicalRoot()
+                    request_container = RequestContainer(REQUEST=request)
+                    parent = aq_base(parent).__of__(request_container)
+        return parent.unrestrictedTraverse(self.getPath())
 
     def getObject(self, REQUEST=None):
         """Return the object for this record
@@ -63,6 +90,14 @@ class AbstractCatalogBrain(Record.Record, Acquisition.Implicit):
         if not path:
             return None
         parent = aq_parent(self)
+        if getattr(parent, 'REQUEST', None) is None:
+            if _GLOBALREQUEST_INSTALLED:
+                request = getRequest()
+                if request is not None:
+                    # path should be absolute, starting at the physical root
+                    parent = self.getPhysicalRoot()
+                    request_container = RequestContainer(REQUEST=request)
+                    parent = aq_base(parent).__of__(request_container)
         if len(path) > 1:
             parent = parent.unrestrictedTraverse(path[:-1])
 

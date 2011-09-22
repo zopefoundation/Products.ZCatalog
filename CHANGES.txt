@@ -4,6 +4,8 @@ Changelog
 2.13.21 (unreleased)
 --------------------
 
+- Added support for using ZCatalog as local utility.
+  This feature requires the optional `five.globalrequest` dependency.
 
 2.13.20 (2011-08-23)
 --------------------
