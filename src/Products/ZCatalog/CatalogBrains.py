@@ -25,6 +25,7 @@ else:
 
 from .interfaces import ICatalogBrain
 from Acquisition import aq_base
+from Acquisition import aq_get
 from Acquisition import aq_parent
 from Acquisition import Implicit
 from Record import Record
@@ -53,7 +54,7 @@ class AbstractCatalogBrain(Record, Implicit):
 
     def getURL(self, relative=0):
         """Generate a URL for this record"""
-        request = getattr(self, 'REQUEST', None)
+        request = aq_get(self, 'REQUEST', None)
         if request is None:
             if _GLOBALREQUEST_INSTALLED:
                 request = getRequest()
@@ -65,7 +66,7 @@ class AbstractCatalogBrain(Record, Implicit):
         Same as getObject, but does not do security checks.
         """
         parent = aq_parent(self)
-        if getattr(parent, 'REQUEST', None) is None:
+        if aq_get(parent, 'REQUEST', None) is None:
             if _GLOBALREQUEST_INSTALLED:
                 request = getRequest()
                 if request is not None:
@@ -90,7 +91,7 @@ class AbstractCatalogBrain(Record, Implicit):
         if not path:
             return None
         parent = aq_parent(self)
-        if getattr(parent, 'REQUEST', None) is None:
+        if aq_get(parent, 'REQUEST', None) is None:
             if _GLOBALREQUEST_INSTALLED:
                 request = getRequest()
                 if request is not None:
