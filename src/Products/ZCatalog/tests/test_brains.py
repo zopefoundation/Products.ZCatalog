@@ -7,7 +7,7 @@
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
-# FOR A PARTICULAR PURPOSE
+# FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
 """Unittests for Catalog brains
@@ -15,15 +15,16 @@
 
 import unittest
 
-import Acquisition
 from Acquisition import aq_base
+from Acquisition import aq_parent
+from Acquisition import Implicit
 from zExceptions import Unauthorized
 from ZODB.POSException import ConflictError
 
 _marker = object()
 
 
-class Happy(Acquisition.Implicit):
+class Happy(Implicit):
     """Happy content"""
 
     def __init__(self, id):
@@ -55,31 +56,32 @@ class DummyRequest(object):
         return path
 
 
-class DummyCatalog(Acquisition.Implicit):
+class DummyRoot(Implicit):
 
-    _objs = {'/happy': Happy('happy'),
-             '/secret': Secret('secret'),
-             '/conflicter': Conflicter('conflicter')}
-    _paths = _objs.keys() + ['/zonked']
-    _paths.sort()
-
-    # This is sooooo ugly
+    happy = Happy('happy')
+    secret = Secret('secret')
+    conflicter = Conflicter('conflicter')
 
     def unrestrictedTraverse(self, path, default=None):
-        assert path in ['', ('', ), ['']], path
+        assert path in ['', ('',), ['']], path
         return self
 
     def restrictedTraverse(self, path, default=_marker):
-        if not path.startswith('/'):
-            path = '/'+path
+        if path.startswith('/'):
+            path = path[1:]
         try:
-            ob = self._objs[path].__of__(self)
+            ob = getattr(self, path).__of__(self)
             ob.check()
             return ob
-        except KeyError:
+        except AttributeError:
             if default is not _marker:
                 return default
             raise
+
+
+class DummyCatalog(Implicit):
+
+    _paths = ['/conflicter', '/happy', '/secret', '/zonked']
 
     def getpath(self, rid):
         return self._paths[rid]
@@ -102,8 +104,8 @@ class ConflictingCatalog(DummyCatalog):
 class TestBrains(unittest.TestCase):
 
     def setUp(self):
-        self.cat = DummyCatalog()
-        self.cat.REQUEST = DummyRequest()
+        self.root = DummyRoot()
+        self.cat = DummyCatalog().__of__(self.root)
 
     def _makeBrain(self, rid):
         from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain
@@ -131,7 +133,10 @@ class TestBrains(unittest.TestCase):
         self.assertRaises(ConflictError, b.getPath)
 
     def testGetURL(self):
+        request = DummyRequest()
         b = self._makeBrain(0)
+
+        self.root.REQUEST = request
         self.assertEqual(b.getURL(), 'http://superbad.com/conflicter')
 
     def testGetRID(self):
@@ -139,8 +144,12 @@ class TestBrains(unittest.TestCase):
         self.assertEqual(b.getRID(), 42)
 
     def testGetObjectHappy(self):
+        request = DummyRequest()
         b = self._makeBrain(1)
+
+        self.root.REQUEST = request
         self.assertEqual(b.getPath(), '/happy')
+        self.assertEqual(b.getObject().REQUEST, request)
         self.assertTrue(aq_base(b.getObject()) is
                         aq_base(self.cat.getobject(1)))
 
@@ -150,7 +159,6 @@ class TestBrains(unittest.TestCase):
         self.assertRaises(ConflictError, b.getObject)
 
     def testGetObjectRaisesUnauthorized(self):
-        from zExceptions import Unauthorized
         b = self._makeBrain(2)
         self.assertEqual(b.getPath(), '/secret')
         self.assertRaises(Unauthorized, b.getObject)
@@ -159,7 +167,7 @@ class TestBrains(unittest.TestCase):
         from zExceptions import NotFound
         b = self._makeBrain(3)
         self.assertEqual(b.getPath(), '/zonked')
-        self.assertRaises(KeyError, self.cat.getobject, 3)
+        self.assertRaises(AttributeError, self.cat.getobject, 3)
         self.assertRaises((NotFound, AttributeError, KeyError), b.getObject)
 
 
