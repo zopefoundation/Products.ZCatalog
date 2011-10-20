@@ -900,9 +900,13 @@ class ZCatalog(Folder, Persistent, Implicit):
             output.append('  %s: {' % repr(cid))
             for querykey, details in sorted(plan.items()):
                 output.append('    %s: {' % repr(querykey))
-                for indexname, benchmark in sorted(details.items()):
-                    tuplebench = (round(benchmark[0], 4), ) + benchmark[1:]
-                    output.append('      %r:\n      %r,' % (indexname, tuplebench))
+                if isinstance(details, (frozenset, set)):
+                    # todo: print out value indexes
+                    pass
+                else:
+                    for indexname, benchmark in sorted(details.items()):
+                        tuplebench = (round(benchmark[0], 4), ) + benchmark[1:]
+                        output.append('      %r:\n      %r,' % (indexname, tuplebench))
                 output.append('    },')
             output.append('  },')
         output.append('}')

@@ -272,24 +272,12 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         self.assertEquals(plan.valueindexes(), frozenset())
 
     def test_valueindexes_set(self):
-        from ..plan import ValueIndexes
-        indexes = ('index1', 'index2')
-        ValueIndexes.set(indexes)
+        from ..plan import PriorityMap
+        from ..plan import VALUE_INDEX_KEY
         plan = self._makeOne()
+        indexes = frozenset(['index1', 'index2'])
+        PriorityMap.set_entry(plan.cid, VALUE_INDEX_KEY, indexes)
         self.assertEquals(plan.valueindexes(), frozenset(indexes))
-
-    def test_valueindexes_clear(self):
-        from ..plan import ValueIndexes
-        ValueIndexes.set(('index1', ))
-        ValueIndexes.clear()
-        plan = self._makeOne()
-        self.assertEquals(plan.valueindexes(), frozenset())
-
-    def test_valueindexes_already_set(self):
-        from ..plan import ValueIndexes
-        ValueIndexes.set(('index1', ))
-        plan = self._makeOne()
-        self.assertEquals(plan.valueindexes(), frozenset(('index1', )))
 
     # Test the actual logic for determining value indexes
     # Test make_key

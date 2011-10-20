@@ -125,29 +125,6 @@ class Reports(NestedDict):
     value = {}
 
 
-class ValueIndexes(object):
-    """Holds a set of index names considered to have an uneven value
-    distribution.
-    """
-
-    lock = allocate_lock()
-    value = frozenset()
-
-    @classmethod
-    def get(cls):
-        return cls.value
-
-    @classmethod
-    def set(cls, value):
-        value = frozenset(value)
-        with cls.lock:
-            cls.value = value
-
-    @classmethod
-    def clear(cls):
-        cls.set(frozenset())
-
-
 class CatalogPlan(object):
     """Catalog plan class to measure and identify catalog queries and plan
     their execution.
@@ -155,11 +132,11 @@ class CatalogPlan(object):
 
     def __init__(self, catalog, query=None, threshold=0.1):
         self.catalog = catalog
+        self.cid = self.get_id()
         self.query = query
         self.key = self.make_key(query)
         self.benchmark = {}
         self.threshold = threshold
-        self.cid = self.get_id()
         self.init_timer()
 
     def get_id(self):
@@ -189,8 +166,8 @@ class CatalogPlan(object):
         # number of unique values, where the number of items for each value
         # differs a lot. If the number of items per value is similar, the
         # duration of a query is likely similar as well.
-        value_indexes = ValueIndexes.get()
-        if value_indexes:
+        value_indexes = PriorityMap.get_entry(self.cid, VALUE_INDEX_KEY)
+        if isinstance(value_indexes, (frozenset, set)):
             # Calculating all the value indexes is quite slow, so we do this
             # once for the first query. Since this is an optimization only,
             # slightly outdated results based on index changes in the running
@@ -206,7 +183,8 @@ class CatalogPlan(object):
                     # greater than zero
                     value_indexes.add(name)
 
-        ValueIndexes.set(value_indexes)
+        value_indexes = frozenset(value_indexes)
+        PriorityMap.set_entry(self.cid, VALUE_INDEX_KEY, value_indexes)
         return value_indexes
 
     def make_key(self, query):
@@ -336,5 +314,4 @@ class CatalogPlan(object):
 from zope.testing.cleanup import addCleanUp
 addCleanUp(PriorityMap.clear)
 addCleanUp(Reports.clear)
-addCleanUp(ValueIndexes.clear)
 del addCleanUp
