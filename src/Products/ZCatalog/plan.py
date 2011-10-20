@@ -232,9 +232,8 @@ class CatalogPlan(object):
                 # to do this without imposing restrictions on the types of values
                 key.append((name, repr(v)))
 
-        key = tuple(sorted(key))
+        return tuple(sorted(key))
 
-        return key
     def plan(self):
         benchmark = PriorityMap.get_entry(self.cid, self.key)
         if not benchmark:
