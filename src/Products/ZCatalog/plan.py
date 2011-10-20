@@ -177,35 +177,6 @@ class ValueIndexes(object):
         return value_indexes
 
 
-def make_key(catalog, query):
-    if not query:
-        return None
-
-    indexes = catalog.indexes
-    valueindexes = ValueIndexes.determine(indexes)
-    key = keys = query.keys()
-
-    values = [name for name in keys if name in valueindexes]
-    if values:
-        # If we have indexes whose values should be considered, we first
-        # preserve all normal indexes and then add the keys whose values
-        # matter including their value into the key
-        key = [name for name in keys if name not in values]
-        for name in values:
-
-            v = query.get(name, [])
-            if isinstance(v, (tuple, list)):
-                v = list(v)
-                v.sort()
-
-            # We need to make sure the key is immutable, repr() is an easy way
-            # to do this without imposing restrictions on the types of values
-            key.append((name, repr(v)))
-
-    key = tuple(sorted(key))
-    return key
-
-
 class CatalogPlan(object):
     """Catalog plan class to measure and identify catalog queries and plan
     their execution.
@@ -214,7 +185,7 @@ class CatalogPlan(object):
     def __init__(self, catalog, query=None, threshold=0.1):
         self.catalog = catalog
         self.query = query
-        self.key = make_key(catalog, query)
+        self.key = catalog.make_key(query)
         self.benchmark = {}
         self.threshold = threshold
         self.cid = self.get_id()
