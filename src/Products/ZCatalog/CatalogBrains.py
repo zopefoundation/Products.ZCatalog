@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Catalog brain implementation.
-"""
 
 from pkg_resources import DistributionNotFound
 from pkg_resources import get_distribution
