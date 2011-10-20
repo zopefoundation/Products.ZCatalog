@@ -185,7 +185,7 @@ class CatalogPlan(object):
     def __init__(self, catalog, query=None, threshold=0.1):
         self.catalog = catalog
         self.query = query
-        self.key = catalog.make_key(query)
+        self.key = self.make_key(query)
         self.benchmark = {}
         self.threshold = threshold
         self.cid = self.get_id()
@@ -207,6 +207,34 @@ class CatalogPlan(object):
         self.stop_time = None
         self.duration = None
 
+    def make_key(self, query):
+        if not query:
+            return None
+
+        indexes = self.catalog.indexes
+        valueindexes = ValueIndexes.determine(indexes)
+        key = keys = query.keys()
+
+        values = [name for name in keys if name in valueindexes]
+        if values:
+            # If we have indexes whose values should be considered, we first
+            # preserve all normal indexes and then add the keys whose values
+            # matter including their value into the key
+            key = [name for name in keys if name not in values]
+            for name in values:
+
+                v = query.get(name, [])
+                if isinstance(v, (tuple, list)):
+                    v = list(v)
+                    v.sort()
+
+                # We need to make sure the key is immutable, repr() is an easy way
+                # to do this without imposing restrictions on the types of values
+                key.append((name, repr(v)))
+
+        key = tuple(sorted(key))
+
+        return key
     def plan(self):
         benchmark = PriorityMap.get_entry(self.cid, self.key)
         if not benchmark:
