@@ -24,6 +24,7 @@ from zope.dottedname.resolve import resolve
 
 MAX_DISTINCT_VALUES = 10
 REFRESH_RATE = 100
+VALUE_INDEX_KEY = '#valueindexes'
 
 Duration = namedtuple('Duration', ['start', 'end'])
 IndexMeasurement = namedtuple('IndexMeasurement',
@@ -146,36 +147,6 @@ class ValueIndexes(object):
     def clear(cls):
         cls.set(frozenset())
 
-    @classmethod
-    def determine(cls, indexes):
-        # This function determines all indexes whose values should be respected
-        # in the report key. The number of unique values for the index needs to
-        # be lower than the MAX_DISTINCT_VALUES watermark.
-
-        # TODO: Ideally who would only consider those indexes with a small
-        # number of unique values, where the number of items for each value
-        # differs a lot. If the number of items per value is similar, the
-        # duration of a query is likely similar as well.
-        value_indexes = cls.get()
-        if value_indexes:
-            # Calculating all the value indexes is quite slow, so we do this
-            # once for the first query. Since this is an optimization only,
-            # slightly outdated results based on index changes in the running
-            # process can be ignored.
-            return value_indexes
-
-        value_indexes = set()
-        for name, index in indexes.items():
-            if IUniqueValueIndex.providedBy(index):
-                values = index.uniqueValues()
-                if values and len(list(values)) < MAX_DISTINCT_VALUES:
-                    # Only consider indexes which actually return a number
-                    # greater than zero
-                    value_indexes.add(name)
-
-        cls.set(value_indexes)
-        return value_indexes
-
 
 class CatalogPlan(object):
     """Catalog plan class to measure and identify catalog queries and plan
@@ -207,12 +178,42 @@ class CatalogPlan(object):
         self.stop_time = None
         self.duration = None
 
+    def valueindexes(self):
+        indexes = self.catalog.indexes
+
+        # This function determines all indexes whose values should be respected
+        # in the report key. The number of unique values for the index needs to
+        # be lower than the MAX_DISTINCT_VALUES watermark.
+
+        # TODO: Ideally who would only consider those indexes with a small
+        # number of unique values, where the number of items for each value
+        # differs a lot. If the number of items per value is similar, the
+        # duration of a query is likely similar as well.
+        value_indexes = ValueIndexes.get()
+        if value_indexes:
+            # Calculating all the value indexes is quite slow, so we do this
+            # once for the first query. Since this is an optimization only,
+            # slightly outdated results based on index changes in the running
+            # process can be ignored.
+            return value_indexes
+
+        value_indexes = set()
+        for name, index in indexes.items():
+            if IUniqueValueIndex.providedBy(index):
+                values = index.uniqueValues()
+                if values and len(list(values)) < MAX_DISTINCT_VALUES:
+                    # Only consider indexes which actually return a number
+                    # greater than zero
+                    value_indexes.add(name)
+
+        ValueIndexes.set(value_indexes)
+        return value_indexes
+
     def make_key(self, query):
         if not query:
             return None
 
-        indexes = self.catalog.indexes
-        valueindexes = ValueIndexes.determine(indexes)
+        valueindexes = self.valueindexes()
         key = keys = query.keys()
 
         values = [name for name in keys if name in valueindexes]

@@ -156,41 +156,6 @@ class TestReports(unittest.TestCase):
         self.assertEquals(type(self.reports.lock), LockType)
 
 
-class TestValueIndexes(unittest.TestCase):
-
-    def setUp(self):
-        self.value = self._makeOne()
-
-    def tearDown(self):
-        self.value.clear()
-
-    def _makeOne(self):
-        from ..plan import ValueIndexes
-        return ValueIndexes
-
-    def test_get(self):
-        self.assertEquals(self.value.get(), frozenset())
-
-    def test_set(self):
-        indexes = ('index1', 'index2')
-        self.value.set(indexes)
-        self.assertEquals(self.value.get(), frozenset(indexes))
-
-    def test_clear(self):
-        self.value.set(('index1', ))
-        self.value.clear()
-        self.assertEquals(self.value.get(), frozenset())
-
-    def test_determine_already_set(self):
-        self.value.set(('index1', ))
-        self.assertEquals(self.value.determine(()), frozenset(('index1', )))
-
-
-# class TestValueIndexesDetermination(unittest.TestCase):
-# Test the actual logic for determining value indexes
-
-# class TestMakeKey(unittest.TestCase):
-
 class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
     def setUp(self):
@@ -212,7 +177,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         from Products.ZCatalog.ZCatalog import ZCatalog
         zcat = ZCatalog('catalog')
         plan = self._makeOne(zcat._catalog)
-        self.assertEquals(plan.get_id(), ('catalog',))
+        self.assertEquals(plan.get_id(), ('catalog', ))
 
     def test_getCatalogPlan_empty(self):
         from Products.ZCatalog.ZCatalog import ZCatalog
@@ -302,6 +267,32 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.reset()
         self.assertEquals(len(plan.report()), 0)
 
+    def test_valueindexes_get(self):
+        plan = self._makeOne()
+        self.assertEquals(plan.valueindexes(), frozenset())
+
+    def test_valueindexes_set(self):
+        from ..plan import ValueIndexes
+        indexes = ('index1', 'index2')
+        ValueIndexes.set(indexes)
+        plan = self._makeOne()
+        self.assertEquals(plan.valueindexes(), frozenset(indexes))
+
+    def test_valueindexes_clear(self):
+        from ..plan import ValueIndexes
+        ValueIndexes.set(('index1', ))
+        ValueIndexes.clear()
+        plan = self._makeOne()
+        self.assertEquals(plan.valueindexes(), frozenset())
+
+    def test_valueindexes_already_set(self):
+        from ..plan import ValueIndexes
+        ValueIndexes.set(('index1', ))
+        plan = self._makeOne()
+        self.assertEquals(plan.valueindexes(), frozenset(('index1', )))
+
+    # Test the actual logic for determining value indexes
+    # Test make_key
 
 class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
 
