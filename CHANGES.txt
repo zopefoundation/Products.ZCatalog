@@ -4,6 +4,10 @@ Changelog
 2.13.21 (unreleased)
 --------------------
 
+- Refactored value index logic. Determine value indexes per catalog instead of
+  globally. Store value index set in the priority map, so it can be seen in the
+  ZMI and stored in the module level storage.
+
 - Added support for using ZCatalog as local utility.
   This feature requires the optional `five.globalrequest` dependency.
 
