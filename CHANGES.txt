@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.21 (unreleased)
+2.13.21 (2011-10-20)
 --------------------
 
 - Refactored value index logic. Determine value indexes per catalog instead of
