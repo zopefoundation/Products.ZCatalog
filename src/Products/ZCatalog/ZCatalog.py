@@ -49,7 +49,6 @@ from Products.ZCatalog.interfaces import IZCatalog
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
 from .plan import PriorityMap
-from .plan import VALUE_INDEX_KEY
 
 LOG = logging.getLogger('Zope.ZCatalog')
 
@@ -900,16 +899,15 @@ class ZCatalog(Folder, Persistent, Implicit):
         for cid, plan in sorted(pmap.items()):
             output.append('  %s: {' % repr(cid))
             for querykey, details in sorted(plan.items()):
-                output.append('    %s: {' % repr(querykey))
                 if isinstance(details, (frozenset, set)):
-                    output.append('      %r:\n      %r,' % (
-                        VALUE_INDEX_KEY, details))
+                    output.append('    %r: %r,' % (querykey, details))
                 else:
+                    output.append('    %s: {' % repr(querykey))
                     for indexname, bench in sorted(details.items()):
                         tuplebench = (round(bench[0], 4), ) + bench[1:]
                         output.append('      %r:\n      %r,' % (
                             indexname, tuplebench))
-                output.append('    },')
+                    output.append('    },')
             output.append('  },')
         output.append('}')
         return '\n'.join(output)
