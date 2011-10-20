@@ -24,7 +24,7 @@ from zope.dottedname.resolve import resolve
 
 MAX_DISTINCT_VALUES = 10
 REFRESH_RATE = 100
-VALUE_INDEX_KEY = '#valueindexes'
+VALUE_INDEX_KEY = 'VALUE_INDEXES'
 
 Duration = namedtuple('Duration', ['start', 'end'])
 IndexMeasurement = namedtuple('IndexMeasurement',
