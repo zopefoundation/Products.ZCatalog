@@ -53,9 +53,8 @@ class AbstractCatalogBrain(Record, Implicit):
     def getURL(self, relative=0):
         """Generate a URL for this record"""
         request = aq_get(self, 'REQUEST', None)
-        if request is None:
-            if _GLOBALREQUEST_INSTALLED:
-                request = getRequest()
+        if request is None and _GLOBALREQUEST_INSTALLED:
+            request = getRequest()
         return request.physicalPathToURL(self.getPath(), relative)
 
     def _unrestrictedGetObject(self):
@@ -64,14 +63,14 @@ class AbstractCatalogBrain(Record, Implicit):
         Same as getObject, but does not do security checks.
         """
         parent = aq_parent(self)
-        if aq_get(parent, 'REQUEST', None) is None:
-            if _GLOBALREQUEST_INSTALLED:
-                request = getRequest()
-                if request is not None:
-                    # path should be absolute, starting at the physical root
-                    parent = self.getPhysicalRoot()
-                    request_container = RequestContainer(REQUEST=request)
-                    parent = aq_base(parent).__of__(request_container)
+        if (aq_get(parent, 'REQUEST', None) is None
+            and _GLOBALREQUEST_INSTALLED):
+            request = getRequest()
+            if request is not None:
+                # path should be absolute, starting at the physical root
+                parent = self.getPhysicalRoot()
+                request_container = RequestContainer(REQUEST=request)
+                parent = aq_base(parent).__of__(request_container)
         return parent.unrestrictedTraverse(self.getPath())
 
     def getObject(self, REQUEST=None):
@@ -89,14 +88,14 @@ class AbstractCatalogBrain(Record, Implicit):
         if not path:
             return None
         parent = aq_parent(self)
-        if aq_get(parent, 'REQUEST', None) is None:
-            if _GLOBALREQUEST_INSTALLED:
-                request = getRequest()
-                if request is not None:
-                    # path should be absolute, starting at the physical root
-                    parent = self.getPhysicalRoot()
-                    request_container = RequestContainer(REQUEST=request)
-                    parent = aq_base(parent).__of__(request_container)
+        if (aq_get(parent, 'REQUEST', None) is None
+            and _GLOBALREQUEST_INSTALLED):
+            request = getRequest()
+            if request is not None:
+                # path should be absolute, starting at the physical root
+                parent = self.getPhysicalRoot()
+                request_container = RequestContainer(REQUEST=request)
+                parent = aq_base(parent).__of__(request_container)
         if len(path) > 1:
             parent = parent.unrestrictedTraverse(path[:-1])
 
