@@ -32,10 +32,11 @@ class dummy(object):
 
 TESTMAP = {
     '/folder/catalog': {
+        'VALUE_INDEXES': frozenset(['index1']),
         'index1 index2': {
             'index1': (2.0, 3, True),
             'index2': (1.5, 2, False),
-        }
+        },
     }
 }
 
@@ -127,9 +128,11 @@ class TestPriorityMapDefault(unittest.TestCase):
             os.environ['ZCATALOGQUERYPLAN'] = \
                 'Products.ZCatalog.tests.test_plan.TESTMAP'
             self.pmap.load_default()
-            expected = {'/folder/catalog': {'index1 index2': {
-                'index1': Benchmark(duration=2.0, hits=3, limit=True),
-                'index2': Benchmark(duration=1.5, hits=2, limit=False),
+            expected = {'/folder/catalog': {
+                'VALUE_INDEXES': frozenset(['index1']),
+                'index1 index2': {
+                    'index1': Benchmark(duration=2.0, hits=3, limit=True),
+                    'index2': Benchmark(duration=1.5, hits=2, limit=False),
             }}}
             self.assertEquals(self.pmap.get_value(), expected)
         finally:

@@ -105,9 +105,12 @@ class PriorityMap(NestedDict):
                     new_plan[cid] = {}
                     for querykey, details in plan.items():
                         new_plan[cid][querykey] = {}
-                        for indexname, benchmark in details.items():
-                            new_plan[cid][querykey][indexname] = \
-                                Benchmark(*benchmark)
+                        if isinstance(details, (frozenset, set)):
+                            new_plan[cid][querykey] = details
+                        else:
+                            for indexname, benchmark in details.items():
+                                new_plan[cid][querykey][indexname] = \
+                                    Benchmark(*benchmark)
                 with cls.lock:
                     cls.value = new_plan
             except ImportError:
