@@ -11,6 +11,8 @@
 #
 ##############################################################################
 
+import os
+import os.path
 import time
 from collections import namedtuple
 from logging import getLogger
@@ -97,12 +99,21 @@ class PriorityMap(NestedDict):
         if location:
             try:
                 pmap = resolve(location)
-                cls.load_from_path(location, pmap)
+                cls.load_pmap(location, pmap)
             except ImportError:
                 logger.warning('could not load priority map from %s', location)
 
     @classmethod
-    def load_from_path(cls, location, pmap):
+    def load_from_path(cls, path):
+        path = os.path.abspath(path)
+        _globals = {}
+        _locals = {}
+        execfile(path, _globals, _locals)
+        pmap = _locals['queryplan'].copy()
+        cls.load_pmap(path, pmap)
+
+    @classmethod
+    def load_pmap(cls, location, pmap):
         logger.info('loaded priority %d map(s) from %s',
             len(pmap), location)
         # Convert the simple benchmark tuples to namedtuples

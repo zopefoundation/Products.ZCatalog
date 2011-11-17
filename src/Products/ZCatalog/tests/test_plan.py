@@ -12,10 +12,13 @@
 ##############################################################################
 
 import os
+import os.path
 import time
 import unittest
 
 from zope.testing import cleanup
+
+HERE = __file__
 
 
 class dummy(object):
@@ -28,17 +31,6 @@ class dummy(object):
 
     def numbers(self):
         return (self.num, self.num + 1)
-
-
-TESTMAP = {
-    '/folder/catalog': {
-        'VALUE_INDEXES': frozenset(['index1']),
-        'index1 index2': {
-            'index1': (2.0, 3, True),
-            'index2': (1.5, 2, False),
-        },
-    }
-}
 
 
 class TestNestedDict(unittest.TestCase):
@@ -116,7 +108,6 @@ class TestPriorityMapDefault(unittest.TestCase):
     def test_load_failure(self):
         try:
             os.environ['ZCATALOGQUERYPLAN'] = 'Products.ZCatalog.invalid'
-            # 'Products.ZCatalog.tests.test_plan.TESTMAP'
             self.pmap.load_default()
             self.assertEquals(self.pmap.get_value(), {})
         finally:
@@ -126,7 +117,7 @@ class TestPriorityMapDefault(unittest.TestCase):
         from ..plan import Benchmark
         try:
             os.environ['ZCATALOGQUERYPLAN'] = \
-                'Products.ZCatalog.tests.test_plan.TESTMAP'
+                'Products.ZCatalog.tests.queryplan.queryplan'
             self.pmap.load_default()
             expected = {'/folder/catalog': {
                 'VALUE_INDEXES': frozenset(['index1']),
@@ -137,6 +128,18 @@ class TestPriorityMapDefault(unittest.TestCase):
             self.assertEquals(self.pmap.get_value(), expected)
         finally:
             del os.environ['ZCATALOGQUERYPLAN']
+
+    def test_load_from_path(self):
+        from ..plan import Benchmark
+        path = os.path.join(os.path.dirname(HERE), 'queryplan.py')
+        self.pmap.load_from_path(path)
+        expected = {'/folder/catalog': {
+            'VALUE_INDEXES': frozenset(['index1']),
+            'index1 index2': {
+                'index1': Benchmark(duration=2.0, hits=3, limit=True),
+                'index2': Benchmark(duration=1.5, hits=2, limit=False),
+        }}}
+        self.assertEquals(self.pmap.get_value(), expected)
 
 
 class TestReports(unittest.TestCase):

@@ -4,6 +4,8 @@ Changelog
 2.13.22 (unreleased)
 --------------------
 
+- Added a new `load_from_path` class method to the `PriorityMap`, which allows
+  one to load a plan from a file, instead of a module via an environment var.
 
 2.13.21 (2011-10-20)
 --------------------
