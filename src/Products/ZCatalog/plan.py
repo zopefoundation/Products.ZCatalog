@@ -97,24 +97,28 @@ class PriorityMap(NestedDict):
         if location:
             try:
                 pmap = resolve(location)
-                logger.info('loaded priority %d map(s) from %s',
-                    len(pmap), location)
-                # Convert the simple benchmark tuples to namedtuples
-                new_plan = {}
-                for cid, plan in pmap.items():
-                    new_plan[cid] = {}
-                    for querykey, details in plan.items():
-                        new_plan[cid][querykey] = {}
-                        if isinstance(details, (frozenset, set)):
-                            new_plan[cid][querykey] = details
-                        else:
-                            for indexname, benchmark in details.items():
-                                new_plan[cid][querykey][indexname] = \
-                                    Benchmark(*benchmark)
-                with cls.lock:
-                    cls.value = new_plan
+                cls.load_from_path(location, pmap)
             except ImportError:
                 logger.warning('could not load priority map from %s', location)
+
+    @classmethod
+    def load_from_path(cls, location, pmap):
+        logger.info('loaded priority %d map(s) from %s',
+            len(pmap), location)
+        # Convert the simple benchmark tuples to namedtuples
+        new_plan = {}
+        for cid, plan in pmap.items():
+            new_plan[cid] = {}
+            for querykey, details in plan.items():
+                new_plan[cid][querykey] = {}
+                if isinstance(details, (frozenset, set)):
+                    new_plan[cid][querykey] = details
+                else:
+                    for indexname, benchmark in details.items():
+                        new_plan[cid][querykey][indexname] = \
+                            Benchmark(*benchmark)
+        with cls.lock:
+            cls.value = new_plan
 
 
 class Reports(NestedDict):
