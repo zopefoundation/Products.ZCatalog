@@ -39,7 +39,7 @@ class CatalogAware:
 
     def _warn_deprecated(self):
         warnings.warn('The Products.ZCatalog.CatalogAwareness module is '
-                      'deprecated and will be removed in Zope 2.14. Please '
+                      'deprecated and will be removed in Zope 4. Please '
                       'use event subscribers for zope.lifecycle events to '
                       'automatically index and unindex your objects.',
                       DeprecationWarning, stacklevel=3)

@@ -439,7 +439,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                           'object or a mixture of a query dict and keyword '
                           'arguments. Please use only a simple query dict. '
                           'Your query contained "%s". This support is '
-                          'deprecated and will be removed in Zope 2.14.' %
+                          'deprecated and will be removed in Zope 4.' %
                           repr(real_req), DeprecationWarning, stacklevel=4)
 
             known_keys = query.keys()
@@ -529,7 +529,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             if r is not None:
                 r, u = r
                 # Short circuit if empty result
-                # BBB: We can remove the "r is not None" check in Zope 2.14
+                # BBB: We can remove the "r is not None" check in Zope 4
                 # once we don't need to support the "return everything" case
                 # anymore
                 if r is not None and not r:
@@ -573,7 +573,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             # and so we return everything in the catalog
             warnings.warn('Your query %s produced no query restriction. '
                           'Currently the entire catalog content is returned. '
-                          'In Zope 2.14 this will result in an empty LazyCat '
+                          'In Zope 4 this will result in an empty LazyCat '
                           'to be returned.' % repr(cr.make_key(query)),
                           DeprecationWarning, stacklevel=3)
 
@@ -885,7 +885,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if REQUEST is None and not kw:
             # Try to acquire request if we get no args for bw compat
             warnings.warn('Calling searchResults without a query argument nor '
-                          'keyword arguments is deprecated. In Zope 2.14 the '
+                          'keyword arguments is deprecated. In Zope 4 the '
                           'query will no longer be automatically taken from '
                           'the acquired request.',
                           DeprecationWarning, stacklevel=3)
@@ -923,7 +923,7 @@ class CatalogSearchArgumentsMap(object):
     BBB: Values that are empty strings are treated as non-existent. This is
     to ignore empty values, thereby ignoring empty form fields to be
     consistent with hysterical behavior. This is deprecated and can be changed
-    in Zope 2.14.
+    in Zope 4.
     """
 
     def __init__(self, request, keywords):

@@ -4,6 +4,7 @@ Changelog
 2.13.23 (unreleased)
 --------------------
 
+- Updated deprecation warnings to point to Zope 4 instead of 2.14.
 
 2.13.22 (2011-11-17)
 --------------------
