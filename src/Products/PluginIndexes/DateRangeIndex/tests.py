@@ -138,8 +138,7 @@ class DRI_Tests(unittest.TestCase):
     def test_datetime(self):
         from datetime import datetime
         from DateTime.DateTime import DateTime
-        from Products.PluginIndexes.DateIndex.tests.test_DateIndex \
-            import _getEastern
+        from Products.PluginIndexes.DateIndex.tests import _getEastern
         before = datetime(2009, 7, 11, 0, 0, tzinfo=_getEastern())
         start = datetime(2009, 7, 13, 5, 15, tzinfo=_getEastern())
         between = datetime(2009, 7, 13, 5, 45, tzinfo=_getEastern())
