@@ -33,14 +33,14 @@ class KeywordIndex(UnIndex):
 
     This should have an _apply_index that returns a relevance score
     """
-    meta_type="KeywordIndex"
+    meta_type = "KeywordIndex"
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
 
-    query_options = ("query","operator", "range")
+    query_options = ("query", "operator", "range")
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
         """ index an object 'obj' with integer id 'i'
@@ -135,6 +135,7 @@ class KeywordIndex(UnIndex):
 
 
 manage_addKeywordIndexForm = DTMLFile('dtml/addKeywordIndex', globals())
+
 
 def manage_addKeywordIndex(self, id, extra=None,
         REQUEST=None, RESPONSE=None, URL3=None):

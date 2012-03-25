@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""KeywordIndex unit tests.
-"""
 
 import unittest
 
@@ -20,16 +18,17 @@ from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
 class Dummy:
 
-    def __init__( self, foo ):
+    def __init__(self, foo):
         self._foo = foo
 
-    def foo( self ):
+    def foo(self):
         return self._foo
 
-    def __str__( self ):
+    def __str__(self):
         return '<Dummy: %s>' % self._foo
 
     __repr__ = __str__
+
 
 def sortedUnique(seq):
     unique = {}
@@ -40,49 +39,42 @@ def sortedUnique(seq):
     return unique
 
 
-class TestKeywordIndex( unittest.TestCase ):
-    """
-        Test KeywordIndex objects.
-    """
+class TestKeywordIndex(unittest.TestCase):
+
     _old_log_write = None
 
-    def setUp( self ):
-        """
-        """
-        self._index = KeywordIndex( 'foo' )
+    def setUp(self):
+        self._index = KeywordIndex('foo')
         self._marker = []
-        self._values = [ ( 0, Dummy( ['a'] ) )
-                       , ( 1, Dummy( ['a','b'] ) )
-                       , ( 2, Dummy( ['a','b','c'] ) )
-                       , ( 3, Dummy( ['a','b','c','a'] ) )
-                       , ( 4, Dummy( ['a', 'b', 'c', 'd'] ) )
-                       , ( 5, Dummy( ['a', 'b', 'c', 'e'] ) )
-                       , ( 6, Dummy( ['a', 'b', 'c', 'e', 'f'] ))
-                       , ( 7, Dummy( [0] ) )
+        self._values = [(0, Dummy(['a'])),
+                        (1, Dummy(['a', 'b'])),
+                        (2, Dummy(['a', 'b', 'c'])),
+                        (3, Dummy(['a', 'b', 'c', 'a'])),
+                        (4, Dummy(['a', 'b', 'c', 'd'])),
+                        (5, Dummy(['a', 'b', 'c', 'e'])),
+                        (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
+                        (7, Dummy([0])),
                        ]
-        self._noop_req  = { 'bar': 123 }
-        self._all_req = { 'foo': ['a'] }
-        self._some_req = { 'foo': ['e'] }
-        self._overlap_req = { 'foo': ['c', 'e'] }
+        self._noop_req = {'bar': 123}
+        self._all_req = {'foo': ['a']}
+        self._some_req = {'foo': ['e']}
+        self._overlap_req = {'foo': ['c', 'e']}
         self._string_req = {'foo': 'a'}
-        self._zero_req  = { 'foo': [0] }
+        self._zero_req = {'foo': [0]}
 
-    def tearDown( self ):
-        """
-        """
-
-    def _populateIndex( self ):
+    def _populateIndex(self):
         for k, v in self._values:
-            self._index.index_object( k, v )
+            self._index.index_object(k, v)
 
-    def _checkApply( self, req, expectedValues ):
-        result, used = self._index._apply_index( req )
-        assert used == ( 'foo', )
-        assert len(result) == len( expectedValues ), \
-          '%s | %s' % ( map( None, result ),
-                        map(lambda x: x[0], expectedValues ))
+    def _checkApply(self, req, expectedValues):
+        result, used = self._index._apply_index(req)
+        assert used == ('foo', )
+        assert len(result) == len(expectedValues), \
+          '%s | %s' % (map(None, result),
+                       map(lambda x: x[0], expectedValues))
 
-        if hasattr(result, 'keys'): result=result.keys()
+        if hasattr(result, 'keys'):
+            result = result.keys()
         for k, v in expectedValues:
             assert k in result
 
@@ -97,77 +89,70 @@ class TestKeywordIndex( unittest.TestCase ):
         verifyClass(IUniqueValueIndex, KeywordIndex)
 
     def testAddObjectWOKeywords(self):
+        self._populateIndex()
+        self._index.index_object(999, None)
 
-        try:
-            self._populateIndex()
-            self._index.index_object(999, None)
-        finally:
-            pass
-
-    def testEmpty( self ):
-        assert len( self._index ) == 0
-        assert len( self._index.referencedObjects() ) == 0
+    def testEmpty(self):
+        assert len(self._index) == 0
+        assert len(self._index.referencedObjects()) == 0
         self.assertEqual(self._index.numObjects(), 0)
 
-        assert self._index.getEntryForObject( 1234 ) is None
-        assert ( self._index.getEntryForObject( 1234, self._marker )
-                  is self._marker ), self._index.getEntryForObject(1234)
-        self._index.unindex_object( 1234 ) # nothrow
+        assert self._index.getEntryForObject(1234) is None
+        assert (self._index.getEntryForObject(1234, self._marker)
+                  is self._marker), self._index.getEntryForObject(1234)
+        self._index.unindex_object(1234)  # nothrow
 
-        assert self._index.hasUniqueValuesFor( 'foo' )
-        assert not self._index.hasUniqueValuesFor( 'bar' )
-        assert len( self._index.uniqueValues( 'foo' ) ) == 0
+        assert self._index.hasUniqueValuesFor('foo')
+        assert not self._index.hasUniqueValuesFor('bar')
+        assert len(self._index.uniqueValues('foo')) == 0
 
-        assert self._index._apply_index( self._noop_req ) is None
-        self._checkApply( self._all_req, [] )
-        self._checkApply( self._some_req, [] )
-        self._checkApply( self._overlap_req, [] )
-        self._checkApply( self._string_req, [] )
+        assert self._index._apply_index(self._noop_req) is None
+        self._checkApply(self._all_req, [])
+        self._checkApply(self._some_req, [])
+        self._checkApply(self._overlap_req, [])
+        self._checkApply(self._string_req, [])
 
-    def testPopulated( self ):
+    def testPopulated(self):
         self._populateIndex()
         values = self._values
 
-        #assert len( self._index ) == len( values )
-        assert len( self._index.referencedObjects() ) == len( values )
-
-        assert self._index.getEntryForObject( 1234 ) is None
-        assert ( self._index.getEntryForObject( 1234, self._marker )
-                  is self._marker )
-        self._index.unindex_object( 1234 ) # nothrow
-        self.assertEqual(self._index.indexSize(), len( values )-1)
+        assert len(self._index.referencedObjects()) == len(values)
+        assert self._index.getEntryForObject(1234) is None
+        assert (self._index.getEntryForObject(1234, self._marker)
+            is self._marker)
+        self._index.unindex_object(1234)  # nothrow
+        self.assertEqual(self._index.indexSize(), len(values) - 1)
 
         for k, v in values:
-            entry = self._index.getEntryForObject( k )
+            entry = self._index.getEntryForObject(k)
             entry.sort()
             kw = sortedUnique(v.foo())
             self.assertEqual(entry, kw)
 
-        assert len( self._index.uniqueValues( 'foo' ) ) == len( values )-1
-        assert self._index._apply_index( self._noop_req ) is None
+        assert len(self._index.uniqueValues('foo')) == len(values) - 1
+        assert self._index._apply_index(self._noop_req) is None
 
-        self._checkApply( self._all_req, values[:-1])
-        self._checkApply( self._some_req, values[ 5:7 ] )
-        self._checkApply( self._overlap_req, values[2:7] )
-        self._checkApply( self._string_req, values[:-1] )
+        self._checkApply(self._all_req, values[:-1])
+        self._checkApply(self._some_req, values[5:7])
+        self._checkApply(self._overlap_req, values[2:7])
+        self._checkApply(self._string_req, values[:-1])
 
-    def testZero( self ):
+    def testZero(self):
         self._populateIndex()
         values = self._values
-        self._checkApply( self._zero_req, values[ -1: ] )
-        assert 0 in self._index.uniqueValues( 'foo' )
+        self._checkApply(self._zero_req, values[-1:])
+        assert 0 in self._index.uniqueValues('foo')
 
     def testReindexChange(self):
         self._populateIndex()
         expected = Dummy(['x', 'y'])
         self._index.index_object(6, expected)
         result, used = self._index._apply_index({'foo': ['x', 'y']})
-        result=result.keys()
+        result = result.keys()
         assert len(result) == 1
         assert result[0] == 6
         result, used = self._index._apply_index(
-            {'foo': ['a', 'b', 'c', 'e', 'f']}
-            )
+            {'foo': ['a', 'b', 'c', 'e', 'f']})
         result = result.keys()
         assert 6 not in result
 
@@ -191,27 +176,19 @@ class TestKeywordIndex( unittest.TestCase ):
         # Test an 'and' search, ensuring that 'range' doesn't mess it up.
         self._populateIndex()
 
-        record = { 'foo' : { 'query'  : [ 'e', 'f' ]
-                           , 'operator' : 'and'
-                           }
-                 }
-        self._checkApply( record, self._values[6:7] )
+        record = {'foo': {'query': ['e', 'f'], 'operator': 'and'}}
+        self._checkApply(record, self._values[6:7])
 
-        #
-        #   Make sure that 'and' tests with incompatible paramters
-        #   don't return empty sets.
-        #
-        record[ 'foo' ][ 'range' ] = 'min:max'
-        self._checkApply( record, self._values[6:7] )
+        # Make sure that 'and' tests with incompatible parameters
+        # don't return empty sets.
+        record['foo']['range'] = 'min:max'
+        self._checkApply(record, self._values[6:7])
 
     def testDuplicateKeywords(self):
-        try:
-            self._index.index_object(0, Dummy(['a', 'a', 'b', 'b']))
-            self._index.unindex_object(0)
-        finally:
-            pass
+        self._index.index_object(0, Dummy(['a', 'a', 'b', 'b']))
+        self._index.unindex_object(0)
 
-    def testCollectorIssue889(self) :
+    def testCollectorIssue889(self):
         # Test that collector issue 889 is solved
         values = self._values
         nonexistent = 'foo-bar-baz'
@@ -220,22 +197,14 @@ class TestKeywordIndex( unittest.TestCase ):
         result = self._index._index.get(nonexistent, self._marker)
         assert result is self._marker
         # patched _apply_index now works as expected
-        record = {'foo' : { 'query'    : [nonexistent]
-                          , 'operator' : 'and'}
-                 }
+        record = {'foo': {'query': [nonexistent], 'operator': 'and'}}
         self._checkApply(record, [])
-        record = {'foo' : { 'query'    : [nonexistent, 'a']
-                          , 'operator' : 'and'}
-                 }
+        record = {'foo': {'query': [nonexistent, 'a'], 'operator': 'and'}}
         # and does not break anything
         self._checkApply(record, [])
-        record = {'foo' : { 'query'    : ['d']
-                          , 'operator' : 'and'}
-                 }
+        record = {'foo': {'query': ['d'], 'operator': 'and'}}
         self._checkApply(record, values[4:5])
-        record = {'foo' : { 'query'    : ['a', 'e']
-                          , 'operator' : 'and'}
-                 }
+        record = {'foo': {'query': ['a', 'e'], 'operator': 'and'}}
         self._checkApply(record, values[5:7])
 
     def test_noindexing_when_noattribute(self):
@@ -274,5 +243,5 @@ class TestKeywordIndex( unittest.TestCase ):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest( unittest.makeSuite( TestKeywordIndex ) )
+    suite.addTest(unittest.makeSuite(TestKeywordIndex))
     return suite

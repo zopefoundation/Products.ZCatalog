@@ -20,13 +20,13 @@ from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 
 class Dummy:
 
-    def __init__( self, foo ):
+    def __init__(self, foo):
         self._foo = foo
 
-    def foo( self ):
+    def foo(self):
         return self._foo
 
-    def __str__( self ):
+    def __str__(self):
         return '<Dummy: %s>' % self._foo
 
     __repr__ = __str__
@@ -36,23 +36,23 @@ class FieldIndexTests(unittest.TestCase):
     """Test FieldIndex objects.
     """
 
-    def setUp( self ):
-        self._index = FieldIndex( 'foo' )
+    def setUp(self):
+        self._index = FieldIndex('foo')
         self._marker = []
-        self._values = [ ( 0, Dummy( 'a' ) )
-                       , ( 1, Dummy( 'ab' ) )
-                       , ( 2, Dummy( 'abc' ) )
-                       , ( 3, Dummy( 'abca' ) )
-                       , ( 4, Dummy( 'abcd' ) )
-                       , ( 5, Dummy( 'abce' ) )
-                       , ( 6, Dummy( 'abce' ) )
-                       , ( 7, Dummy( 0 ) ) #  Collector #1959
-                       , ( 8, Dummy(None) )]
+        self._values = [(0, Dummy('a')),
+                        (1, Dummy('ab')),
+                        (2, Dummy('abc')),
+                        (3, Dummy('abca')),
+                        (4, Dummy('abcd')),
+                        (5, Dummy('abce')),
+                        (6, Dummy('abce')),
+                        (7, Dummy(0)),  # Collector #1959
+                        (8, Dummy(None))]
         self._forward = {}
         self._backward = {}
         for k, v in self._values:
             self._backward[k] = v
-            keys = self._forward.get( v, [] )
+            keys = self._forward.get(v, [])
             self._forward[v] = keys
 
         self._noop_req  = {'bar': 123}
@@ -66,11 +66,11 @@ class FieldIndexTests(unittest.TestCase):
         self._max_req_n = {'foo':
             {'query': 'abc', 'range': 'max', 'not': ['a', 'b', None, 0]}}
         self._range_req = {'foo':
-            {'query': ( 'abc', 'abcd' ), 'range': 'min:max'}}
+            {'query': ('abc', 'abcd'), 'range': 'min:max'}}
         self._range_ren = {'foo':
-            {'query': ( 'abc', 'abcd' ), 'range': 'min:max', 'not': 'abcd'}}
+            {'query': ('abc', 'abcd'), 'range': 'min:max', 'not': 'abcd'}}
         self._range_non = {'foo':
-            {'query': ( 'a', 'aa' ), 'range': 'min:max', 'not': 'a'}}
+            {'query': ('a', 'aa'), 'range': 'min:max', 'not': 'a'}}
         self._zero_req  = {'foo': 0 }
         self._none_req  = {'foo': None }
         self._not_1     = {'foo': {'query': 'a', 'not': 'a'}}
@@ -80,17 +80,17 @@ class FieldIndexTests(unittest.TestCase):
         self._not_5     = {'foo': {'not': ['a', 'b']}}
         self._not_6     = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
-    def _populateIndex( self ):
+    def _populateIndex(self):
         for k, v in self._values:
-            self._index.index_object( k, v )
+            self._index.index_object(k, v)
 
-    def _checkApply( self, req, expectedValues ):
-        result, used = self._index._apply_index( req )
+    def _checkApply(self, req, expectedValues):
+        result, used = self._index._apply_index(req)
         if hasattr(result, 'keys'):
             result = result.keys()
-        assert used == ( 'foo', )
-        assert len( result ) == len( expectedValues ), \
-          '%s | %s' % ( map( None, result ), expectedValues )
+        assert used == ('foo', )
+        assert len(result) == len(expectedValues), \
+          '%s | %s' % (map(None, result), expectedValues)
         for k, v in expectedValues:
             assert k in result
 
@@ -104,21 +104,21 @@ class FieldIndexTests(unittest.TestCase):
         verifyClass(ISortIndex, FieldIndex)
         verifyClass(IUniqueValueIndex, FieldIndex)
 
-    def testEmpty( self ):
+    def testEmpty(self):
         "Test an empty FieldIndex."
 
-        assert len( self._index ) == 0
-        assert len( self._index.referencedObjects() ) == 0
+        assert len(self._index) == 0
+        assert len(self._index.referencedObjects()) == 0
         self.assertEqual(self._index.numObjects(), 0)
 
-        assert self._index.getEntryForObject( 1234 ) is None
-        assert ( self._index.getEntryForObject( 1234, self._marker )
-                  is self._marker )
-        self._index.unindex_object( 1234 ) # nothrow
+        assert self._index.getEntryForObject(1234) is None
+        assert (self._index.getEntryForObject(1234, self._marker)
+                  is self._marker)
+        self._index.unindex_object(1234)  # nothrow
 
-        assert self._index.hasUniqueValuesFor( 'foo' )
-        assert not self._index.hasUniqueValuesFor( 'bar' )
-        assert len( self._index.uniqueValues( 'foo' ) ) == 0
+        assert self._index.hasUniqueValuesFor('foo')
+        assert not self._index.hasUniqueValuesFor('bar')
+        assert len(self._index.uniqueValues('foo')) == 0
 
         assert self._index._apply_index(self._noop_req) is None
         self._checkApply(self._request, [])
@@ -130,26 +130,26 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._range_ren, [])
         self._checkApply(self._range_non, [])
 
-    def testPopulated( self ):
+    def testPopulated(self):
         """ Test a populated FieldIndex """
         self._populateIndex()
         values = self._values
 
-        assert len( self._index ) == len( values )-1 #'abce' is duplicate
-        assert len( self._index.referencedObjects() ) == len( values )
-        self.assertEqual(self._index.indexSize(), len( values )-1)
+        assert len(self._index) == len(values) - 1  # 'abce' is duplicate
+        assert len(self._index.referencedObjects() ) == len(values)
+        self.assertEqual(self._index.indexSize(), len(values) - 1)
 
-        assert self._index.getEntryForObject( 1234 ) is None
-        assert ( self._index.getEntryForObject( 1234, self._marker )
-                  is self._marker )
-        self._index.unindex_object( 1234 ) # nothrow
+        assert self._index.getEntryForObject(1234) is None
+        assert (self._index.getEntryForObject(1234, self._marker)
+                  is self._marker)
+        self._index.unindex_object(1234)  # nothrow
 
         for k, v in values:
-            assert self._index.getEntryForObject( k ) == v.foo()
+            assert self._index.getEntryForObject(k) == v.foo()
 
-        assert len( self._index.uniqueValues( 'foo' ) ) == len( values )-1
+        assert len(self._index.uniqueValues('foo')) == len(values) - 1
 
-        assert self._index._apply_index( self._noop_req ) is None
+        assert self._index._apply_index(self._noop_req) is None
 
         self._checkApply(self._request, values[-4:-2])
         self._checkApply(self._min_req, values[2:-2])
@@ -167,12 +167,12 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._not_5, values[1:])
         self._checkApply(self._not_6, values[0:1])
 
-    def testZero( self ):
+    def testZero(self):
         """ Make sure 0 gets indexed """
         self._populateIndex()
         values = self._values
-        self._checkApply( self._zero_req, values[ -2:-1 ] )
-        assert 0 in self._index.uniqueValues( 'foo' )
+        self._checkApply(self._zero_req, values[-2:-1])
+        assert 0 in self._index.uniqueValues('foo')
 
     def testNone(self):
         """ make sure None gets indexed """
@@ -181,20 +181,20 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._none_req, values[-1:])
         assert None in self._index.uniqueValues('foo')
 
-    def testReindex( self ):
+    def testReindex(self):
         self._populateIndex()
-        result, used = self._index._apply_index( {'foo':'abc'} )
-        assert list(result)==[2]
-        assert self._index.keyForDocument(2)=='abc'
+        result, used = self._index._apply_index({'foo': 'abc'})
+        assert list(result) == [2]
+        assert self._index.keyForDocument(2) == 'abc'
         d = Dummy('world')
-        self._index.index_object(2,d)
-        result, used = self._index._apply_index( {'foo':'world'} )
-        assert list(result)==[2]
-        assert self._index.keyForDocument(2)=='world'
+        self._index.index_object(2, d)
+        result, used = self._index._apply_index({'foo': 'world'})
+        assert list(result) == [2]
+        assert self._index.keyForDocument(2) == 'world'
         del d._foo
-        self._index.index_object(2,d)
-        result, used = self._index._apply_index( {'foo':'world'} )
-        assert list(result)==[]
+        self._index.index_object(2, d)
+        result, used = self._index._apply_index({'foo': 'world'})
+        assert list(result) == []
         try:
             should_not_be = self._index.keyForDocument(2)
         except KeyError:
@@ -206,35 +206,28 @@ class FieldIndexTests(unittest.TestCase):
 
     def testRange(self):
         """Test a range search"""
-        index = FieldIndex( 'foo' )
+        index = FieldIndex('foo')
         for i in range(100):
-            index.index_object(i, Dummy(i%10))
+            index.index_object(i, Dummy(i % 10))
 
-        record = { 'foo' : { 'query'  : [-99, 3]
-                           , 'range'  : 'min:max'
-                           }
-                 }
-        r=index._apply_index( record )
+        record = {'foo': {'query': [-99, 3], 'range': 'min:max'}}
+        r = index._apply_index(record)
 
-        assert tuple(r[1])==('foo',), r[1]
-        r=list(r[0].keys())
+        assert tuple(r[1]) == ('foo', ), r[1]
+        r = list(r[0].keys())
 
-        expect=[
+        expect = [
             0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 30, 31, 32, 33,
             40, 41, 42, 43, 50, 51, 52, 53, 60, 61, 62, 63, 70, 71, 72, 73,
             80, 81, 82, 83, 90, 91, 92, 93
             ]
+        assert r == expect, r
 
-        assert r==expect, r
-
-        #
-        #   Make sure that range tests with incompatible paramters
-        #   don't return empty sets.
-        #
-        record[ 'foo' ][ 'operator' ] = 'and'
-        r2, ignore = index._apply_index( record )
-        r2 = list( r2.keys() )
-
+        # Make sure that range tests with incompatible paramters
+        # don't return empty sets.
+        record['foo']['operator'] = 'and'
+        r2, ignore = index._apply_index(record)
+        r2 = list(r2.keys())
         assert r2 == r
 
 
