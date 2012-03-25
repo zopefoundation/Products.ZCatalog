@@ -4,6 +4,10 @@ Changelog
 3.0 (unreleased)
 ----------------
 
+- Added support for simple `sort_on` queries with two sort indexes. The
+  `sort_order` is currently single valued and applies to both of them. But a
+  query like: `{'foo': 'a', 'sort_on':['foo', 'bar']}` is supported now.
+
 - Change some internal wiring and let multiple sort_on values pass through.
   `Catalog.sortResults` is now called with a list of search indexes.
 
