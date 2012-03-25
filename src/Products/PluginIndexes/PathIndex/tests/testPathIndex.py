@@ -16,9 +16,9 @@
 import unittest
 
 
-
 class Dummy:
-    def __init__( self, path):
+
+    def __init__(self, path):
         self.path = path
 
     def getPhysicalPath(self):
@@ -527,9 +527,3 @@ class PathIndexTests(unittest.TestCase):
         self.assertEqual(list(index._search('bb', 1)), [1])
         self.assertEqual(list(index._search('aa/bb', 0)), [1])
         self.assertEqual(list(index._search('aa/bb', 1)), [])
-
-
-def test_suite():
-    return unittest.TestSuite((
-            unittest.makeSuite(PathIndexTests),
-        ))

@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Unit tests for util module.
-"""
 
 import unittest
 
@@ -76,9 +74,3 @@ class parseIndexRequestTests(unittest.TestCase):
         parser = self._makeOne(request, 'path', ('query', 'not'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('not'), ['bar', 'baz'])
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(parseIndexRequestTests))
-    return suite

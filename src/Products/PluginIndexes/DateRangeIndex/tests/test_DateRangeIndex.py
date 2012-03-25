@@ -17,9 +17,9 @@ import unittest
 class Dummy(object):
 
     def __init__(self, name, start, stop):
-        self._name  = name
+        self._name = name
         self._start = start
-        self._stop  = stop
+        self._stop = stop
 
     def name(self):
         return self._name
@@ -246,9 +246,3 @@ class DRI_Tests(unittest.TestCase):
         results, used = index._apply_index({'work': 11},
             resultset=IISet([0, 5, 7]))
         self.assertEqual(set(results), set([0, 5]))
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(DRI_Tests))
-    return suite

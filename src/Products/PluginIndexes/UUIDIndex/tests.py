@@ -131,9 +131,3 @@ class UUIDIndexTests(unittest.TestCase):
         # second index call fails and logs
         self._index.index_object(1, obj)
         self._checkApply({'foo': 'a'}, [(0, obj)])
-
-
-def test_suite():
-    return unittest.TestSuite((
-        unittest.makeSuite(UUIDIndexTests),
-        ))

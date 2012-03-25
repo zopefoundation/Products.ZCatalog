@@ -239,9 +239,3 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
         self.assertFalse(self._index._unindex.get(10))
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestKeywordIndex))
-    return suite

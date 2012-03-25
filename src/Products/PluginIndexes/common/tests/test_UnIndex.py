@@ -10,10 +10,9 @@
 # FOR A PARTICULAR PURPOSE
 #
 #############################################################################
-""" Tests for common UnIndex features.
-"""
 
 import unittest
+
 
 class UnIndexTests(unittest.TestCase):
 
@@ -71,9 +70,3 @@ class UnIndexTests(unittest.TestCase):
 
         dummy.exc = TypeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(UnIndexTests))
-    return suite

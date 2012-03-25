@@ -15,11 +15,11 @@
 
 import unittest
 
+
 class Dummy:
 
     def __init__(self, name, date):
-
-        self._name  = name
+        self._name = name
         self._date = date
 
     def name(self):
@@ -274,9 +274,3 @@ class DI_Tests(unittest.TestCase):
                          {'date': 1072742900}, [values[7]])
         index.index_object(7, None)
         self.assertFalse(7 in index.documentToKeyMap().keys())
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest( unittest.makeSuite( DI_Tests ) )
-    return suite

@@ -216,10 +216,3 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertEqual(index._index_value, 0)
         self.assertEqual(index._index_length.value, 19)
         self.assertEqual(list(index._index), range(80, 99))
-
-
-def test_suite():
-    from unittest import TestSuite, makeSuite
-    suite = TestSuite()
-    suite.addTest(makeSuite(TestBooleanIndex))
-    return suite

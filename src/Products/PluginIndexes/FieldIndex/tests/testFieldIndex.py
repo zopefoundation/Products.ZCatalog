@@ -229,9 +229,3 @@ class FieldIndexTests(unittest.TestCase):
         r2, ignore = index._apply_index(record)
         r2 = list(r2.keys())
         assert r2 == r
-
-
-def test_suite():
-    return unittest.TestSuite((
-        unittest.makeSuite(FieldIndexTests),
-        ))
