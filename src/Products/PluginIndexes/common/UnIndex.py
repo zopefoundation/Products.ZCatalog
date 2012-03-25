@@ -354,7 +354,6 @@ class UnIndex(SimpleItem):
         if not record.keys and not_parm:
             # we have only a 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
-            not_parm = None
 
         # experimental code for specifing the operator
         operator = record.get('operator',self.useOperator)

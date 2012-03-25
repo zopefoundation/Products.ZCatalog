@@ -37,7 +37,7 @@ class KeywordIndex(UnIndex):
         {'label': 'Browse', 'action': 'manage_browse'},
     )
 
-    query_options = ("query", "operator", "range")
+    query_options = ("query", "operator", "range", "not")
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
         """ index an object 'obj' with integer id 'i'

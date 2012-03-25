@@ -62,6 +62,13 @@ class TestKeywordIndex(unittest.TestCase):
         self._string_req = {'foo': 'a'}
         self._zero_req = {'foo': [0]}
 
+        self._not_1 = {'foo': {'query': 'f', 'not': 'f'}}
+        self._not_2 = {'foo': {'query': ['e', 'f'], 'not': 'f'}}
+        self._not_3 = {'foo': {'not': 0}}
+        self._not_4 = {'foo': {'not': [0, 'e']}}
+        self._not_5 = {'foo': {'not': [0, 'no-value']}}
+        self._not_6 = {'foo': 'c', 'bar': {'query': 123, 'not': 1}}
+
     def _populateIndex(self):
         for k, v in self._values:
             self._index.index_object(k, v)
@@ -136,6 +143,13 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._some_req, values[5:7])
         self._checkApply(self._overlap_req, values[2:7])
         self._checkApply(self._string_req, values[:-1])
+
+        self._checkApply(self._not_1, [])
+        self._checkApply(self._not_2, values[5:6])
+        self._checkApply(self._not_3, values[:7])
+        self._checkApply(self._not_4, values[:5])
+        self._checkApply(self._not_5, values[:7])
+        self._checkApply(self._not_6, values[2:7])
 
     def testZero(self):
         self._populateIndex()

@@ -4,9 +4,10 @@ Changelog
 3.0 (unreleased)
 ----------------
 
-- Added support for `not` queries to FieldIndexes. Both restrictions of normal
-  queries and range queries are supported, as well as purely exclusive
-  queries. For example: `{'foo': {'query': ['a', 'ab'], 'not': 'a'}}`,
+- Added support for `not` queries in field and keyword indexes. Both
+  restrictions of normal queries and range queries are supported, as well as
+  purely exclusive queries. For example:
+  `{'foo': {'query': ['a', 'ab'], 'not': 'a'}}`,
   `{'query': 'a', 'range': 'min', 'not': ['a', 'e', 'f']}}` and
   `{'foo': {'not': ['a', 'b']}}`.
 
