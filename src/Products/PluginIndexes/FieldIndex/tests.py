@@ -18,7 +18,7 @@ import unittest
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 
 
-class Dummy:
+class Dummy(object):
 
     def __init__(self, foo):
         self._foo = foo

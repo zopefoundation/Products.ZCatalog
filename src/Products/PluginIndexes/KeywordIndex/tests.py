@@ -16,7 +16,7 @@ import unittest
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
 
-class Dummy:
+class Dummy(object):
 
     def __init__(self, foo):
         self._foo = foo
