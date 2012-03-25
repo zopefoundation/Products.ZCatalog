@@ -457,7 +457,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         return query
 
     def _sorted_search_indexes(self, query):
-        # Simple implementation doing no ordering.
+        # Simple implementation ordering only by limited result support
         query_keys = query.keys()
         order = []
         for name, index in self.indexes.items():
