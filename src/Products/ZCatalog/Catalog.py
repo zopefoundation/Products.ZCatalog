@@ -677,13 +677,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             if len(sort_index) > 1:
                 index2 = sort_index[1]
             sort_index = sort_index[0]
-        _intersection = intersection
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
         index2_key_map = (index2 is not None and
             index2.documentToKeyMap() or None)
-        _None = None
-        _keyerror = KeyError
         result = []
         append = result.append
         if hasattr(rs, 'keys'):
@@ -736,10 +733,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # We have an index that has a set of values for
                 # each sort key, so we intersect with each set and
                 # get a sorted sequence of the intersections.
-                intset = _intersection(rs, intset)
+                intset = intersection(rs, intset)
                 if intset:
-                    keys = getattr(intset, 'keys', _None)
-                    if keys is not _None:
+                    keys = getattr(intset, 'keys', None)
+                    if keys is not None:
                         # Is this ever true?
                         intset = keys()
                     length += len(intset)
@@ -763,10 +760,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index
+            # import pdb; pdb.set_trace()
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
@@ -800,7 +798,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                    key2 = (index2_key_map is not None and
+                        index2_key_map.get(did) or None)
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
@@ -808,13 +808,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         continue
                     i = bisect(keys, key)
                     keys.insert(i, key)
-                    result.insert(i, (key, did, _self__getitem__))
+                    result.insert(i, ((key, key2), did, _self__getitem__))
                     if n == limit:
                         del keys[0], result[0]
                     else:
                         n += 1
                     worst = keys[0]
-            result.reverse()
+            if index2 is not None:
+                result.sort(reverse=True)
+            else:
+                result.reverse()
             if merge:
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
@@ -832,7 +835,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                    key2 = (index2_key_map is not None and
+                        index2_key_map.get(did) or None)
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
@@ -840,12 +845,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         continue
                     i = bisect(keys, key)
                     keys.insert(i, key)
-                    result.insert(i, (key, did, _self__getitem__))
+                    result.insert(i, ((key, key2), did, _self__getitem__))
                     if n == limit:
                         del keys[-1], result[-1]
                     else:
                         n += 1
                     best = keys[-1]
+            if index2 is not None:
+                result.sort()
             if merge:
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
