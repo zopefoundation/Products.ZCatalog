@@ -499,6 +499,14 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(len(a), upper,
                          'length should be %s, its %s' % (upper, len(a)))
 
+    def DISABLED_test_sort_on_two(self):
+        upper = self.upper
+        a = self._catalog(sort_on=('att1', 'num'), att1='att1')
+        self.assertEqual(len(a), upper,
+                         'length should be %s, its %s' % (upper, len(a)))
+        for x in range(self.upper):
+            self.assertEqual(a[x].num, x)
+
     def testKeywordIndexWithMinRange(self):
         a = self._catalog(att3={'query': 'att', 'range': 'min'})
         self.assertEqual(len(a), self.upper)

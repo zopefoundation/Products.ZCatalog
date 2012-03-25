@@ -671,6 +671,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # proportion of the time to perform an indexed search.
         # Try to avoid all non-local attribute lookup inside
         # those loops.
+        if isinstance(sort_index, list):
+            # TODO: ignore multiple sort indexes for now
+            sort_index = sort_index[0]
         _intersection = intersection
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
@@ -861,20 +864,25 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         return kw.get("sort_%s" % attr, None)
 
     def _getSortIndex(self, args):
-        """Returns a search index object or None."""
-        sort_index_name = self._get_sort_attr("on", args)
-        if sort_index_name is not None:
+        """Returns a list of search index objects or None."""
+        sort_index_names = self._get_sort_attr("on", args)
+        if sort_index_names is not None:
             # self.indexes is always a dict, so get() w/ 1 arg works
-            sort_index = self.indexes.get(sort_index_name)
-            if sort_index is None:
-                raise CatalogError('Unknown sort_on index (%s)' %
-                                   sort_index_name)
-            else:
-                if not hasattr(sort_index, 'documentToKeyMap'):
-                    raise CatalogError(
-                        'The index chosen for sort_on (%s) is not capable of '
-                        'being used as a sort index.' % sort_index_name)
-            return sort_index
+            sort_indexes = []
+            if not isinstance(sort_index_names, (list, tuple)):
+                sort_index_names = [sort_index_names]
+            for name in sort_index_names:
+                sort_index = self.indexes.get(name)
+                if sort_index is None:
+                    raise CatalogError('Unknown sort_on index: %s' %
+                                       repr(name))
+                else:
+                    if not hasattr(sort_index, 'documentToKeyMap'):
+                        raise CatalogError('The index chosen for sort_on is not '
+                            'capable of being used as a sort index: '
+                            '%s' % repr(name))
+                sort_indexes.append(sort_index)
+            return sort_indexes[0]
         else:
             return None
 
@@ -895,16 +903,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             args = REQUEST
         else:
             args = CatalogSearchArgumentsMap(REQUEST, kw)
-        sort_index = self._getSortIndex(args)
+        sort_indexes = self._getSortIndex(args)
         sort_limit = self._get_sort_attr('limit', args)
         reverse = 0
-        if sort_index is not None:
+        if sort_indexes is not None:
             order = self._get_sort_attr("order", args)
             if (isinstance(order, str) and
                 order.lower() in ('reverse', 'descending')):
                 reverse = 1
         # Perform searches with indexes and sort_index
-        return self.search(args, sort_index, reverse, sort_limit, _merge)
+        return self.search(args, sort_indexes, reverse, sort_limit, _merge)
 
     __call__ = searchResults
 

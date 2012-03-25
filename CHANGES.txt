@@ -4,6 +4,9 @@ Changelog
 3.0 (unreleased)
 ----------------
 
+- Change some internal wiring and let multiple sort_on values pass through.
+  `Catalog.sortResults` is now called with a list of search indexes.
+
 - Added support for `not` queries in field and keyword indexes. Both
   restrictions of normal queries and range queries are supported, as well as
   purely exclusive queries. For example:
