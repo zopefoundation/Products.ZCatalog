@@ -120,7 +120,7 @@ class parseIndexRequest:
         self.keys = keys
         not_value = getattr(self, 'not', None)
         if not_value is not None:
-            if isinstance(not_value, basestring):
+            if not isinstance(not_value, (tuple, list)):
                 not_value = [not_value]
                 setattr(self, 'not', not_value)
 

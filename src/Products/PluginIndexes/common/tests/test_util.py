@@ -74,3 +74,9 @@ class parseIndexRequestTests(unittest.TestCase):
         parser = self._makeOne(request, 'path', ('query', 'not'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('not'), ['bar', 'baz'])
+
+    def test_get_not_int(self):
+        request = {'path': 'foo', 'path_not': 0}
+        parser = self._makeOne(request, 'path', ('query', 'not'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('not'), [0])
