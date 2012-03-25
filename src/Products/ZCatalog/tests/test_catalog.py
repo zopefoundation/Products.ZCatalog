@@ -465,7 +465,7 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(len(a), self.upper,
                          'should be %s, but is %s' % (self.upper, len(a)))
 
-    def testGoodSortIndex(self):
+    def test_sort_on_good_index(self):
         upper = self.upper
         a = self._catalog(att1='att1', sort_on='num')
         self.assertEqual(len(a), upper,
@@ -473,19 +473,19 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
 
-    def testBadSortIndex(self):
+    def test_sort_on_bad_index(self):
         from Products.ZCatalog.Catalog import CatalogError
         def badsortindex():
             self._catalog(sort_on='foofaraw')
         self.assertRaises(CatalogError, badsortindex)
 
-    def testWrongKindOfIndexForSort(self):
+    def test_sort_on_wrong_index(self):
         from Products.ZCatalog.Catalog import CatalogError
         def wrongsortindex():
             self._catalog(sort_on='att2')
         self.assertRaises(CatalogError, wrongsortindex)
 
-    def testTextIndexQWithSortOn(self):
+    def test_sort_on(self):
         upper = self.upper
         a = self._catalog(sort_on='num', att2='att2')
         self.assertEqual(len(a), upper,
@@ -493,7 +493,7 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
 
-    def testTextIndexQWithoutSortOn(self):
+    def test_sort_on_missing(self):
         upper = self.upper
         a = self._catalog(att2='att2')
         self.assertEqual(len(a), upper,
