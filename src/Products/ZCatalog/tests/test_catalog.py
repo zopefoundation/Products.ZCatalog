@@ -510,16 +510,16 @@ class TestRangeSearch(CatalogBase, unittest.TestCase):
         self._catalog.addIndex('number', index)
         self._catalog.addColumn('number')
 
-        for i in range(5000):
-            obj = objRS(random.randrange(0, 20000))
+        for i in range(50):
+            obj = objRS(random.randrange(0, 200))
             self._catalog.catalogObject(obj, i)
 
-        self._catalog = self._catalog.__of__(objRS(200))
+        self._catalog = self._catalog.__of__(objRS(20))
 
     def testRangeSearch(self):
-        for i in range(1000):
-            m = random.randrange(0, 20000)
-            n = m + 1000
+        for i in range(10):
+            m = random.randrange(0, 200)
+            n = m + 10
 
             for r in self._catalog.searchResults(
                 number={'query': (m, n), 'range': 'min:max'}):
