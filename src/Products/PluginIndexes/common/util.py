@@ -118,6 +118,11 @@ class parseIndexRequest:
                     setattr(self, op, request[field])
 
         self.keys = keys
+        not_value = getattr(self, 'not', None)
+        if not_value is not None:
+            if isinstance(not_value, basestring):
+                not_value = [not_value]
+                setattr(self, 'not', not_value)
 
     def get(self, k, default_v=None):
         if hasattr(self, k):

@@ -53,6 +53,30 @@ class parseIndexRequestTests(unittest.TestCase):
         self.assertEqual(parser.get('level'), 0)
         self.assertEqual(parser.get('operator'), 'and')
 
+    def test_get_not_dict(self):
+        request = {'path': {'query': 'foo', 'not': 'bar'}}
+        parser = self._makeOne(request, 'path', ('query', 'not'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('not'), ['bar'])
+
+    def test_get_not_dict_list(self):
+        request = {'path': {'query': 'foo', 'not': ['bar', 'baz']}}
+        parser = self._makeOne(request, 'path', ('query', 'not'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('not'), ['bar', 'baz'])
+
+    def test_get_not_string(self):
+        request = {'path': 'foo', 'path_not': 'bar'}
+        parser = self._makeOne(request, 'path', ('query', 'not'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('not'), ['bar'])
+
+    def test_get_not_string_list(self):
+        request = {'path': 'foo', 'path_not': ['bar', 'baz']}
+        parser = self._makeOne(request, 'path', ('query', 'not'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('not'), ['bar', 'baz'])
+
 
 def test_suite():
     suite = unittest.TestSuite()

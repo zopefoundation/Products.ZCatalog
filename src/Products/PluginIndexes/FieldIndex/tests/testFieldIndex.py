@@ -37,8 +37,6 @@ class FieldIndexTests(unittest.TestCase):
     """
 
     def setUp( self ):
-        """
-        """
         self._index = FieldIndex( 'foo' )
         self._marker = []
         self._values = [ ( 0, Dummy( 'a' ) )
@@ -57,23 +55,30 @@ class FieldIndexTests(unittest.TestCase):
             keys = self._forward.get( v, [] )
             self._forward[v] = keys
 
-        self._noop_req  = { 'bar': 123 }
-        self._request   = { 'foo': 'abce' }
-        self._min_req   = { 'foo': {'query': 'abc'
-                          , 'range': 'min'}
-                          }
-        self._max_req   = { 'foo': {'query': 'abc'
-                          , 'range': 'max' }
-                          }
-        self._range_req = { 'foo': {'query': ( 'abc', 'abcd' )
-                          , 'range': 'min:max' }
-                          }
-        self._zero_req  = { 'foo': 0 }
-        self._none_req  = { 'foo': None }
-
-    def tearDown( self ):
-        """
-        """
+        self._noop_req  = {'bar': 123}
+        self._request   = {'foo': 'abce'}
+        self._min_req   = {'foo':
+            {'query': 'abc', 'range': 'min'}}
+        self._min_req_n = {'foo':
+            {'query': 'abc', 'range': 'min', 'not': 'abca'}}
+        self._max_req   = {'foo':
+            {'query': 'abc', 'range': 'max'}}
+        self._max_req_n = {'foo':
+            {'query': 'abc', 'range': 'max', 'not': ['a', 'b', None, 0]}}
+        self._range_req = {'foo':
+            {'query': ( 'abc', 'abcd' ), 'range': 'min:max'}}
+        self._range_ren = {'foo':
+            {'query': ( 'abc', 'abcd' ), 'range': 'min:max', 'not': 'abcd'}}
+        self._range_non = {'foo':
+            {'query': ( 'a', 'aa' ), 'range': 'min:max', 'not': 'a'}}
+        self._zero_req  = {'foo': 0 }
+        self._none_req  = {'foo': None }
+        self._not_1     = {'foo': {'query': 'a', 'not': 'a'}}
+        self._not_2     = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
+        self._not_3     = {'foo': {'not': 'a'}}
+        self._not_4     = {'foo': {'not': [0, None]}}
+        self._not_5     = {'foo': {'not': ['a', 'b']}}
+        self._not_6     = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
     def _populateIndex( self ):
         for k, v in self._values:
@@ -115,11 +120,15 @@ class FieldIndexTests(unittest.TestCase):
         assert not self._index.hasUniqueValuesFor( 'bar' )
         assert len( self._index.uniqueValues( 'foo' ) ) == 0
 
-        assert self._index._apply_index( self._noop_req ) is None
-        self._checkApply( self._request, [] )
-        self._checkApply( self._min_req, [] )
-        self._checkApply( self._max_req, [] )
-        self._checkApply( self._range_req, [] )
+        assert self._index._apply_index(self._noop_req) is None
+        self._checkApply(self._request, [])
+        self._checkApply(self._min_req, [])
+        self._checkApply(self._min_req_n, [])
+        self._checkApply(self._max_req, [])
+        self._checkApply(self._max_req_n, [])
+        self._checkApply(self._range_req, [])
+        self._checkApply(self._range_ren, [])
+        self._checkApply(self._range_non, [])
 
     def testPopulated( self ):
         """ Test a populated FieldIndex """
@@ -142,10 +151,21 @@ class FieldIndexTests(unittest.TestCase):
 
         assert self._index._apply_index( self._noop_req ) is None
 
-        self._checkApply( self._request, values[ -4:-2 ] )
-        self._checkApply( self._min_req, values[ 2:-2 ] )
-        self._checkApply( self._max_req, values[ :3 ] + values[ -2: ] )
-        self._checkApply( self._range_req, values[ 2:5 ] )
+        self._checkApply(self._request, values[-4:-2])
+        self._checkApply(self._min_req, values[2:-2])
+        self._checkApply(self._min_req_n, values[2:3] + values[4:-2])
+        self._checkApply(self._max_req, values[:3] + values[-2:])
+        self._checkApply(self._max_req_n, values[1:3])
+        self._checkApply(self._range_req, values[2:5])
+        self._checkApply(self._range_ren, values[2:4])
+        self._checkApply(self._range_non, [])
+
+        self._checkApply(self._not_1, [])
+        self._checkApply(self._not_2, values[1:2])
+        self._checkApply(self._not_3, values[1:])
+        self._checkApply(self._not_4, values[:7])
+        self._checkApply(self._not_5, values[1:])
+        self._checkApply(self._not_6, values[0:1])
 
     def testZero( self ):
         """ Make sure 0 gets indexed """

@@ -17,6 +17,7 @@ from cgi import escape
 from logging import getLogger
 import sys
 
+from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import IISet
@@ -293,6 +294,18 @@ class UnIndex(SimpleItem):
             LOG.debug('Attempt to unindex nonexistent document'
                       ' with id %s' % documentId,exc_info=True)
 
+    def _apply_not(self, not_parm, resultset=None):
+        index = self._index
+        setlist = []
+        for k in not_parm:
+            s = index.get(k, None)
+            if s is None:
+                continue
+            elif isinstance(s, int):
+                s = IISet((s, ))
+            setlist.append(s)
+        return multiunion(setlist)
+
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in the request arg.
 
@@ -336,6 +349,13 @@ class UnIndex(SimpleItem):
         r     = None
         opr   = None
 
+        # not / exclude parameter
+        not_parm = record.get('not', None)
+        if not record.keys and not_parm:
+            # we have only a 'not' query
+            record.keys = [k for k in index.keys() if k not in not_parm]
+            not_parm = None
+
         # experimental code for specifing the operator
         operator = record.get('operator',self.useOperator)
         if not operator in self.operators :
@@ -371,6 +391,9 @@ class UnIndex(SimpleItem):
                 result = setlist[0]
                 if isinstance(result, int):
                     result = IISet((result,))
+                if not_parm:
+                    exclude = self._apply_not(not_parm, resultset)
+                    result = difference(result, exclude)
                 return result, (self.id,)
 
             if operator == 'or':
@@ -417,6 +440,9 @@ class UnIndex(SimpleItem):
                 result = setlist[0]
                 if isinstance(result, int):
                     result = IISet((result,))
+                if not_parm:
+                    exclude = self._apply_not(not_parm, resultset)
+                    result = difference(result, exclude)
                 return result, (self.id,)
 
             if operator == 'or':
@@ -442,8 +468,10 @@ class UnIndex(SimpleItem):
             r = IISet((r, ))
         if r is None:
             return IISet(), (self.id,)
-        else:
-            return r, (self.id,)
+        if not_parm:
+            exclude = self._apply_not(not_parm, resultset)
+            r = difference(r, exclude)
+        return r, (self.id,)
 
     def hasUniqueValuesFor(self, name):
         """has unique values for column name"""
