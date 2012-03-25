@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Keyword index.
-"""
 
 from logging import getLogger
 
@@ -26,7 +24,6 @@ LOG = getLogger('Zope.KeywordIndex')
 
 
 class KeywordIndex(UnIndex):
-
     """Like an UnIndex only it indexes sequences of items.
 
     Searches match any keyword.
