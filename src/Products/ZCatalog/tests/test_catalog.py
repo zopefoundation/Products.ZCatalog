@@ -499,7 +499,7 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(len(a), upper,
                          'length should be %s, its %s' % (upper, len(a)))
 
-    def DISABLED_test_sort_on_two(self):
+    def test_sort_on_two(self):
         upper = self.upper
         a = self._catalog(sort_on=('att1', 'num'), att1='att1')
         self.assertEqual(len(a), upper,

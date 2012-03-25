@@ -15,6 +15,7 @@ import types
 import logging
 import warnings
 from bisect import bisect
+from collections import defaultdict
 from random import randint
 
 import Acquisition
@@ -671,12 +672,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # proportion of the time to perform an indexed search.
         # Try to avoid all non-local attribute lookup inside
         # those loops.
+        index2 = None
         if isinstance(sort_index, list):
-            # TODO: ignore multiple sort indexes for now
+            if len(sort_index) > 1:
+                index2 = sort_index[1]
             sort_index = sort_index[0]
         _intersection = intersection
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
+        index2_key_map = (index2 is not None and
+            index2.documentToKeyMap() or None)
         _None = None
         _keyerror = KeyError
         result = []
@@ -738,7 +743,15 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # Is this ever true?
                         intset = keys()
                     length += len(intset)
-                    append((k, intset, _self__getitem__))
+                    # sort on secondary index
+                    if index2_key_map is not None:
+                        keysets = defaultdict(list)
+                        for i in intset:
+                            keysets[(k, index2_key_map.get(i))].append(i)
+                        for k2, v2 in keysets.items():
+                            append((k2, v2, _self__getitem__))
+                    else:
+                        append((k, intset, _self__getitem__))
                     # Note that sort keys are unique.
 
             if reverse:
@@ -882,7 +895,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             'capable of being used as a sort index: '
                             '%s' % repr(name))
                 sort_indexes.append(sort_index)
-            return sort_indexes[0]
+            if len(sort_indexes) > 2:
+                raise CatalogError('Two sort indexes are supported at max, '
+                    'got: %s' %repr(name))
+            return sort_indexes
         else:
             return None
 
