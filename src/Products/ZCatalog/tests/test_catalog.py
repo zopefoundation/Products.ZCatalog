@@ -520,6 +520,20 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         for x in range(9):
             self.assertTrue(a[x].num > a[x + 1].num)
 
+    def test_sort_on_two_big_limit(self):
+        a = self._catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_limit=self.upper * 3)
+        self.assertEqual(len(a), 100)
+        for x in range(99):
+            self.assertTrue(a[x].num < a[x + 1].num)
+
+    def test_sort_on_two_big_limit_reverse(self):
+        a = self._catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_limit=self.upper * 3, sort_order='reverse')
+        self.assertEqual(len(a), 100)
+        for x in range(99):
+            self.assertTrue(a[x].num > a[x + 1].num)
+
     def testKeywordIndexWithMinRange(self):
         a = self._catalog(att3={'query': 'att', 'range': 'min'})
         self.assertEqual(len(a), self.upper)

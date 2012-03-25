@@ -764,11 +764,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
+                    key2 = (index2_key_map is not None and
+                        index2_key_map.get(did) or None)
                 except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
-                    append((key, did, _self__getitem__))
+                    append(((key, key2), did, _self__getitem__))
                     # The reference back to __getitem__ is used in case
                     # we do not merge now and need to intermingle the
                     # results with those of other catalogs while avoiding
