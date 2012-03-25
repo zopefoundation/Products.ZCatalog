@@ -282,6 +282,11 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         sr = self._catalog.search(query)
         self.assertEqual(len(sr), 3)
 
+    def testSearchNot(self):
+        query = {'title': {'not': ['0']}}
+        sr = self._catalog.search(query)
+        self.assertEqual(len(sr), 9)
+
     # resolve_url
     # resolve_path
     # manage_normalize_paths

@@ -53,6 +53,8 @@ class dummy(ExtensionClass.Base):
 
     def __init__(self, num):
         self.num = num
+        if isinstance(num, int) and (self.num % 10) == 0:
+            self.ends_in_zero = True
 
     def col1(self):
         return 'col1'
@@ -180,11 +182,13 @@ class TestCatalog(CatalogBase, unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         num = FieldIndex('num')
+        ends_in_zero = FieldIndex('ends_in_zero')
 
         self._catalog.addIndex('att1', att1)
         self._catalog.addIndex('att2', att2)
         self._catalog.addIndex('att3', att3)
         self._catalog.addIndex('num', num)
+        self._catalog.addIndex('ends_in_zero', ends_in_zero)
         self._catalog.addColumn('att1')
         self._catalog.addColumn('att2')
         self._catalog.addColumn('att3')
@@ -418,6 +422,21 @@ class TestCatalog(CatalogBase, unittest.TestCase):
     # _get_sort_attr
     # _getSortIndex
     # searchResults
+
+    def test_search_not(self):
+        query = dict(att1='att1', num={'not': [0, 1]})
+        result = self._catalog(query)
+        self.assertEqual(len(result), self.upper - 2)
+
+    def test_search_not_nothing(self):
+        query = dict(att1='att1', col1={'not': 'col1'})
+        result = self._catalog(query)
+        self.assertEqual(len(result), 0)
+
+    def test_search_not_no_value_in_index(self):
+        query = dict(att1='att1', ends_in_zero={'not': False})
+        result = self._catalog(query)
+        self.assertEqual(len(result), 10)
 
     def testResultLength(self):
         a = self._catalog(att1='att1')
