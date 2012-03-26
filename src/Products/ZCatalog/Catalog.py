@@ -16,6 +16,7 @@ import logging
 import warnings
 from bisect import bisect
 from collections import defaultdict
+from operator import itemgetter
 from random import randint
 
 import Acquisition
@@ -714,6 +715,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 b_start = rlen - b_end
             limit = b_start + b_size
 
+        # determine sort_spec
+        sort_spec = [reverse and -1 or 1, reverse and -1 or 1]
+
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
@@ -749,18 +753,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             append((k2, v2, _self__getitem__))
                     else:
                         append((k, intset, _self__getitem__))
-                    # Note that sort keys are unique.
 
-            if reverse:
-                result.sort(reverse=True)
-            else:
-                result.sort()
+            result = multisort(result, sort_spec)
             sequence, slen = self._limit_sequence(result, length, b_start,
                 b_size, switched_reverse)
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index
-            # import pdb; pdb.set_trace()
             for did in rs:
                 try:
                     key = index_key_map[did]
@@ -776,10 +775,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     # results with those of other catalogs while avoiding
                     # the cost of instantiating a LazyMap per result
             if merge:
-                if reverse:
-                    result.sort(reverse=True)
-                else:
-                    result.sort()
+                result = multisort(result, sort_spec)
                 if limit is not None:
                     result = result[:limit]
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
@@ -817,7 +813,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         n += 1
                     worst = keys[0]
             if index2 is not None:
-                result.sort(reverse=True)
+                result = multisort(result, sort_spec)
             else:
                 result.reverse()
             if merge:
@@ -854,7 +850,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         n += 1
                     best = keys[-1]
             if index2 is not None:
-                result.sort()
+                result = multisort(result, sort_spec)
             if merge:
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
@@ -1016,3 +1012,25 @@ def mergeResults(results, has_sort_keys, reverse):
         else:
             combined.sort()
         return LazyMap(lambda rec: rec[2](rec[1]), combined, len(combined))
+
+
+def multisort(items, sort_spec):
+    """Sort a list by multiple keys bidirectionally.
+
+    sort_spec is a list of ones and minus ones, with 1 meaning sort normally
+    and -1 meaning sort reversed.
+
+    The length of sort_spec must match the length of the first value in each
+    list entry given via `items`.
+    """
+    comparers = []
+    for i in xrange(len(sort_spec)):
+        comparers.append((itemgetter(i), sort_spec[i]))
+
+    def comparer(left, right):
+        for func, order in comparers:
+            result = cmp(func(left), func(right))
+            if result:
+                return order * result
+        return 0
+    return sorted(items, cmp=comparer)
