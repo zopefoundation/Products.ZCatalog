@@ -797,8 +797,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = (index2_key_map is not None and
-                            index2_key_map.get(did) or None)
+                        key2 = index2_key_map.get(did)
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -824,29 +823,45 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             keys = []
             n = 0
             worst = None
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    key2 = (index2_key_map is not None and
-                        index2_key_map.get(did) or None)
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    pass
-                else:
-                    if n >= limit and key <= worst:
-                        continue
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, ((key, key2), did, _self__getitem__))
-                    if n == limit:
-                        del keys[0], result[0]
+            if sort_index_length == 1:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
                     else:
-                        n += 1
-                    worst = keys[0]
-            if index2 is not None:
-                result = multisort(result, sort_spec)
-            else:
+                        if n >= limit and key <= worst:
+                            continue
+                        i = bisect(keys, key)
+                        keys.insert(i, key)
+                        result.insert(i, (key, did, _self__getitem__))
+                        if n == limit:
+                            del keys[0], result[0]
+                        else:
+                            n += 1
+                        worst = keys[0]
                 result.reverse()
+            else:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                        key2 = index2_key_map.get(did)
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
+                    else:
+                        if n >= limit and key <= worst:
+                            continue
+                        i = bisect(keys, key)
+                        keys.insert(i, key)
+                        result.insert(i, ((key, key2), did, _self__getitem__))
+                        if n == limit:
+                            del keys[0], result[0]
+                        else:
+                            n += 1
+                        worst = keys[0]
+                result = multisort(result, sort_spec)
             if merge:
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
@@ -861,26 +876,43 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             keys = []
             n = 0
             best = None
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    key2 = (index2_key_map is not None and
-                        index2_key_map.get(did) or None)
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    pass
-                else:
-                    if n >= limit and key >= best:
-                        continue
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, ((key, key2), did, _self__getitem__))
-                    if n == limit:
-                        del keys[-1], result[-1]
+            if sort_index_length == 1:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
                     else:
-                        n += 1
-                    best = keys[-1]
-            if index2 is not None:
+                        if n >= limit and key >= best:
+                            continue
+                        i = bisect(keys, key)
+                        keys.insert(i, key)
+                        result.insert(i, (key, did, _self__getitem__))
+                        if n == limit:
+                            del keys[-1], result[-1]
+                        else:
+                            n += 1
+                        best = keys[-1]
+            else:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                        key2 = index2_key_map.get(did)
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
+                    else:
+                        if n >= limit and key >= best:
+                            continue
+                        i = bisect(keys, key)
+                        keys.insert(i, key)
+                        result.insert(i, ((key, key2), did, _self__getitem__))
+                        if n == limit:
+                            del keys[-1], result[-1]
+                        else:
+                            n += 1
+                        best = keys[-1]
                 result = multisort(result, sort_spec)
             if merge:
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
