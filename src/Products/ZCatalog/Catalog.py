@@ -729,11 +729,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 sort_spec.append(reverse and -1 or 1)
             first_reverse = reverse
 
-        if merge and limit is None and (
-            rlen > (len(sort_index) * (rlen / 100 + 1))):
+        if merge and (rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
             # so iterate over the sorted index for speed.
-            # This is rarely exercised in practice...
             length = 0
             try:
                 intersection(rs, IISet(()))
