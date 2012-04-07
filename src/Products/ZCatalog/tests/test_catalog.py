@@ -175,17 +175,6 @@ class TestCatalog(unittest.TestCase):
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
         col1 = FieldIndex('col1')
-        col2 = ZCTextIndex('col2', caller=catalog,
-                          index_factory=OkapiIndex, lexicon_id='lexicon')
-        col3 = KeywordIndex('col3')
-
-        catalog.addIndex('col1', col1)
-        catalog.addIndex('col2', col2)
-        catalog.addIndex('col3', col3)
-        catalog.addColumn('col1')
-        catalog.addColumn('col2')
-        catalog.addColumn('col3')
-
         att1 = FieldIndex('att1')
         att2 = ZCTextIndex('att2', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
@@ -193,14 +182,13 @@ class TestCatalog(unittest.TestCase):
         num = FieldIndex('num')
         ends_in_zero = FieldIndex('ends_in_zero')
 
+        catalog.addIndex('col1', col1)
         catalog.addIndex('att1', att1)
         catalog.addIndex('att2', att2)
         catalog.addIndex('att3', att3)
         catalog.addIndex('num', num)
         catalog.addIndex('ends_in_zero', ends_in_zero)
         catalog.addColumn('att1')
-        catalog.addColumn('att2')
-        catalog.addColumn('att3')
         catalog.addColumn('num')
 
         for x in range(0, self.upper):
@@ -263,11 +251,12 @@ class TestCatalog(unittest.TestCase):
         self.assertEquals(set(result), set(['att1', 'att2', 'num']))
 
     def test_sorted_search_indexes_priority(self):
-        # att2 and col2 don't support ILimitedResultIndex, att1 does
+        # att2 doesn't support ILimitedResultIndex, att1 does
         catalog = self._make_one()
-        query = {'att1': 'a', 'att2': 'b', 'col2': 'c'}
+        query = {'att1': 'a', 'att2': 'b'}
         result = catalog._sorted_search_indexes(query)
-        self.assertEquals(result.index('att1'), 2)
+        self.assertEquals(result.index('att2'), 0)
+        self.assertEquals(result.index('att1'), 1)
 
     # search
 
