@@ -904,8 +904,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 raise CatalogError('Two sort indexes are supported at max, '
                     'got: %s' %repr(name))
             return sort_indexes
-        else:
-            return None
+        return None
 
     def searchResults(self, REQUEST=None, used=None, _merge=1, **kw):
         # You should pass in a simple dictionary as the request argument,
