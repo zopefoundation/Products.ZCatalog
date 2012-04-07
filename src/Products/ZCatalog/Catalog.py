@@ -778,22 +778,35 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    key2 = (index2_key_map is not None and
-                        index2_key_map.get(did) or None)
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    pass
-                else:
-                    append(((key, key2), did, _self__getitem__))
-                    # The reference back to __getitem__ is used in case
-                    # we do not merge now and need to intermingle the
-                    # results with those of other catalogs while avoiding
-                    # the cost of instantiating a LazyMap per result
+            if sort_index_length == 1:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
+                    else:
+                        # The reference back to __getitem__ is used in case
+                        # we do not merge now and need to intermingle the
+                        # results with those of other catalogs while avoiding
+                        # the cost of instantiating a LazyMap per result
+                        append((key, did, _self__getitem__))
+                if merge:
+                    result.sort(reverse=reverse)
+            else:
+                for did in rs:
+                    try:
+                        key = index_key_map[did]
+                        key2 = (index2_key_map is not None and
+                            index2_key_map.get(did) or None)
+                    except KeyError:
+                        # This document is not in the sort key index, skip it.
+                        pass
+                    else:
+                        append(((key, key2), did, _self__getitem__))
+                if merge:
+                    result = multisort(result, sort_spec)
             if merge:
-                result = multisort(result, sort_spec)
                 if limit is not None:
                     result = result[:limit]
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
