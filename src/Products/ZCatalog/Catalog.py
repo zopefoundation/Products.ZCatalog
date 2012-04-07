@@ -70,9 +70,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Catalogs no longer care about vocabularies and lexicons
         # so the vocabulary argument is ignored. (Casey)
 
-        self.schema = {}    # mapping from attribute name to column number
-        self.names = ()     # sequence of column names
-        self.indexes = {}   # maping from index name to index object
+        self.schema = {}   # mapping from attribute name to column number
+        self.names = ()    # sequence of column names
+        self.indexes = {}  # mapping from index name to index object
 
         # The catalog maintains a BTree of object meta_data for
         # convenient display on result pages.  meta_data attributes
@@ -144,9 +144,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         scopy = self.schema.copy()
 
-        scopy['data_record_id_']=len(self.schema.keys())
-        scopy['data_record_score_']=len(self.schema.keys())+1
-        scopy['data_record_normalized_score_']=len(self.schema.keys())+2
+        schema_len = len(self.schema.keys())
+        scopy['data_record_id_'] = schema_len
+        scopy['data_record_score_'] = schema_len + 1
+        scopy['data_record_normalized_score_'] = schema_len + 2
 
         mybrains.__record_schema__ = scopy
 
@@ -154,10 +155,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self._v_result_class = mybrains
 
     def addColumn(self, name, default_value=None, threshold=10000):
-        """
-        adds a row to the meta data schema
-        """
-
+        """Adds a row to the meta data schema"""
         schema = self.schema
         names = list(self.names)
 
@@ -191,9 +189,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self.updateBrains()
 
     def delColumn(self, name, threshold=10000):
-        """
-        deletes a row from the meta data schema
-        """
+        """Deletes a row from the meta data schema"""
         names = list(self.names)
         _index = names.index(name)
 
@@ -312,21 +308,20 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         If 'update_metadata' is true (the default), also update metadata for
         the object.  If the object is new to the catalog, this flag has
         no effect (metadata is always created for new objects).
-
         """
-
         if idxs is None:
             idxs = []
 
         index = self.uids.get(uid, None)
 
-        if index is None:  # we are inserting new data
+        if index is None:
+            # we are inserting new data
             index = self.updateMetadata(object, uid, None)
             self._length.change(1)
             self.uids[uid] = index
             self.paths[index] = uid
-
-        elif update_metadata:  # we are updating and we need to update metadata
+        elif update_metadata:
+            # we are updating and we need to update metadata
             self.updateMetadata(object, uid, index)
 
         # do indexing
@@ -358,7 +353,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         This method should not raise an exception if the uid cannot
         be found in the catalog.
-
         """
         data = self.data
         uids = self.uids
@@ -491,8 +485,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         results is not guaranteed to fall within the limit however, you should
         still slice or batch the results as usual."""
 
-        rs = None # resultset
-
         # Indexes fulfill a fairly large contract here. We hand each
         # index the query mapping we are given (which may be composed
         # of some combination of web request, kw mappings or plain old dicts)
@@ -511,6 +503,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if not plan:
             plan = self._sorted_search_indexes(query)
 
+        rs = None  # result set
         indexes = self.indexes.keys()
         for i in plan:
             if i not in indexes:
@@ -552,8 +545,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
                 cr.stop_split(intersect_id)
 
-                # consider the time it takes to intersect the index result with
-                # the total resultset to be part of the index time
+                # consider the time it takes to intersect the index result
+                # with the total result set to be part of the index time
                 cr.stop_split(i, result=r, limit=limit_result)
                 if not rs:
                     break
@@ -616,7 +609,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 else:
                     cr.start_split('sort_on')
 
-                    rs = rs.byValue(0) # sort it by score
+                    # sort it by score
+                    rs = rs.byValue(0)
                     max = float(rs[0][0])
 
                     # Here we define our getter function inline so that
@@ -628,11 +622,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         passed into self.useBrains.
                         """
                         score, key = item
-                        r=self._v_result_class(self.data[key])\
-                              .__of__(aq_parent(self))
+                        r = self._v_result_class(
+                            self.data[key]).__of__(aq_parent(self))
                         r.data_record_id_ = key
                         r.data_record_score_ = score
-                        r.data_record_normalized_score_ = int(100.0 * score / max)
+                        r.data_record_normalized_score_ = \
+                            int(100.0 * score / max)
                         return r
 
                     sequence, slen = self._limit_sequence(rs, rlen, b_start,
@@ -670,11 +665,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Sort a result set using a sort index. Return a lazy
         # result set in sorted order if merge is true otherwise
         # returns a list of (sortkey, uid, getter_function) tuples
-        #
-        # The two 'for' loops in here contribute a significant
-        # proportion of the time to perform an indexed search.
-        # Try to avoid all non-local attribute lookup inside
-        # those loops.
         index2 = None
         if isinstance(sort_index, list):
             if len(sort_index) > 1:
@@ -698,8 +688,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if limit is not None and limit >= rlen:
             limit = rlen
 
-        # if we want a batch from the end of the resultset, reverse sorting
-        # order and limit it, then reverse the resultset again
+        # if we want a batch from the end of the result set, reverse sorting
+        # order and limit it, then reverse the result set again
         switched_reverse = False
         if b_size and b_start and b_start > rlen / 2:
             reverse = not reverse
@@ -725,9 +715,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             # The result set is much larger than the sorted index,
             # so iterate over the sorted index for speed.
             # This is rarely exercised in practice...
-
             length = 0
-
             try:
                 intersection(rs, IISet(()))
             except TypeError:
@@ -789,7 +777,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     switched_reverse)
                 return sequence
         elif reverse:
-            # Limit/sort results using N-Best algorithm
+            # Limit / sort results using N-Best algorithm
             # This is faster for large sets then a full sort
             # And uses far less memory
             keys = []
@@ -828,7 +816,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     switched_reverse)
                 return sequence
         elif not reverse:
-            # Limit/sort results using N-Best algorithm in reverse (N-Worst?)
+            # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
             keys = []
             n = 0
             best = None
@@ -898,13 +886,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                                        repr(name))
                 else:
                     if not hasattr(sort_index, 'documentToKeyMap'):
-                        raise CatalogError('The index chosen for sort_on is not '
-                            'capable of being used as a sort index: '
+                        raise CatalogError('The index chosen for sort_on is '
+                            'not capable of being used as a sort index: '
                             '%s' % repr(name))
                 sort_indexes.append(sort_index)
             if len(sort_indexes) > 2:
                 raise CatalogError('Two sort indexes are supported at max, '
-                    'got: %s' %repr(name))
+                    'got: %s' % repr(name))
             if len(sort_indexes) == 1:
                 # be nice and keep the old API intact for single sort_on's
                 return sort_indexes[0]
