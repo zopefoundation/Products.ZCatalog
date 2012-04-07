@@ -662,9 +662,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
     def sortResults(self, rs, sort_index, reverse=False, limit=None,
             merge=True, actual_result_count=None, b_start=0, b_size=None):
-        # Sort a result set using a sort index. Return a lazy
-        # result set in sorted order if merge is true otherwise
-        # returns a list of (sortkey, uid, getter_function) tuples
+        # Sort a result set using one or more sort indexes. Both sort_index
+        # and reverse can be lists of indexes and reverse specifications.
+        # Return a lazy result set in sorted order if merge is true otherwise
+        # returns a list of (sortkey, uid, getter_function) tuples, where
+        # sortkey can be a tuple on its own.
         index2 = None
         sort_index_length = 1
         if isinstance(sort_index, list):
