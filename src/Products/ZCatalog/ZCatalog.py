@@ -881,11 +881,12 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     security.declareProtected(manage_zcatalog_indexes, 'addColumn')
     def addColumn(self, name, default_value=None):
-        return self._catalog.addColumn(name, default_value)
+        return self._catalog.addColumn(name, default_value,
+            threshold=self.threshold)
 
     security.declareProtected(manage_zcatalog_indexes, 'delColumn')
     def delColumn(self, name):
-        return self._catalog.delColumn(name)
+        return self._catalog.delColumn(name, threshold=self.threshold)
 
     # Catalog plan methods
 

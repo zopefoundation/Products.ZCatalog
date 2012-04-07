@@ -35,6 +35,7 @@ from Products.PluginIndexes.interfaces import ILimitedResultIndex
 from .Lazy import LazyMap, LazyCat, LazyValues
 from .CatalogBrains import AbstractCatalogBrain, NoBrainer
 from .plan import CatalogPlan
+from .ProgressHandler import ZLogHandler
 
 LOG = logging.getLogger('Zope.ZCatalog')
 
@@ -152,7 +153,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self._v_brains = brains
         self._v_result_class = mybrains
 
-    def addColumn(self, name, default_value=None):
+    def addColumn(self, name, default_value=None, threshold=10000):
         """
         adds a row to the meta data schema
         """
@@ -176,8 +177,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if default_value in (None, ''):
             default_value = MV
 
-        for key, value in self.data.iteritems():
+        pghandler = ZLogHandler(threshold)
+        pghandler.init('Adding %s column' % name, len(self))
+        for i, (key, value) in enumerate(self.data.iteritems()):
+            pghandler.report(i)
             self.data[key] = value + (default_value, )
+        pghandler.finish()
 
         self.names = tuple(names)
         self.schema = schema
@@ -187,7 +192,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         self._p_changed = 1 # why?
 
-    def delColumn(self, name):
+    def delColumn(self, name, threshold=10000):
         """
         deletes a row from the meta data schema
         """
@@ -214,10 +219,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         # remove the column value from each record
         _next_index = _index + 1
-        for key, value in self.data.iteritems():
-            rec = list(value)
-            del rec[_index]
+        pghandler = ZLogHandler(threshold)
+        pghandler.init('Deleting %s column' % name, len(self))
+        for i, (key, value) in enumerate(self.data.iteritems()):
+            pghandler.report(i)
             self.data[key] = value[:_index] + value[_next_index:]
+        pghandler.finish()
 
     def addIndex(self, name, index_type):
         """Create a new index, given a name and a index_type.

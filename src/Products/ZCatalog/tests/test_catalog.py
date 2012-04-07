@@ -101,13 +101,24 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._makeOne()
         self.assertRaises(CatalogError, catalog.addColumn, '_id')
 
+    def test_add_brains(self):
+        catalog = self._makeOne()
+        catalog.addColumn('col1')
+        catalog.addColumn('col3')
+        for i in xrange(3):
+            catalog.catalogObject(dummy(3), repr(i))
+        self.assertTrue('col2' not in catalog.data.values()[0])
+        catalog.addColumn('col2', default_value='new')
+        self.assert_('col2' in catalog.schema, 'add column failed')
+        self.assertTrue('new' in catalog.data.values()[0])
+
     def test_del(self):
         catalog = self._makeOne()
         catalog.addColumn('id')
         catalog.delColumn('id')
         self.assert_('id' not in catalog.schema, 'del column failed')
 
-    def test_del_remaining(self):
+    def test_del_brains(self):
         catalog = self._makeOne()
         catalog.addColumn('col1')
         catalog.addColumn('col2')

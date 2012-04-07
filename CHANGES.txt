@@ -4,6 +4,10 @@ Changelog
 3.0 (unreleased)
 ----------------
 
+- Added a `threshold` argument to the catalog's `addColumn` and `delColumn`
+  methods and used it for a progress handler. Also optimized some of their
+  internals.
+
 - Added support for simple `sort_on` queries with two sort indexes. The
   `sort_order` is currently single valued and applies to both of them. But a
   query like: `{'foo': 'a', 'sort_on':['foo', 'bar']}` is supported now.
