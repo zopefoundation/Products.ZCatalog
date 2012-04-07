@@ -22,18 +22,18 @@ from random import randint
 import Acquisition
 from Acquisition import aq_base
 from Acquisition import aq_parent
-import ExtensionClass
-from Missing import MV
-from Persistence import Persistent
-from Products.PluginIndexes.interfaces import ILimitedResultIndex
-
 import BTrees.Length
 from BTrees.IIBTree import intersection, IISet
 from BTrees.IIBTree import weightedIntersection
 from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOBTree
-from Lazy import LazyMap, LazyCat, LazyValues
-from CatalogBrains import AbstractCatalogBrain, NoBrainer
+import ExtensionClass
+from Missing import MV
+from Persistence import Persistent
+
+from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from .Lazy import LazyMap, LazyCat, LazyValues
+from .CatalogBrains import AbstractCatalogBrain, NoBrainer
 from .plan import CatalogPlan
 
 LOG = logging.getLogger('Zope.ZCatalog')
