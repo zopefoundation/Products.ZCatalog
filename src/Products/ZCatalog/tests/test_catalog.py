@@ -537,8 +537,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(att1='att1', sort_on='num')
-        self.assertEqual(len(a), upper,
-                         'length should be %s, its %s' % (upper, len(a)))
+        self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
 
@@ -562,8 +561,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on='num', att2='att2')
-        self.assertEqual(len(a), upper,
-                         'length should be %s, its %s' % (upper, len(a)))
+        self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
 
@@ -571,17 +569,24 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(att2='att2')
-        self.assertEqual(len(a), upper,
-                         'length should be %s, its %s' % (upper, len(a)))
+        self.assertEqual(len(a), upper)
 
     def test_sort_on_two(self):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1')
-        self.assertEqual(len(a), upper,
-                         'length should be %s, its %s' % (upper, len(a)))
+        self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
+
+    def test_sort_on_two_reverse(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order='reverse')
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num > a[x + 1].num)
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
