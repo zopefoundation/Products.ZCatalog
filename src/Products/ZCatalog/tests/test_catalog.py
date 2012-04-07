@@ -238,49 +238,6 @@ class TestCatalog(unittest.TestCase):
         brain = catalog(num=9999)[0]
         self.assertEqual(brain.att1, 'foobar')
 
-    def _uncatalog(self, catalog):
-        for x in range(0, self.upper):
-            catalog.uncatalogObject(repr(x))
-
-    def testUncatalogFieldIndex(self):
-        catalog = self._make_one()
-        self._uncatalog(catalog)
-        a = catalog(att1='att1')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
-
-    def testUncatalogTextIndex(self):
-        catalog = self._make_one()
-        self._uncatalog(catalog)
-        a = catalog(att2='att2')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
-
-    def testUncatalogKeywordIndex(self):
-        catalog = self._make_one()
-        self._uncatalog(catalog)
-        a = catalog(att3='att3')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
-
-    def testBadUncatalog(self):
-        catalog = self._make_one()
-        try:
-            catalog.uncatalogObject('asdasdasd')
-        except Exception:
-            self.fail('uncatalogObject raised exception on bad uid')
-
-    def testUncatalogTwice(self):
-        catalog = self._make_one()
-        catalog.uncatalogObject('0')
-
-        def _second(self):
-            catalog.uncatalogObject('0')
-        self.assertRaises(Exception, _second)
-
-    def testCatalogLength(self):
-        catalog = self._make_one()
-        for x in range(0, self.upper):
-            catalog.uncatalogObject(repr(x))
-        self.assertEqual(len(catalog), 0)
-
     def testUniqueValuesForLength(self):
         catalog = self._make_one()
         a = catalog.uniqueValuesFor('att1')
@@ -630,6 +587,69 @@ class TestCatalog(unittest.TestCase):
         catalog = self._make_one()
         a = catalog(att3='att3', att2='att2')
         self.assertEqual(len(a), self.upper)
+
+
+class TestUnCatalog(unittest.TestCase):
+
+    upper = 5
+
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.lexicon = PLexicon('lexicon')
+        att1 = FieldIndex('att1')
+        att2 = ZCTextIndex('att2', caller=catalog,
+                          index_factory=OkapiIndex, lexicon_id='lexicon')
+        att3 = KeywordIndex('att3')
+        catalog.addIndex('att1', att1)
+        catalog.addIndex('att2', att2)
+        catalog.addIndex('att3', att3)
+
+        for x in range(0, self.upper):
+            catalog.catalogObject(dummy(x), repr(x))
+        return catalog.__of__(dummy('foo'))
+
+    def _uncatalog(self, catalog):
+        for x in range(0, self.upper):
+            catalog.uncatalogObject(repr(x))
+
+    def test_uncatalog_field_index(self):
+        catalog = self._make_one()
+        self._uncatalog(catalog)
+        a = catalog(att1='att1')
+        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+
+    def test_uncatalog_text_index(self):
+        catalog = self._make_one()
+        self._uncatalog(catalog)
+        a = catalog(att2='att2')
+        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+
+    def test_uncatalog_keyword_index(self):
+        catalog = self._make_one()
+        self._uncatalog(catalog)
+        a = catalog(att3='att3')
+        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+
+    def test_bad_uncatalog(self):
+        catalog = self._make_one()
+        try:
+            catalog.uncatalogObject('asdasdasd')
+        except Exception:
+            self.fail('uncatalogObject raised exception on bad uid')
+
+    def test_uncatalog_twice(self):
+        catalog = self._make_one()
+        catalog.uncatalogObject('0')
+
+        def _second(self):
+            catalog.uncatalogObject('0')
+        self.assertRaises(Exception, _second)
+
+    def test_uncatalog_ength(self):
+        catalog = self._make_one()
+        self._uncatalog(catalog)
+        self.assertEqual(len(catalog), 0)
 
 
 class TestRangeSearch(unittest.TestCase):
