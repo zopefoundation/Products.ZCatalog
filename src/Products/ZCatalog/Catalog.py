@@ -797,7 +797,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = index2_key_map.get(did)
+                        key2 = index2_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -846,7 +846,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = index2_key_map.get(did)
+                        key2 = index2_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -898,7 +898,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = index2_key_map.get(did)
+                        key2 = index2_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
