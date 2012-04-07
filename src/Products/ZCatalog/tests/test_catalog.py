@@ -318,17 +318,13 @@ class TestCatalogSortBatch(unittest.TestCase):
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
-        col1 = FieldIndex('col1')
         att1 = FieldIndex('att1')
         att2 = ZCTextIndex('att2', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
-        att3 = KeywordIndex('att3')
+        catalog.addIndex('att2', att2)
         num = FieldIndex('num')
 
-        catalog.addIndex('col1', col1)
         catalog.addIndex('att1', att1)
-        catalog.addIndex('att2', att2)
-        catalog.addIndex('att3', att3)
         catalog.addIndex('num', num)
         catalog.addColumn('num')
 
@@ -520,7 +516,10 @@ class TestCatalogSortBatch(unittest.TestCase):
         self.assertEqual(len(result), self.upper - 2)
 
     def test_search_not_nothing(self):
-        catalog = self._make_one()
+        def extra(catalog):
+            col1 = FieldIndex('col1')
+            catalog.addIndex('col1', col1)
+        catalog = self._make_one(extra)
         query = dict(att1='att1', col1={'not': 'col1'})
         result = catalog(query)
         self.assertEqual(len(result), 0)
