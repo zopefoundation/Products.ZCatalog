@@ -295,7 +295,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
     # the cataloging API
 
     def catalogObject(self, object, uid, threshold=None, idxs=None,
-                      update_metadata=1):
+                      update_metadata=True):
         """
         Adds an object to the Catalog by iteratively applying it to
         all indexes.
@@ -378,7 +378,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             LOG.error('uncatalogObject unsuccessfully '
                       'attempted to uncatalog an object '
                       'with a uid of %s. ' % str(uid))
-
 
     def uniqueValuesFor(self, name):
         """ return unique values for FieldIndex name """
@@ -479,7 +478,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             sequence.reverse()
         return (sequence, slen)
 
-    def search(self, query, sort_index=None, reverse=0, limit=None, merge=1):
+    def search(self,
+            query, sort_index=None, reverse=False, limit=None, merge=True):
         """Iterate through the indexes, applying the query to each one. If
         merge is true then return a lazy result set (sorted if appropriate)
         otherwise return the raw (possibly scored) results for later merging.
@@ -630,7 +630,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                               .__of__(aq_parent(self))
                         r.data_record_id_ = key
                         r.data_record_score_ = score
-                        r.data_record_normalized_score_ = int(100. * score / max)
+                        r.data_record_normalized_score_ = int(100.0 * score / max)
                         return r
 
                     sequence, slen = self._limit_sequence(rs, rlen, b_start,
@@ -663,8 +663,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         cr.stop()
         return result
 
-    def sortResults(self, rs, sort_index, reverse=0, limit=None, merge=1,
-                    actual_result_count=None, b_start=0, b_size=None):
+    def sortResults(self, rs, sort_index, reverse=False, limit=None,
+            merge=True, actual_result_count=None, b_start=0, b_size=None):
         # Sort a result set using a sort index. Return a lazy
         # result set in sorted order if merge is true otherwise
         # returns a list of (sortkey, uid, getter_function) tuples
@@ -909,7 +909,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             return sort_indexes
         return None
 
-    def searchResults(self, REQUEST=None, used=None, _merge=1, **kw):
+    def searchResults(self, REQUEST=None, used=None, _merge=True, **kw):
         # You should pass in a simple dictionary as the request argument,
         # which only contains the relevant query.
         # The used argument is deprecated and is ignored
@@ -928,12 +928,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             args = CatalogSearchArgumentsMap(REQUEST, kw)
         sort_indexes = self._getSortIndex(args)
         sort_limit = self._get_sort_attr('limit', args)
-        reverse = 0
+        reverse = False
         if sort_indexes is not None:
             order = self._get_sort_attr("order", args)
             if (isinstance(order, str) and
                 order.lower() in ('reverse', 'descending')):
-                reverse = 1
+                reverse = True
         # Perform searches with indexes and sort_index
         return self.search(args, sort_indexes, reverse, sort_limit, _merge)
 
