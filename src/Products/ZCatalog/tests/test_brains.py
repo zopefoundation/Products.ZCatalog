@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Unittests for Catalog brains
-"""
 
 import unittest
 
@@ -198,9 +196,3 @@ class TestBrains(unittest.TestCase):
         self.assertEqual(b.getPath(), '/zonked')
         self.assertRaises(AttributeError, self.cat.getobject, 3)
         self.assertRaises((NotFound, AttributeError, KeyError), b.getObject)
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestBrains))
-    return suite

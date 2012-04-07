@@ -10,13 +10,11 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-"""Unittests for Lazy sequence classes
-"""
 
 import unittest
 
 
-class BaseSequenceTest(unittest.TestCase):
+class BaseSequenceTest(object):
 
     def _compare(self, lseq, seq):
         self.assertEqual(len(lseq), len(seq))
@@ -32,7 +30,7 @@ class BaseSequenceTest(unittest.TestCase):
         self.assertEqual(lcat.actual_result_count, 20)
 
 
-class TestLazyCat(BaseSequenceTest):
+class TestLazyCat(unittest.TestCase, BaseSequenceTest):
 
     def _createLSeq(self, *sequences):
         from Products.ZCatalog.Lazy import LazyCat
@@ -262,7 +260,7 @@ class TestLazyMop(TestLazyCat):
         self.assertEqual(len(lmop), letter_length)
 
 
-class TestLazyValues(BaseSequenceTest):
+class TestLazyValues(unittest.TestCase, BaseSequenceTest):
 
     def _createLSeq(self, seq):
         from Products.ZCatalog.Lazy import LazyValues
@@ -283,13 +281,3 @@ class TestLazyValues(BaseSequenceTest):
         seq = zip(letters, range(10))
         lvals = self._createLSeq(seq)
         self._compare(lvals[2:-2], range(2, 8))
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLazyCat))
-    suite.addTest(unittest.makeSuite(TestLazyMap))
-    suite.addTest(unittest.makeSuite(TestLazyFilter))
-    suite.addTest(unittest.makeSuite(TestLazyMop))
-    suite.addTest(unittest.makeSuite(TestLazyValues))
-    return suite

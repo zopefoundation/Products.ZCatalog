@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" Unittests for ZCatalog
-"""
 
 import unittest
 
@@ -432,11 +430,3 @@ class TestZCatalogGetObject(ZCatalogBase, unittest.TestCase):
         del root.ob
         self.assertRaises((NotFound, AttributeError, KeyError),
                           brain._unrestrictedGetObject)
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestZCatalog))
-    suite.addTest(unittest.makeSuite(TestAddDelColumnIndex))
-    suite.addTest(unittest.makeSuite(TestZCatalogGetObject))
-    return suite

@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-""" Unittests for Catalog.
-"""
 
 import unittest
 from Testing.ZopeTestCase.warnhook import WarningsHook
@@ -823,16 +821,3 @@ class TestScoring(CatalogBase, unittest.TestCase):
         brains = cat(title='1*', true=True)
         self.assertEqual(len(brains), 4)
         self.assertEqual(brains[0].title, '111')
-
-
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestAddDelColumn))
-    suite.addTest(unittest.makeSuite(TestAddDelIndexes))
-    suite.addTest(unittest.makeSuite(TestCatalog))
-    suite.addTest(unittest.makeSuite(TestRangeSearch))
-    suite.addTest(unittest.makeSuite(TestCatalogReturnAll))
-    suite.addTest(unittest.makeSuite(TestCatalogSearchArgumentsMap))
-    suite.addTest(unittest.makeSuite(TestMergeResults))
-    suite.addTest(unittest.makeSuite(TestScoring))
-    return suite
