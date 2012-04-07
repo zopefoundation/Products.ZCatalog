@@ -1095,6 +1095,14 @@ def multisort(items, sort_spec):
     The length of sort_spec must match the length of the first value in each
     list entry given via `items`.
     """
+    first = sort_spec[0]
+    different = any([True for s in sort_spec if s != first])
+    if not different:
+        # if we can, we do an in-place sort
+        reverse = first != 1 and True or False
+        items.sort(reverse=reverse, key=itemgetter(0))
+        return items
+
     comparers = []
     for i, v in enumerate(sort_spec):
         comparers.append((itemgetter(i), v))
