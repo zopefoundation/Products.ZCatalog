@@ -236,6 +236,101 @@ class TestCatalog(unittest.TestCase):
     # getIndexDataForRID
     # make_query
 
+    def testKeywordIndexWithMinRange(self):
+        catalog = self._make_one()
+        a = catalog(att3={'query': 'att', 'range': 'min'})
+        self.assertEqual(len(a), self.upper)
+
+    def testKeywordIndexWithMaxRange(self):
+        catalog = self._make_one()
+        a = catalog(att3={'query': 'att35', 'range': ':max'})
+        self.assertEqual(len(a), self.upper)
+
+    def testKeywordIndexWithMinMaxRangeCorrectSyntax(self):
+        catalog = self._make_one()
+        a = catalog(att3={'query': ['att', 'att35'], 'range': 'min:max'})
+        self.assertEqual(len(a), self.upper)
+
+    def testKeywordIndexWithMinMaxRangeWrongSyntax(self):
+        # checkKeywordIndex with min/max range wrong syntax.
+        catalog = self._make_one()
+        a = catalog(att3={'query': ['att'], 'range': 'min:max'})
+        self.assert_(len(a) != self.upper)
+
+    def testCombinedTextandKeywordQuery(self):
+        catalog = self._make_one()
+        a = catalog(att3='att3', att2='att2')
+        self.assertEqual(len(a), self.upper)
+
+    def testResultLength(self):
+        catalog = self._make_one()
+        a = catalog(att1='att1')
+        self.assertEqual(len(a), self.upper,
+                         'length should be %s, its %s' % (self.upper, len(a)))
+
+    def testMappingWithEmptyKeysDoesntReturnAll(self):
+        # Queries with empty keys used to return all, because of a bug in the
+        # parseIndexRequest function, mistaking a CatalogSearchArgumentsMap
+        # for a Record class
+        catalog = self._make_one()
+        a = catalog({'col1': '', 'col2': '', 'col3': ''})
+        self.assertEqual(len(a), 0, 'length should be 0, its %s' % len(a))
+
+    def testFieldIndexLength(self):
+        catalog = self._make_one()
+        a = catalog(att1='att1')
+        self.assertEqual(len(a), self.upper,
+                         'should be %s, but is %s' % (self.upper, len(a)))
+
+    def testTextIndexLength(self):
+        catalog = self._make_one()
+        a = catalog(att2='att2')
+        self.assertEqual(len(a), self.upper,
+                         'should be %s, but is %s' % (self.upper, len(a)))
+
+    def testKeywordIndexLength(self):
+        catalog = self._make_one()
+        a = catalog(att3='att3')
+        self.assertEqual(len(a), self.upper,
+                         'should be %s, but is %s' % (self.upper, len(a)))
+
+
+class TestCatalogSortBatch(unittest.TestCase):
+
+    upper = 100
+
+    nums = range(upper)
+    for i in range(upper):
+        j = random.randrange(0, upper)
+        tmp = nums[i]
+        nums[i] = nums[j]
+        nums[j] = tmp
+
+    def _make_one(self, extra=None):
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.lexicon = PLexicon('lexicon')
+        col1 = FieldIndex('col1')
+        att1 = FieldIndex('att1')
+        att2 = ZCTextIndex('att2', caller=catalog,
+                          index_factory=OkapiIndex, lexicon_id='lexicon')
+        att3 = KeywordIndex('att3')
+        num = FieldIndex('num')
+
+        catalog.addIndex('col1', col1)
+        catalog.addIndex('att1', att1)
+        catalog.addIndex('att2', att2)
+        catalog.addIndex('att3', att3)
+        catalog.addIndex('num', num)
+        catalog.addColumn('num')
+
+        if extra is not None:
+            extra(catalog)
+
+        for x in range(0, self.upper):
+            catalog.catalogObject(dummy(self.nums[x]), repr(x))
+        return catalog.__of__(dummy('foo'))
+
     def test_sorted_search_indexes_empty(self):
         catalog = self._make_one()
         result = catalog._sorted_search_indexes({})
@@ -259,8 +354,6 @@ class TestCatalog(unittest.TestCase):
         result = catalog._sorted_search_indexes(query)
         self.assertEquals(result.index('att2'), 0)
         self.assertEquals(result.index('att1'), 1)
-
-    # search
 
     def test_sortResults(self):
         catalog = self._make_one()
@@ -411,7 +504,6 @@ class TestCatalog(unittest.TestCase):
 
     # _get_sort_attr
     # _getSortIndex
-    # searchResults
 
     def test_search_not(self):
         catalog = self._make_one()
@@ -433,38 +525,6 @@ class TestCatalog(unittest.TestCase):
         query = dict(att1='att1', ends_in_zero={'not': False})
         result = catalog(query)
         self.assertEqual(len(result), 10)
-
-    def testResultLength(self):
-        catalog = self._make_one()
-        a = catalog(att1='att1')
-        self.assertEqual(len(a), self.upper,
-                         'length should be %s, its %s' % (self.upper, len(a)))
-
-    def testMappingWithEmptyKeysDoesntReturnAll(self):
-        # Queries with empty keys used to return all, because of a bug in the
-        # parseIndexRequest function, mistaking a CatalogSearchArgumentsMap
-        # for a Record class
-        catalog = self._make_one()
-        a = catalog({'col1': '', 'col2': '', 'col3': ''})
-        self.assertEqual(len(a), 0, 'length should be 0, its %s' % len(a))
-
-    def testFieldIndexLength(self):
-        catalog = self._make_one()
-        a = catalog(att1='att1')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
-
-    def testTextIndexLength(self):
-        catalog = self._make_one()
-        a = catalog(att2='att2')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
-
-    def testKeywordIndexLength(self):
-        catalog = self._make_one()
-        a = catalog(att3='att3')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
 
     def test_sort_on_good_index(self):
         catalog = self._make_one()
@@ -546,32 +606,6 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(len(a), 100)
         for x in range(99):
             self.assertTrue(a[x].num > a[x + 1].num)
-
-    def testKeywordIndexWithMinRange(self):
-        catalog = self._make_one()
-        a = catalog(att3={'query': 'att', 'range': 'min'})
-        self.assertEqual(len(a), self.upper)
-
-    def testKeywordIndexWithMaxRange(self):
-        catalog = self._make_one()
-        a = catalog(att3={'query': 'att35', 'range': ':max'})
-        self.assertEqual(len(a), self.upper)
-
-    def testKeywordIndexWithMinMaxRangeCorrectSyntax(self):
-        catalog = self._make_one()
-        a = catalog(att3={'query': ['att', 'att35'], 'range': 'min:max'})
-        self.assertEqual(len(a), self.upper)
-
-    def testKeywordIndexWithMinMaxRangeWrongSyntax(self):
-        # checkKeywordIndex with min/max range wrong syntax.
-        catalog = self._make_one()
-        a = catalog(att3={'query': ['att'], 'range': 'min:max'})
-        self.assert_(len(a) != self.upper)
-
-    def testCombinedTextandKeywordQuery(self):
-        catalog = self._make_one()
-        a = catalog(att3='att3', att2='att2')
-        self.assertEqual(len(a), self.upper)
 
 
 class TestUnCatalog(unittest.TestCase):
