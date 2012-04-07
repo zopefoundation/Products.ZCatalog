@@ -1100,10 +1100,13 @@ def multisort(items, sort_spec):
     """
     first = sort_spec[0]
     different = any([True for s in sort_spec if s != first])
+    first_reverse = first != 1 and True or False
+
+    # always do an in-place sort. The default sort via key is really fast and
+    # the later cmp approach is efficient when getting mostly sorted data.
+    items.sort(reverse=first_reverse, key=itemgetter(0))
     if not different:
-        # if we can, we do an in-place sort
-        reverse = first != 1 and True or False
-        items.sort(reverse=reverse, key=itemgetter(0))
+        # if all keys are sorted in the same direction, we are done
         return items
 
     comparers = []
@@ -1116,4 +1119,5 @@ def multisort(items, sort_spec):
             if result:
                 return order * result
         return 0
-    return sorted(items, cmp=comparer)
+    items.sort(cmp=comparer)
+    return items
