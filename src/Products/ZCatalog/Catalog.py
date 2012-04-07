@@ -107,21 +107,21 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
     def updateBrains(self):
         self.useBrains(self._v_brains)
 
-    def __getitem__(self, index, ttype=type(())):
+    def __getitem__(self, index):
         """
         Returns instances of self._v_brains, or whatever is passed
         into self.useBrains.
         """
-        if type(index) is ttype:
+        if isinstance(index, tuple):
             # then it contains a score...
             normalized_score, score, key = index
-            r=self._v_result_class(self.data[key]).__of__(aq_parent(self))
+            r = self._v_result_class(self.data[key]).__of__(aq_parent(self))
             r.data_record_id_ = key
             r.data_record_score_ = score
             r.data_record_normalized_score_ = normalized_score
         else:
             # otherwise no score, set all scores to 1
-            r=self._v_result_class(self.data[index]).__of__(aq_parent(self))
+            r = self._v_result_class(self.data[index]).__of__(aq_parent(self))
             r.data_record_id_ = index
             r.data_record_score_ = 1
             r.data_record_normalized_score_ = 1
