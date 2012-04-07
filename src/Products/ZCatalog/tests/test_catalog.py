@@ -161,7 +161,7 @@ class TestAddDelIndexes(unittest.TestCase):
 
 class TestCatalog(unittest.TestCase):
 
-    upper = 100
+    upper = 10
 
     nums = range(upper)
     for i in range(upper):
@@ -174,19 +174,16 @@ class TestCatalog(unittest.TestCase):
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
-        col1 = FieldIndex('col1')
+
         att1 = FieldIndex('att1')
+        catalog.addIndex('att1', att1)
+
         att2 = ZCTextIndex('att2', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
-        att3 = KeywordIndex('att3')
-        num = FieldIndex('num')
-
-        catalog.addIndex('col1', col1)
-        catalog.addIndex('att1', att1)
         catalog.addIndex('att2', att2)
+
+        att3 = KeywordIndex('att3')
         catalog.addIndex('att3', att3)
-        catalog.addIndex('num', num)
-        catalog.addColumn('num')
 
         if extra is not None:
             extra(catalog)
@@ -206,6 +203,9 @@ class TestCatalog(unittest.TestCase):
     def testCatalogObjectUpdateMetadataFalse(self):
         def extra(catalog):
             catalog.addColumn('att1')
+            num = FieldIndex('num')
+            catalog.addIndex('num', num)
+
         catalog = self._make_one(extra=extra)
         ob = dummy(9999)
         catalog.catalogObject(ob, '9999')
@@ -261,6 +261,8 @@ class TestCatalog(unittest.TestCase):
         catalog = self._make_one()
         a = catalog(att3='att3', att2='att2')
         self.assertEqual(len(a), self.upper)
+        a = catalog(att3='att3', att2='none')
+        self.assertEqual(len(a), 0)
 
     def testResultLength(self):
         catalog = self._make_one()
@@ -272,27 +274,33 @@ class TestCatalog(unittest.TestCase):
         # Queries with empty keys used to return all, because of a bug in the
         # parseIndexRequest function, mistaking a CatalogSearchArgumentsMap
         # for a Record class
-        catalog = self._make_one()
-        a = catalog({'col1': '', 'col2': '', 'col3': ''})
+        def extra(catalog):
+            col1 = FieldIndex('col1')
+            catalog.addIndex('col1', col1)
+        catalog = self._make_one(extra=extra)
+        a = catalog({'col1': ''})
         self.assertEqual(len(a), 0, 'length should be 0, its %s' % len(a))
 
-    def testFieldIndexLength(self):
+    def test_field_index_length(self):
         catalog = self._make_one()
         a = catalog(att1='att1')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
+        self.assertEqual(len(a), self.upper)
+        a = catalog(att1='none')
+        self.assertEqual(len(a), 0)
 
-    def testTextIndexLength(self):
+    def test_text_index_length(self):
         catalog = self._make_one()
         a = catalog(att2='att2')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
+        self.assertEqual(len(a), self.upper)
+        a = catalog(att2='none')
+        self.assertEqual(len(a), 0)
 
-    def testKeywordIndexLength(self):
+    def test_keyword_index_length(self):
         catalog = self._make_one()
         a = catalog(att3='att3')
-        self.assertEqual(len(a), self.upper,
-                         'should be %s, but is %s' % (self.upper, len(a)))
+        self.assertEqual(len(a), self.upper)
+        a = catalog(att3='none')
+        self.assertEqual(len(a), 0)
 
 
 class TestCatalogSortBatch(unittest.TestCase):
