@@ -85,22 +85,35 @@ class CatalogBase(object):
         self._catalog = None
 
 
-class TestAddDelColumn(CatalogBase, unittest.TestCase):
+class TestAddDelColumn(unittest.TestCase):
 
-    def testAdd(self):
-        self._catalog.addColumn('id')
-        self.assertEqual('id' in self._catalog.schema, True,
-                         'add column failed')
+    def _makeOne(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
 
-    def testAddBad(self):
+    def test_add(self):
+        catalog = self._makeOne()
+        catalog.addColumn('id')
+        self.assertEqual('id' in catalog.schema, True, 'add column failed')
+
+    def test_add_bad(self):
         from Products.ZCatalog.Catalog import CatalogError
-        self.assertRaises(CatalogError, self._catalog.addColumn, '_id')
+        catalog = self._makeOne()
+        self.assertRaises(CatalogError, catalog.addColumn, '_id')
 
-    def testDel(self):
-        self._catalog.addColumn('id')
-        self._catalog.delColumn('id')
-        self.assert_('id' not in self._catalog.schema,
-                     'del column failed')
+    def test_del(self):
+        catalog = self._makeOne()
+        catalog.addColumn('id')
+        catalog.delColumn('id')
+        self.assert_('id' not in catalog.schema, 'del column failed')
+
+    def test_del_remaining(self):
+        catalog = self._makeOne()
+        catalog.addColumn('id')
+        catalog.addColumn('id2')
+        catalog.addColumn('id3')
+        catalog.delColumn('id2')
+        self.assert_('id2' not in catalog.schema, 'del column failed')
 
 
 class TestAddDelIndexes(CatalogBase, unittest.TestCase):

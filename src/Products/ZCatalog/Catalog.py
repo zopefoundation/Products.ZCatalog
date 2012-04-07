@@ -204,11 +204,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         del names[_index]
 
         # rebuild the schema
-        i = 0
         schema = {}
-        for name in names:
+        for i, name in enumerate(names):
             schema[name] = i
-            i = i + 1
 
         self.schema = schema
         self.names = tuple(names)
