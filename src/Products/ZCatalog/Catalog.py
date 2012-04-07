@@ -190,8 +190,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # new column? update the brain
         self.updateBrains()
 
-        self._p_changed = 1 # why?
-
     def delColumn(self, name, threshold=10000):
         """
         deletes a row from the meta data schema
