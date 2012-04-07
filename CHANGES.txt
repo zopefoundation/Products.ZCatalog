@@ -11,12 +11,13 @@ Changelog
   methods and used it for a progress handler. Also optimized some of their
   internals.
 
-- Added support for simple `sort_on` queries with two sort indexes. The
-  `sort_order` is currently single valued and applies to both of them. But a
-  query like: `{'foo': 'a', 'sort_on':['foo', 'bar']}` is supported now.
+- Added support for simple `sort_on` queries with two sort indexes and
+  differing `sort_order` values. For example:
+  `{'foo': 'a', 'sort_on': ('foo', 'bar')}`
+  `{'foo': 'a', 'sort_on': ('foo', 'bar'), 'sort_order': ('', 'reverse')}`
 
 - Change some internal wiring and let multiple sort_on values pass through.
-  `Catalog.sortResults` is now called with a list of search indexes.
+  `Catalog.sortResults` can now be called with a list of search indexes.
 
 - Added support for `not` queries in field and keyword indexes. Both
   restrictions of normal queries and range queries are supported, as well as

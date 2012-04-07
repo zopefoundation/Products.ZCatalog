@@ -692,7 +692,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # order and limit it, then reverse the result set again
         switched_reverse = False
         if b_size and b_start and b_start > rlen / 2:
-            reverse = not reverse
+            if isinstance(reverse, list):
+                reverse = [not r for r in reverse]
+            else:
+                reverse = not reverse
             switched_reverse = True
             b_end = b_start + b_size
             if b_end >= rlen:
@@ -708,7 +711,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             limit = b_start + b_size
 
         # determine sort_spec
-        sort_spec = [reverse and -1 or 1, reverse and -1 or 1]
+        if isinstance(reverse, list):
+            sort_spec = [r and -1 or 1 for r in reverse]
+            # limit to current maximum of two indexes
+            sort_spec = sort_spec[:2]
+            # use first sort order for choosing the algorithm
+            reverse = reverse[0]
+        else:
+            sort_spec = [reverse and -1 or 1, reverse and -1 or 1]
 
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
@@ -921,9 +931,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         reverse = False
         if sort_indexes is not None:
             order = self._get_sort_attr("order", args)
-            if (isinstance(order, str) and
-                order.lower() in ('reverse', 'descending')):
-                reverse = True
+            reverse = []
+            if order is None:
+                order = ['']
+            elif isinstance(order, str):
+                order = [order]
+            for o in order:
+                reverse.append(o.lower() in ('reverse', 'descending'))
+            if len(reverse) == 1:
+                # be nice and keep the old API intact for single sort_order
+                reverse = reverse[0]
         # Perform searches with indexes and sort_index
         return self.search(args, sort_indexes, reverse, sort_limit, _merge)
 
@@ -1016,12 +1033,12 @@ def multisort(items, sort_spec):
     list entry given via `items`.
     """
     comparers = []
-    for i in xrange(len(sort_spec)):
-        comparers.append((itemgetter(i), sort_spec[i]))
+    for i, v in enumerate(sort_spec):
+        comparers.append((itemgetter(i), v))
 
     def comparer(left, right):
         for func, order in comparers:
-            result = cmp(func(left), func(right))
+            result = cmp(func(left[0]), func(right[0]))
             if result:
                 return order * result
         return 0

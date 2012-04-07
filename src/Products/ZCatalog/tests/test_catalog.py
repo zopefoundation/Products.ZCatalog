@@ -471,12 +471,44 @@ class TestCatalogSortBatch(unittest.TestCase):
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(48, 56))
 
+    def testSortLimitViaBatchingArgsRightMiddleSortOnTwoSecond(self):
+        catalog = self._make_one()
+        query = dict(att1='att1', sort_on=('att1', 'num'),
+            sort_order=('', 'reverse'), b_start=48, b_size=8)
+        result = catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(51, 43, -1))
+
     def testSortLimitViaBatchingArgsEarlySecondHalf(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(55, 70))
+
+    def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoFirst(self):
+        catalog = self._make_one()
+        query = dict(att1='att1', sort_on=('att1', 'num'),
+            sort_order=('reverse', ''), b_start=55, b_size=15)
+        result = catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(55, 70))
+
+    def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoSecond(self):
+        catalog = self._make_one()
+        query = dict(att1='att1', sort_on=('att1', 'num'),
+            sort_order=('', 'reverse'), b_start=55, b_size=15)
+        result = catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(44, 29, -1))
+
+    def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoBoth(self):
+        catalog = self._make_one()
+        query = dict(att1='att1', sort_on=('att1', 'num'),
+            sort_order=('reverse', 'reverse'), b_start=55, b_size=15)
+        result = catalog(query)
+        self.assertEqual(result.actual_result_count, 100)
+        self.assertEqual([r.num for r in result], range(44, 29, -1))
 
     def testSortLimitViaBatchingArgsSecondHalf(self):
         catalog = self._make_one()
@@ -587,6 +619,51 @@ class TestCatalogSortBatch(unittest.TestCase):
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
+
+    def test_sort_on_two_reverse_neither(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order=('', ''))
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num < a[x + 1].num)
+
+    def test_sort_on_two_reverse_first(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order=('reverse', ''))
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num < a[x + 1].num)
+
+    def test_sort_on_two_reverse_second(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order=('', 'reverse'))
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num > a[x + 1].num)
+
+    def test_sort_on_two_reverse_both(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order=('reverse', 'reverse'))
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num > a[x + 1].num)
+
+    def test_sort_on_two_reverse_too_many(self):
+        catalog = self._make_one()
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',
+            sort_order=('', '', 'reverse', ''))
+        self.assertEqual(len(a), upper)
+        for x in range(upper - 1):
+            self.assertTrue(a[x].num < a[x + 1].num)
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
