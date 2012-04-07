@@ -696,6 +696,60 @@ class TestCatalogSortBatch(unittest.TestCase):
         for x in range(99):
             self.assertTrue(a[x].num > a[x + 1].num)
 
+    def test_sort_on_three(self):
+        def extra(catalog):
+            col2 = FieldIndex('col2')
+            catalog.addIndex('col2', col2)
+        catalog = self._make_one(extra)
+        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1')
+        self.assertEqual(len(a), self.upper)
+        for x in range(self.upper):
+            self.assertEqual(a[x].num, x)
+
+    def test_sort_on_three_reverse(self):
+        def extra(catalog):
+            col2 = FieldIndex('col2')
+            catalog.addIndex('col2', col2)
+        catalog = self._make_one(extra)
+        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+            sort_order='reverse')
+        self.assertEqual(len(a), self.upper)
+        for x in range(self.upper - 1):
+            self.assertTrue(a[x].num > a[x + 1].num)
+
+    def test_sort_on_three_reverse_last(self):
+        def extra(catalog):
+            col2 = FieldIndex('col2')
+            catalog.addIndex('col2', col2)
+        catalog = self._make_one(extra)
+        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+            sort_order=('', '', 'reverse'))
+        self.assertEqual(len(a), self.upper)
+        for x in range(self.upper - 1):
+            self.assertTrue(a[x].num > a[x + 1].num)
+
+    def test_sort_on_three_small_limit(self):
+        def extra(catalog):
+            col2 = FieldIndex('col2')
+            catalog.addIndex('col2', col2)
+        catalog = self._make_one(extra)
+        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+            sort_limit=10)
+        self.assertEqual(len(a), 10)
+        for x in range(9):
+            self.assertTrue(a[x].num < a[x + 1].num)
+
+    def test_sort_on_three_big_limit(self):
+        def extra(catalog):
+            col2 = FieldIndex('col2')
+            catalog.addIndex('col2', col2)
+        catalog = self._make_one(extra)
+        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+            sort_limit=self.upper * 3)
+        self.assertEqual(len(a), 100)
+        for x in range(99):
+            self.assertTrue(a[x].num < a[x + 1].num)
+
 
 class TestUnCatalog(unittest.TestCase):
 

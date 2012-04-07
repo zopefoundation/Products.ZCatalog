@@ -11,10 +11,11 @@ Changelog
   methods and used it for a progress handler. Also optimized some of their
   internals.
 
-- Added support for simple `sort_on` queries with two sort indexes and
+- Added support for `sort_on` queries with any number of sort indexes and
   differing `sort_order` values. For example:
   `{'foo': 'a', 'sort_on': ('foo', 'bar')}`
   `{'foo': 'a', 'sort_on': ('foo', 'bar'), 'sort_order': ('', 'reverse')}`
+  `{'foo': 'a', 'sort_on': ('foo', 'bar', 'baz')}`
 
 - Change some internal wiring and let multiple sort_on values pass through.
   `Catalog.sortResults` can now be called with a list of search indexes.

@@ -667,17 +667,19 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Return a lazy result set in sorted order if merge is true otherwise
         # returns a list of (sortkey, uid, getter_function) tuples, where
         # sortkey can be a tuple on its own.
-        index2 = None
+        second_indexes = None
+        second_indexes_key_map = None
         sort_index_length = 1
         if isinstance(sort_index, list):
             sort_index_length = len(sort_index)
             if sort_index_length > 1:
-                index2 = sort_index[1]
+                second_indexes = sort_index[1:]
+                second_indexes_key_map = []
+                for si in second_indexes:
+                    second_indexes_key_map.append(si.documentToKeyMap())
             sort_index = sort_index[0]
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
-        index2_key_map = (index2 is not None and
-            index2.documentToKeyMap() or None)
         result = []
         append = result.append
         if hasattr(rs, 'keys'):
@@ -769,10 +771,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # sort on secondary index
                         keysets = defaultdict(list)
                         for i in intset:
-                            try:
-                                keysets[(k, index2_key_map[i])].append(i)
-                            except KeyError:
-                                pass
+                            full_key = [k]
+                            for km in second_indexes_key_map:
+                                try:
+                                    full_key.append(km[i])
+                                except KeyError:
+                                    pass
+                            keysets[tuple(full_key)].append(i)
                         for k2, v2 in keysets.items():
                             append((k2, v2, _self__getitem__))
                 result = multisort(result, sort_spec)
@@ -799,13 +804,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             else:
                 for did in rs:
                     try:
-                        key = index_key_map[did]
-                        key2 = index2_key_map[did]
+                        full_key = [index_key_map[did]]
+                        for km in second_indexes_key_map:
+                            full_key.append(km[did])
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
                     else:
-                        append(((key, key2), did, _self__getitem__))
+                        append((tuple(full_key), did, _self__getitem__))
                 if merge:
                     result = multisort(result, sort_spec)
             if merge:
@@ -849,7 +855,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = index2_key_map[did]
+                        full_key = [key]
+                        for km in second_indexes_key_map:
+                            full_key.append(km[did])
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -858,7 +866,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             continue
                         i = bisect(keys, key)
                         keys.insert(i, key)
-                        result.insert(i, ((key, key2), did, _self__getitem__))
+                        result.insert(i,
+                            (tuple(full_key), did, _self__getitem__))
                         if n == limit:
                             del keys[0], result[0]
                         else:
@@ -901,7 +910,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        key2 = index2_key_map[did]
+                        full_key = [key]
+                        for km in second_indexes_key_map:
+                            full_key.append(km[did])
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -910,7 +921,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             continue
                         i = bisect(keys, key)
                         keys.insert(i, key)
-                        result.insert(i, ((key, key2), did, _self__getitem__))
+                        result.insert(i,
+                            (tuple(full_key), did, _self__getitem__))
                         if n == limit:
                             del keys[-1], result[-1]
                         else:
@@ -966,9 +978,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             'not capable of being used as a sort index: '
                             '%s' % repr(name))
                 sort_indexes.append(sort_index)
-            if len(sort_indexes) > 2:
-                raise CatalogError('Two sort indexes are supported at max, '
-                    'got: %s' % repr(name))
             if len(sort_indexes) == 1:
                 # be nice and keep the old API intact for single sort_on's
                 return sort_indexes[0]
