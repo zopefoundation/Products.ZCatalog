@@ -70,37 +70,24 @@ class objRS(ExtensionClass.Base):
         self.number = num
 
 
-class CatalogBase(object):
-
-    def _makeOne(self):
-        from Products.ZCatalog.Catalog import Catalog
-        return Catalog()
-
-    def setUp(self):
-        self._catalog = self._makeOne()
-
-    def tearDown(self):
-        self._catalog = None
-
-
 class TestAddDelColumn(unittest.TestCase):
 
-    def _makeOne(self):
+    def _make_one(self):
         from Products.ZCatalog.Catalog import Catalog
         return Catalog()
 
     def test_add(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.addColumn('id')
         self.assertEqual('id' in catalog.schema, True, 'add column failed')
 
     def test_add_bad(self):
         from Products.ZCatalog.Catalog import CatalogError
-        catalog = self._makeOne()
+        catalog = self._make_one()
         self.assertRaises(CatalogError, catalog.addColumn, '_id')
 
     def test_add_brains(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.addColumn('col1')
         catalog.addColumn('col3')
         for i in xrange(3):
@@ -111,13 +98,13 @@ class TestAddDelColumn(unittest.TestCase):
         self.assertTrue('new' in catalog.data.values()[0])
 
     def test_del(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.addColumn('id')
         catalog.delColumn('id')
         self.assert_('id' not in catalog.schema, 'del column failed')
 
     def test_del_brains(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.addColumn('col1')
         catalog.addColumn('col2')
         catalog.addColumn('col3')
@@ -131,18 +118,18 @@ class TestAddDelColumn(unittest.TestCase):
 
 class TestAddDelIndexes(unittest.TestCase):
 
-    def _makeOne(self):
+    def _make_one(self):
         from Products.ZCatalog.Catalog import Catalog
         return Catalog()
 
     def test_add_field_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
         self.assert_(isinstance(catalog.indexes['id'], FieldIndex))
 
     def test_add_text_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.lexicon = PLexicon('lexicon')
         idx = ZCTextIndex('id', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
@@ -151,21 +138,21 @@ class TestAddDelIndexes(unittest.TestCase):
         self.assert_(isinstance(i, ZCTextIndex))
 
     def test_add_keyword_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
         self.assert_(isinstance(i, KeywordIndex))
 
     def test_del_field_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
         self.assert_('id' not in catalog.indexes)
 
     def test_del_text_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         catalog.lexicon = PLexicon('lexicon')
         idx = ZCTextIndex('id', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
@@ -174,14 +161,14 @@ class TestAddDelIndexes(unittest.TestCase):
         self.assert_('id' not in catalog.indexes)
 
     def test_del_keyword_index(self):
-        catalog = self._makeOne()
+        catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
         self.assert_('id' not in catalog.indexes)
 
 
-class TestCatalog(CatalogBase, unittest.TestCase):
+class TestCatalog(unittest.TestCase):
 
     upper = 100
 
@@ -192,8 +179,12 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         nums[i] = nums[j]
         nums[j] = tmp
 
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
+
     def setUp(self):
-        self._catalog = self._makeOne()
+        self._catalog = self._make_one()
         self._catalog.lexicon = PLexicon('lexicon')
         col1 = FieldIndex('col1')
         col2 = ZCTextIndex('col2', caller=self._catalog,
@@ -227,6 +218,9 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         for x in range(0, self.upper):
             self._catalog.catalogObject(dummy(self.nums[x]), repr(x))
         self._catalog = self._catalog.__of__(dummy('foo'))
+
+    def tearDown(self):
+        self._catalog = None
 
     # clear
     # updateBrains
@@ -590,113 +584,121 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(len(a), self.upper)
 
 
-class TestRangeSearch(CatalogBase, unittest.TestCase):
+class TestRangeSearch(unittest.TestCase):
 
-    def setUp(self):
-        self._catalog = self._makeOne()
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
+
+    def test_range_search(self):
+        catalog = self._make_one()
         index = FieldIndex('number')
-        self._catalog.addIndex('number', index)
-        self._catalog.addColumn('number')
-
+        catalog.addIndex('number', index)
+        catalog.addColumn('number')
         for i in range(50):
             obj = objRS(random.randrange(0, 200))
-            self._catalog.catalogObject(obj, i)
+            catalog.catalogObject(obj, i)
+        catalog = catalog.__of__(objRS(20))
 
-        self._catalog = self._catalog.__of__(objRS(20))
-
-    def testRangeSearch(self):
         for i in range(10):
             m = random.randrange(0, 200)
             n = m + 10
-            query = dict(number={'query': (m, n), 'range': 'min:max'})
-            for r in self._catalog(query):
+            for r in catalog(number={'query': (m, n), 'range': 'min:max'}):
                 size = r.number
                 self.assert_(m <= size and size <= n,
                              "%d vs [%d,%d]" % (r.number, m, n))
 
 
-class TestCatalogReturnAll(CatalogBase, unittest.TestCase):
+class TestCatalogReturnAll(unittest.TestCase):
+
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
 
     def setUp(self):
         self.warningshook = WarningsHook()
         self.warningshook.install()
-        self._catalog = self._makeOne()
 
     def testEmptyMappingReturnsAll(self):
+        catalog = self._make_one()
         col1 = FieldIndex('col1')
-        self._catalog.addIndex('col1', col1)
+        catalog.addIndex('col1', col1)
         for x in range(0, 10):
-            self._catalog.catalogObject(dummy(x), repr(x))
-        self.assertEqual(len(self._catalog), 10)
-        length = len(self._catalog({}))
+            catalog.catalogObject(dummy(x), repr(x))
+        self.assertEqual(len(catalog), 10)
+        length = len(catalog({}))
         self.assertEqual(length, 10)
 
     def tearDown(self):
-        CatalogBase.tearDown(self)
         self.warningshook.uninstall()
 
 
 class TestCatalogSearchArgumentsMap(unittest.TestCase):
 
-    def _makeOne(self, request=None, keywords=None):
+    def _make_one(self, request=None, keywords=None):
         from Products.ZCatalog.Catalog import CatalogSearchArgumentsMap
         return CatalogSearchArgumentsMap(request, keywords)
 
     def test_init_empty(self):
-        argmap = self._makeOne()
+        argmap = self._make_one()
         self.assert_(argmap)
 
     def test_init_request(self):
-        argmap = self._makeOne(dict(foo='bar'), None)
+        argmap = self._make_one(dict(foo='bar'), None)
         self.assertEquals(argmap.get('foo'), 'bar')
 
     def test_init_keywords(self):
-        argmap = self._makeOne(None, dict(foo='bar'))
+        argmap = self._make_one(None, dict(foo='bar'))
         self.assertEquals(argmap.get('foo'), 'bar')
 
     def test_getitem(self):
-        argmap = self._makeOne(dict(a='a'), dict(b='b'))
+        argmap = self._make_one(dict(a='a'), dict(b='b'))
         self.assertEquals(argmap['a'], 'a')
         self.assertEquals(argmap['b'], 'b')
         self.assertRaises(KeyError, argmap.__getitem__, 'c')
 
     def test_getitem_emptystring(self):
-        argmap = self._makeOne(dict(a='', c='c'), dict(b='', c=''))
+        argmap = self._make_one(dict(a='', c='c'), dict(b='', c=''))
         self.assertRaises(KeyError, argmap.__getitem__, 'a')
         self.assertRaises(KeyError, argmap.__getitem__, 'b')
         self.assertEquals(argmap['c'], 'c')
 
     def test_get(self):
-        argmap = self._makeOne(dict(a='a'), dict(b='b'))
+        argmap = self._make_one(dict(a='a'), dict(b='b'))
         self.assertEquals(argmap.get('a'), 'a')
         self.assertEquals(argmap.get('b'), 'b')
         self.assertEquals(argmap.get('c'), None)
         self.assertEquals(argmap.get('c', 'default'), 'default')
 
     def test_keywords_precedence(self):
-        argmap = self._makeOne(dict(a='a', c='r'), dict(b='b', c='k'))
+        argmap = self._make_one(dict(a='a', c='r'), dict(b='b', c='k'))
         self.assertEquals(argmap.get('c'), 'k')
         self.assertEquals(argmap['c'], 'k')
 
     def test_haskey(self):
-        argmap = self._makeOne(dict(a='a'), dict(b='b'))
+        argmap = self._make_one(dict(a='a'), dict(b='b'))
         self.assert_(argmap.has_key('a'))
         self.assert_(argmap.has_key('b'))
         self.assert_(not argmap.has_key('c'))
 
     def test_contains(self):
-        argmap = self._makeOne(dict(a='a'), dict(b='b'))
+        argmap = self._make_one(dict(a='a'), dict(b='b'))
         self.assert_('a' in argmap)
         self.assert_('b' in argmap)
         self.assert_('c' not in argmap)
 
 
-class TestMergeResults(CatalogBase, unittest.TestCase):
+class TestMergeResults(unittest.TestCase):
 
-    def setUp(self):
-        self.catalogs = []
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
+
+    def _make_many(self):
+        from Products.ZCatalog.Catalog import mergeResults
+        catalogs = []
         for i in range(3):
-            cat = self._makeOne()
+            cat = self._make_one()
             cat.lexicon = PLexicon('lexicon')
             cat.addIndex('num', FieldIndex('num'))
             cat.addIndex('big', FieldIndex('big'))
@@ -710,67 +712,68 @@ class TestMergeResults(CatalogBase, unittest.TestCase):
                 obj.big = i > 5
                 obj.number = True
                 cat.catalogObject(obj, str(i))
-            self.catalogs.append(cat)
+            catalogs.append(cat)
+        return catalogs, mergeResults
 
-    def testNoFilterOrSort(self):
-        from Products.ZCatalog.Catalog import mergeResults
+    def test_no_filter_or_sort(self):
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
-                   dict(number=True), _merge=0) for cat in self.catalogs]
+                   dict(number=True), _merge=0) for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=False, reverse=False)]
         expected = [r.getRID() for r in chain(*results)]
         self.assertEqual(sort(merged_rids), sort(expected))
 
-    def testSortedOnly(self):
-        from Products.ZCatalog.Catalog import mergeResults
+    def test_sorted_only(self):
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
                    dict(number=True, sort_on='num'), _merge=0)
-                   for cat in self.catalogs]
+                   for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
         expected = sort(chain(*results))
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
-    def testSortReverse(self):
-        from Products.ZCatalog.Catalog import mergeResults
+    def test_sort_reverse(self):
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
                    dict(number=True, sort_on='num'), _merge=0)
-                   for cat in self.catalogs]
+                   for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=True)]
         expected = sort(chain(*results), reverse=True)
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
-    def testLimitSort(self):
-        from Products.ZCatalog.Catalog import mergeResults
+    def test_limit_sort(self):
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
                    dict(att1='att1', number=True, sort_on='num',
                    sort_limit=2), _merge=0)
-                   for cat in self.catalogs]
+                   for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
         expected = sort(chain(*results))
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
-    def testScored(self):
-        from Products.ZCatalog.Catalog import mergeResults
+    def test_scored(self):
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(title='4 or 5 or 6', _merge=0)
-                   for cat in self.catalogs]
+                   for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
         expected = sort(chain(*results))
         expected = [rid for sortkey, (nscore, score, rid), getitem in expected]
         self.assertEqual(merged_rids, expected)
 
-    def testSmallIndexSort(self):
+    def test_small_index_sort(self):
         # Test that small index sort optimization is not used for merging
-        from Products.ZCatalog.Catalog import mergeResults
+        catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
                    dict(number=True, sort_on='big'), _merge=0)
-                   for cat in self.catalogs]
+                   for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
         expected = sort(chain(*results))
@@ -778,46 +781,44 @@ class TestMergeResults(CatalogBase, unittest.TestCase):
         self.assertEqual(merged_rids, expected)
 
 
-class TestScoring(CatalogBase, unittest.TestCase):
+class TestScoring(unittest.TestCase):
 
-    def _get_catalog(self):
-        return self._catalog.__of__(zdummy(16336))
-
-    def setUp(self):
-        self._catalog = self._makeOne()
-        self._catalog.lexicon = PLexicon('lexicon')
-        idx = ZCTextIndex('title', caller=self._catalog,
+    def _make_one(self):
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.lexicon = PLexicon('lexicon')
+        idx = ZCTextIndex('title', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
-        self._catalog.addIndex('title', idx)
-        self._catalog.addIndex('true', FieldIndex('true'))
-        self._catalog.addColumn('title')
-        cat = self._get_catalog()
+        catalog.addIndex('title', idx)
+        catalog.addIndex('true', FieldIndex('true'))
+        catalog.addColumn('title')
         for i in (1, 2, 3, 10, 11, 110, 111):
             obj = zdummy(i)
             obj.true = True
             if i == 110:
                 obj.true = False
-            cat.catalogObject(obj, str(i))
+            catalog.catalogObject(obj, str(i))
+        return catalog.__of__(zdummy(1))
 
     def test_simple_search(self):
-        cat = self._get_catalog()
+        cat = self._make_one()
         brains = cat(title='10')
         self.assertEqual(len(brains), 1)
         self.assertEqual(brains[0].title, '10')
 
     def test_or_search(self):
-        cat = self._get_catalog()
+        cat = self._make_one()
         brains = cat(title='2 OR 3')
         self.assertEqual(len(brains), 2)
 
     def test_scored_search(self):
-        cat = self._get_catalog()
+        cat = self._make_one()
         brains = cat(title='1*')
         self.assertEqual(len(brains), 5)
         self.assertEqual(brains[0].title, '111')
 
     def test_combined_scored_search(self):
-        cat = self._get_catalog()
+        cat = self._make_one()
         brains = cat(title='1*', true=True)
         self.assertEqual(len(brains), 4)
         self.assertEqual(brains[0].title, '111')
