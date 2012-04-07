@@ -4,6 +4,9 @@ Changelog
 3.0 (unreleased)
 ----------------
 
+- As part of each progress handler report, also do an automatic transaction
+  savepoint, to give the ZODB cache a chance to do garbage collection.
+
 - Added a `threshold` argument to the catalog's `addColumn` and `delColumn`
   methods and used it for a progress handler. Also optimized some of their
   internals.

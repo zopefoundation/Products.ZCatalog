@@ -15,6 +15,7 @@ import sys
 import time
 from logging import getLogger
 
+import transaction
 from DateTime.DateTime import DateTime
 from zope.interface import implements
 
@@ -31,9 +32,10 @@ class StdoutHandler(object):
     def __init__(self, steps=100):
         self._steps = steps
 
-    def init(self, ident, max):
+    def init(self, ident, max, savepoint=True):
         self._ident = ident
         self._max = max
+        self.savepoint = savepoint
         self._start = time.time()
         self.fp = sys.stdout
         self.output('Process started (%d objects to go)' % self._max)
@@ -48,6 +50,8 @@ class StdoutHandler(object):
     def report(self, current, *args, **kw):
         if current > 0:
             if current % self._steps == 0:
+                if self.savepoint:
+                    transaction.savepoint(optimistic=True)
                 seconds_so_far = time.time() - self._start
                 seconds_to_go = (seconds_so_far / current *
                                  (self._max - current))
