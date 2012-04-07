@@ -131,52 +131,56 @@ class TestAddDelColumn(unittest.TestCase):
         self.assertTrue('col2' not in catalog.data.values()[0])
 
 
-class TestAddDelIndexes(CatalogBase, unittest.TestCase):
+class TestAddDelIndexes(unittest.TestCase):
 
-    def testAddFieldIndex(self):
+    def _makeOne(self):
+        from Products.ZCatalog.Catalog import Catalog
+        return Catalog()
+
+    def test_add_field_index(self):
+        catalog = self._makeOne()
         idx = FieldIndex('id')
-        self._catalog.addIndex('id', idx)
-        self.assert_(isinstance(self._catalog.indexes['id'],
-                                type(FieldIndex('id'))),
-                     'add field index failed')
+        catalog.addIndex('id', idx)
+        self.assert_(isinstance(catalog.indexes['id'], FieldIndex))
 
-    def testAddTextIndex(self):
-        self._catalog.lexicon = PLexicon('lexicon')
-        idx = ZCTextIndex('id', caller=self._catalog,
+    def test_add_text_index(self):
+        catalog = self._makeOne()
+        catalog.lexicon = PLexicon('lexicon')
+        idx = ZCTextIndex('id', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
-        self._catalog.addIndex('id', idx)
-        i = self._catalog.indexes['id']
-        self.assert_(isinstance(i, ZCTextIndex), 'add text index failed')
+        catalog.addIndex('id', idx)
+        i = catalog.indexes['id']
+        self.assert_(isinstance(i, ZCTextIndex))
 
-    def testAddKeywordIndex(self):
+    def test_add_keyword_index(self):
+        catalog = self._makeOne()
         idx = KeywordIndex('id')
-        self._catalog.addIndex('id', idx)
-        i = self._catalog.indexes['id']
-        self.assert_(isinstance(i, type(KeywordIndex('id'))),
-                     'add kw index failed')
+        catalog.addIndex('id', idx)
+        i = catalog.indexes['id']
+        self.assert_(isinstance(i, KeywordIndex))
 
-    def testDelFieldIndex(self):
+    def test_del_field_index(self):
+        catalog = self._makeOne()
         idx = FieldIndex('id')
-        self._catalog.addIndex('id', idx)
-        self._catalog.delIndex('id')
-        self.assert_('id' not in self._catalog.indexes,
-                     'del index failed')
+        catalog.addIndex('id', idx)
+        catalog.delIndex('id')
+        self.assert_('id' not in catalog.indexes)
 
-    def testDelTextIndex(self):
-        self._catalog.lexicon = PLexicon('lexicon')
-        idx = ZCTextIndex('id', caller=self._catalog,
+    def test_del_text_index(self):
+        catalog = self._makeOne()
+        catalog.lexicon = PLexicon('lexicon')
+        idx = ZCTextIndex('id', caller=catalog,
                           index_factory=OkapiIndex, lexicon_id='lexicon')
-        self._catalog.addIndex('id', idx)
-        self._catalog.delIndex('id')
-        self.assert_('id' not in self._catalog.indexes,
-                     'del index failed')
+        catalog.addIndex('id', idx)
+        catalog.delIndex('id')
+        self.assert_('id' not in catalog.indexes)
 
-    def testDelKeywordIndex(self):
+    def test_del_keyword_index(self):
+        catalog = self._makeOne()
         idx = KeywordIndex('id')
-        self._catalog.addIndex('id', idx)
-        self._catalog.delIndex('id')
-        self.assert_('id' not in self._catalog.indexes,
-                     'del index failed')
+        catalog.addIndex('id', idx)
+        catalog.delIndex('id')
+        self.assert_('id' not in catalog.indexes)
 
 
 class TestCatalog(CatalogBase, unittest.TestCase):
@@ -236,20 +240,20 @@ class TestCatalog(CatalogBase, unittest.TestCase):
 
     def testCatalogObjectUpdateMetadataFalse(self):
         ob = dummy(9999)
-        self._catalog.catalogObject(ob, `9999`)
+        self._catalog.catalogObject(ob, '9999')
         brain = self._catalog(num=9999)[0]
         self.assertEqual(brain.att1, 'att1')
         ob.att1 = 'foobar'
-        self._catalog.catalogObject(ob, `9999`, update_metadata=0)
+        self._catalog.catalogObject(ob, '9999', update_metadata=0)
         brain = self._catalog(num=9999)[0]
         self.assertEqual(brain.att1, 'att1')
-        self._catalog.catalogObject(ob, `9999`)
+        self._catalog.catalogObject(ob, '9999')
         brain = self._catalog(num=9999)[0]
         self.assertEqual(brain.att1, 'foobar')
 
     def uncatalog(self):
         for x in range(0, self.upper):
-            self._catalog.uncatalogObject(`x`)
+            self._catalog.uncatalogObject(repr(x))
 
     def testUncatalogFieldIndex(self):
         self.uncatalog()
@@ -273,14 +277,15 @@ class TestCatalog(CatalogBase, unittest.TestCase):
             self.fail('uncatalogObject raised exception on bad uid')
 
     def testUncatalogTwice(self):
-        self._catalog.uncatalogObject(`0`)
+        self._catalog.uncatalogObject('0')
+
         def _second(self):
-            self._catalog.uncatalogObject(`0`)
+            self._catalog.uncatalogObject('0')
         self.assertRaises(Exception, _second)
 
     def testCatalogLength(self):
         for x in range(0, self.upper):
-            self._catalog.uncatalogObject(`x`)
+            self._catalog.uncatalogObject(repr(x))
         self.assertEqual(len(self._catalog), 0)
 
     def testUniqueValuesForLength(self):
@@ -373,11 +378,12 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(a.actual_result_count, self.upper)
 
     def testBigSortLimit(self):
-        a = self._catalog(att1='att1', sort_on='num', sort_limit=self.upper*3)
+        a = self._catalog(
+            att1='att1', sort_on='num', sort_limit=self.upper * 3)
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, 0)
         a = self._catalog(att1='att1',
-            sort_on='num', sort_limit=self.upper*3, sort_order='reverse')
+            sort_on='num', sort_limit=self.upper * 3, sort_order='reverse')
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, self.upper - 1)
 
@@ -503,12 +509,14 @@ class TestCatalog(CatalogBase, unittest.TestCase):
 
     def test_sort_on_bad_index(self):
         from Products.ZCatalog.Catalog import CatalogError
+
         def badsortindex():
             self._catalog(sort_on='foofaraw')
         self.assertRaises(CatalogError, badsortindex)
 
     def test_sort_on_wrong_index(self):
         from Products.ZCatalog.Catalog import CatalogError
+
         def wrongsortindex():
             self._catalog(sort_on='att2')
         self.assertRaises(CatalogError, wrongsortindex)
@@ -602,12 +610,10 @@ class TestRangeSearch(CatalogBase, unittest.TestCase):
         for i in range(10):
             m = random.randrange(0, 200)
             n = m + 10
-
-            for r in self._catalog.searchResults(
-                number={'query': (m, n), 'range': 'min:max'}):
-
+            query = dict(number={'query': (m, n), 'range': 'min:max'})
+            for r in self._catalog(query):
                 size = r.number
-                self.assert_(m<=size and size<=n,
+                self.assert_(m <= size and size <= n,
                              "%d vs [%d,%d]" % (r.number, m, n))
 
 
