@@ -903,6 +903,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             if len(sort_indexes) > 2:
                 raise CatalogError('Two sort indexes are supported at max, '
                     'got: %s' %repr(name))
+            if len(sort_indexes) == 1:
+                # be nice and keep the old API intact for single sort_on's
+                return sort_indexes[0]
             return sort_indexes
         return None
 
