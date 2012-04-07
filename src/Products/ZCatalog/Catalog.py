@@ -666,8 +666,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # result set in sorted order if merge is true otherwise
         # returns a list of (sortkey, uid, getter_function) tuples
         index2 = None
+        sort_index_length = 1
         if isinstance(sort_index, list):
-            if len(sort_index) > 1:
+            sort_index_length = len(sort_index)
+            if sort_index_length > 1:
                 index2 = sort_index[1]
             sort_index = sort_index[0]
         _self__getitem__ = self.__getitem__
@@ -713,12 +715,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # determine sort_spec
         if isinstance(reverse, list):
             sort_spec = [r and -1 or 1 for r in reverse]
-            # limit to current maximum of two indexes
-            sort_spec = sort_spec[:2]
+            # limit to current maximum of sort indexes
+            sort_spec = sort_spec[:sort_index_length]
             # use first sort order for choosing the algorithm
             reverse = reverse[0]
         else:
-            sort_spec = [reverse and -1 or 1, reverse and -1 or 1]
+            sort_spec = []
+            for i in xrange(sort_index_length):
+                sort_spec.append(reverse and -1 or 1)
 
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
