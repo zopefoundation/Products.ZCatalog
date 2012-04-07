@@ -213,10 +213,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self.updateBrains()
 
         # remove the column value from each record
-        for key, value in self.data.items():
+        _next_index = _index + 1
+        for key, value in self.data.iteritems():
             rec = list(value)
             del rec[_index]
-            self.data[key] = tuple(rec)
+            self.data[key] = value[:_index] + value[_next_index:]
 
     def addIndex(self, name, index_type):
         """Create a new index, given a name and a index_type.
