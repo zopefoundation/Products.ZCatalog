@@ -176,10 +176,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if default_value in (None, ''):
             default_value = MV
 
-        for key, value in self.data.items():
-            rec = list(value)
-            rec.append(default_value)
-            self.data[key] = tuple(rec)
+        for key, value in self.data.iteritems():
+            self.data[key] = value + (default_value, )
 
         self.names = tuple(names)
         self.schema = schema
