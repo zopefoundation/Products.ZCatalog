@@ -740,28 +740,39 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # Try to turn rs into an IISet.
                 rs = IISet(rs)
 
-            for k, intset in sort_index.items():
-                # We have an index that has a set of values for
-                # each sort key, so we intersect with each set and
-                # get a sorted sequence of the intersections.
-                intset = intersection(rs, intset)
-                if intset:
-                    keys = getattr(intset, 'keys', None)
-                    if keys is not None:
-                        # Is this ever true?
-                        intset = keys()
-                    length += len(intset)
-                    # sort on secondary index
-                    if index2_key_map is not None:
+            if sort_index_length == 1:
+                for k, intset in sort_index.items():
+                    # We have an index that has a set of values for
+                    # each sort key, so we intersect with each set and
+                    # get a sorted sequence of the intersections.
+                    intset = intersection(rs, intset)
+                    if intset:
+                        keys = getattr(intset, 'keys', None)
+                        if keys is not None:
+                            # Is this ever true?
+                            intset = keys()
+                        length += len(intset)
+                        append((k, intset, _self__getitem__))
+                result.sort(reverse=reverse)
+            else:
+                for k, intset in sort_index.items():
+                    # We have an index that has a set of values for
+                    # each sort key, so we intersect with each set and
+                    # get a sorted sequence of the intersections.
+                    intset = intersection(rs, intset)
+                    if intset:
+                        keys = getattr(intset, 'keys', None)
+                        if keys is not None:
+                            # Is this ever true?
+                            intset = keys()
+                        length += len(intset)
+                        # sort on secondary index
                         keysets = defaultdict(list)
                         for i in intset:
                             keysets[(k, index2_key_map.get(i))].append(i)
                         for k2, v2 in keysets.items():
                             append((k2, v2, _self__getitem__))
-                    else:
-                        append((k, intset, _self__getitem__))
-
-            result = multisort(result, sort_spec)
+                result = multisort(result, sort_spec)
             sequence, slen = self._limit_sequence(result, length, b_start,
                 b_size, switched_reverse)
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
