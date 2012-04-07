@@ -769,7 +769,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # sort on secondary index
                         keysets = defaultdict(list)
                         for i in intset:
-                            keysets[(k, index2_key_map.get(i))].append(i)
+                            try:
+                                keysets[(k, index2_key_map[i])].append(i)
+                            except KeyError:
+                                pass
                         for k2, v2 in keysets.items():
                             append((k2, v2, _self__getitem__))
                 result = multisort(result, sort_spec)
