@@ -26,15 +26,6 @@ from Products.ZCTextIndex.ZCTextIndex import PLexicon
 from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex
 
 
-def sort(iterable, reverse=False):
-    L = list(iterable)
-    if reverse:
-        L.sort(reverse=True)
-    else:
-        L.sort()
-    return L
-
-
 class zdummy(ExtensionClass.Base):
     def __init__(self, num):
         self.num = num
@@ -783,6 +774,14 @@ class TestMergeResults(unittest.TestCase):
             catalogs.append(cat)
         return catalogs, mergeResults
 
+    def _sort(self, iterable, reverse=False):
+        L = list(iterable)
+        if reverse:
+            L.sort(reverse=True)
+        else:
+            L.sort()
+        return L
+
     def test_no_filter_or_sort(self):
         catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
@@ -790,7 +789,7 @@ class TestMergeResults(unittest.TestCase):
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=False, reverse=False)]
         expected = [r.getRID() for r in chain(*results)]
-        self.assertEqual(sort(merged_rids), sort(expected))
+        self.assertEqual(self._sort(merged_rids), self._sort(expected))
 
     def test_sorted_only(self):
         catalogs, mergeResults = self._make_many()
@@ -799,7 +798,7 @@ class TestMergeResults(unittest.TestCase):
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
-        expected = sort(chain(*results))
+        expected = self._sort(chain(*results))
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
@@ -810,7 +809,7 @@ class TestMergeResults(unittest.TestCase):
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=True)]
-        expected = sort(chain(*results), reverse=True)
+        expected = self._sort(chain(*results), reverse=True)
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
@@ -822,7 +821,7 @@ class TestMergeResults(unittest.TestCase):
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
-        expected = sort(chain(*results))
+        expected = self._sort(chain(*results))
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
@@ -832,7 +831,7 @@ class TestMergeResults(unittest.TestCase):
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
-        expected = sort(chain(*results))
+        expected = self._sort(chain(*results))
         expected = [rid for sortkey, (nscore, score, rid), getitem in expected]
         self.assertEqual(merged_rids, expected)
 
@@ -844,7 +843,7 @@ class TestMergeResults(unittest.TestCase):
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
-        expected = sort(chain(*results))
+        expected = self._sort(chain(*results))
         expected = [rid for sortkey, rid, getitem in expected]
         self.assertEqual(merged_rids, expected)
 
