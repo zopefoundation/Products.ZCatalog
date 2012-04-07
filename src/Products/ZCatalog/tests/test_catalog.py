@@ -170,7 +170,7 @@ class TestCatalog(unittest.TestCase):
         nums[i] = nums[j]
         nums[j] = tmp
 
-    def _make_one(self):
+    def _make_one(self, extra=None):
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
@@ -180,16 +180,16 @@ class TestCatalog(unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         num = FieldIndex('num')
-        ends_in_zero = FieldIndex('ends_in_zero')
 
         catalog.addIndex('col1', col1)
         catalog.addIndex('att1', att1)
         catalog.addIndex('att2', att2)
         catalog.addIndex('att3', att3)
         catalog.addIndex('num', num)
-        catalog.addIndex('ends_in_zero', ends_in_zero)
-        catalog.addColumn('att1')
         catalog.addColumn('num')
+
+        if extra is not None:
+            extra(catalog)
 
         for x in range(0, self.upper):
             catalog.catalogObject(dummy(self.nums[x]), repr(x))
@@ -204,7 +204,9 @@ class TestCatalog(unittest.TestCase):
     # updateMetadata
 
     def testCatalogObjectUpdateMetadataFalse(self):
-        catalog = self._make_one()
+        def extra(catalog):
+            catalog.addColumn('att1')
+        catalog = self._make_one(extra=extra)
         ob = dummy(9999)
         catalog.catalogObject(ob, '9999')
         brain = catalog(num=9999)[0]
@@ -424,7 +426,10 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     def test_search_not_no_value_in_index(self):
-        catalog = self._make_one()
+        def extra(catalog):
+            ends_in_zero = FieldIndex('ends_in_zero')
+            catalog.addIndex('ends_in_zero', ends_in_zero)
+        catalog = self._make_one(extra=extra)
         query = dict(att1='att1', ends_in_zero={'not': False})
         result = catalog(query)
         self.assertEqual(len(result), 10)
