@@ -720,11 +720,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             # limit to current maximum of sort indexes
             sort_spec = sort_spec[:sort_index_length]
             # use first sort order for choosing the algorithm
-            reverse = reverse[0]
+            first_reverse = reverse[0]
         else:
             sort_spec = []
             for i in xrange(sort_index_length):
                 sort_spec.append(reverse and -1 or 1)
+            first_reverse = reverse
 
         if merge and limit is None and (
             rlen > (len(sort_index) * (rlen / 100 + 1))):
@@ -792,7 +793,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
                 return sequence
-        elif reverse:
+        elif first_reverse:
             # Limit / sort results using N-Best algorithm
             # This is faster for large sets then a full sort
             # And uses far less memory
@@ -831,7 +832,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
                     switched_reverse)
                 return sequence
-        elif not reverse:
+        elif not first_reverse:
             # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
             keys = []
             n = 0
