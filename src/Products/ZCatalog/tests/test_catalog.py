@@ -109,11 +109,15 @@ class TestAddDelColumn(unittest.TestCase):
 
     def test_del_remaining(self):
         catalog = self._makeOne()
-        catalog.addColumn('id')
-        catalog.addColumn('id2')
-        catalog.addColumn('id3')
-        catalog.delColumn('id2')
-        self.assert_('id2' not in catalog.schema, 'del column failed')
+        catalog.addColumn('col1')
+        catalog.addColumn('col2')
+        catalog.addColumn('col3')
+        for i in xrange(3):
+            catalog.catalogObject(dummy(3), repr(i))
+        self.assertTrue('col2' in catalog.data.values()[0])
+        catalog.delColumn('col2')
+        self.assert_('col2' not in catalog.schema, 'del column failed')
+        self.assertTrue('col2' not in catalog.data.values()[0])
 
 
 class TestAddDelIndexes(CatalogBase, unittest.TestCase):
