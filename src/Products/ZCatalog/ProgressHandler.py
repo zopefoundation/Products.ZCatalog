@@ -43,7 +43,7 @@ class StdoutHandler(object):
 
     def finish(self):
         self.output('Process terminated. Duration: %0.2f seconds' % \
-                    (time.time() -self._start))
+                    (time.time() - self._start))
 
     def report(self, current, *args, **kw):
         if current > 0:
@@ -57,7 +57,7 @@ class StdoutHandler(object):
                             end.strftime('%Y/%m/%d %H:%M:%Sh')))
 
     def output(self, text):
-        print >>self.fp, '%s: %s' % (self._ident, text)
+        print >> self.fp, '%s: %s' % (self._ident, text)
 
 
 class ZLogHandler(StdoutHandler):
@@ -75,4 +75,5 @@ class FilelogHandler(StdoutHandler):
         self.filename = filename
 
     def output(self, text):
-        open(self.filename, 'a').write(text + '\n')
+        with open(self.filename, 'a') as fd:
+            fd.write(text + '\n')
