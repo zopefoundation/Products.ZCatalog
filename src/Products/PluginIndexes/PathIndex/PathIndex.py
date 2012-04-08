@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Path index.
-"""
 
 from logging import getLogger
 
@@ -54,16 +52,16 @@ class PathIndex(Persistent, SimpleItem):
     """
     implements(IPathIndex, IUniqueValueIndex, ISortIndex)
 
-    meta_type="PathIndex"
+    meta_type = "PathIndex"
     query_options = ('query', 'level', 'operator')
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
     )
 
-    def __init__(self,id,caller=None):
+    def __init__(self, id, caller=None):
         self.id = id
-        self.operators = ('or','and')
+        self.operators = ('or', 'and')
         self.useOperator = 'or'
         self.clear()
 
@@ -85,7 +83,7 @@ class PathIndex(Persistent, SimpleItem):
         """
         return (self.id, 'getPhysicalPath', )
 
-    def index_object(self, docid, obj ,threshold=100):
+    def index_object(self, docid, obj, threshold=100):
         """ See IPluggableIndex.
         """
         f = getattr(obj, self.id, None)
@@ -100,7 +98,8 @@ class PathIndex(Persistent, SimpleItem):
                 path = f
 
             if not isinstance(path, (str, tuple)):
-                raise TypeError('path value must be string or tuple of strings')
+                raise TypeError(
+                    'path value must be string or tuple of strings')
         else:
             try:
                 path = obj.getPhysicalPath()
@@ -135,7 +134,7 @@ class PathIndex(Persistent, SimpleItem):
         comps = self._unindex[docid].split('/')
 
         for level in range(len(comps[1:])):
-            comp = comps[level+1]
+            comp = comps[level + 1]
             try:
                 self._index[comp][level].remove(docid)
                 if not self._index[comp][level]:
@@ -170,8 +169,8 @@ class PathIndex(Persistent, SimpleItem):
 
         res = None
         for k in record.keys:
-            rows = self._search(k,level)
-            res = set_func(res,rows)
+            rows = self._search(k, level)
+            res = set_func(res, rows)
 
         if res:
             return res, (self.id,)
@@ -231,13 +230,15 @@ class PathIndex(Persistent, SimpleItem):
     def insertEntry(self, comp, id, level):
         """ See IPathIndex
         """
-        if not self._index.has_key(comp):
-            self._index[comp] = IOBTree()
+        tree = self._index.get(comp, None)
+        if tree is None:
+            self._index[comp] = tree = IOBTree()
 
-        if not self._index[comp].has_key(level):
-            self._index[comp][level] = IITreeSet()
+        tree2 = tree.get(level, None)
+        if tree2 is None:
+            tree[level] = tree2 = IITreeSet()
 
-        self._index[comp][level].insert(id)
+        tree2.insert(id)
         if level > self._depth:
             self._depth = level
 
@@ -262,16 +263,16 @@ class PathIndex(Persistent, SimpleItem):
             level = default_level
         else:
             level = int(path[1])
-            path  = path[0]
-        
+            path = path[0]
+
         if level < 0:
             # Search at every level, return the union of all results
             return multiunion(
-                [self._search(path, level) 
+                [self._search(path, level)
                  for level in xrange(self._depth + 1)])
 
         comps = filter(None, path.split('/'))
-        
+
         if level + len(comps) - 1 > self._depth:
             # Our search is for a path longer than anything in the index
             return IISet()
@@ -281,15 +282,20 @@ class PathIndex(Persistent, SimpleItem):
 
         results = None
         for i, comp in reversed(list(enumerate(comps))):
-            if not self._index.get(comp, {}).has_key(level+i): return IISet()
-            results = intersection(results, self._index[comp][level+i])
+            tree = self._index.get(comp, None)
+            if tree is None:
+                return IISet()
+            tree2 = tree.get(level + i, None)
+            if tree2 is None:
+                return IISet()
+            results = intersection(results, tree2)
         return results
 
     manage = manage_main = DTMLFile('dtml/managePathIndex', globals())
     manage_main._setName('manage_main')
 
-
 manage_addPathIndexForm = DTMLFile('dtml/addPathIndex', globals())
+
 
 def manage_addPathIndex(self, id, REQUEST=None, RESPONSE=None, URL3=None):
     """Add a path index"""
