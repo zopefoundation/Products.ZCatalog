@@ -732,6 +732,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if merge and (rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
             # so iterate over the sorted index for speed.
+            # TODO: len(sort_index) isn't actually what we want for a keyword
+            # index, as it's only the unique values, not the documents.
             length = 0
             try:
                 intersection(rs, IISet(()))
@@ -769,13 +771,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # sort on secondary index
                         keysets = defaultdict(list)
                         for i in intset:
-                            full_key = [k]
+                            full_key = (k, )
                             for km in second_indexes_key_map:
                                 try:
-                                    full_key.append(km[i])
+                                    full_key += (km[i], )
                                 except KeyError:
                                     pass
-                            keysets[tuple(full_key)].append(i)
+                            keysets[full_key].append(i)
                         for k2, v2 in keysets.items():
                             append((k2, v2, _self__getitem__))
                 result = multisort(result, sort_spec)
@@ -804,14 +806,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             else:
                 for did in rs:
                     try:
-                        full_key = [index_key_map[did]]
+                        full_key = (index_key_map[did], )
                         for km in second_indexes_key_map:
-                            full_key.append(km[did])
+                            full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
                     else:
-                        append((tuple(full_key), did, _self__getitem__))
+                        append((full_key, did, _self__getitem__))
                 if merge:
                     result = multisort(result, sort_spec)
             if merge:
@@ -855,9 +857,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        full_key = [key]
+                        full_key = (key, )
                         for km in second_indexes_key_map:
-                            full_key.append(km[did])
+                            full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -866,8 +868,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             continue
                         i = bisect(keys, key)
                         keys.insert(i, key)
-                        result.insert(i,
-                            (tuple(full_key), did, _self__getitem__))
+                        result.insert(i, (full_key, did, _self__getitem__))
                         if n == limit:
                             del keys[0], result[0]
                         else:
@@ -910,9 +911,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for did in rs:
                     try:
                         key = index_key_map[did]
-                        full_key = [key]
+                        full_key = (key, )
                         for km in second_indexes_key_map:
-                            full_key.append(km[did])
+                            full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
                         pass
@@ -921,8 +922,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             continue
                         i = bisect(keys, key)
                         keys.insert(i, key)
-                        result.insert(i,
-                            (tuple(full_key), did, _self__getitem__))
+                        result.insert(i, (full_key, did, _self__getitem__))
                         if n == limit:
                             del keys[-1], result[-1]
                         else:
