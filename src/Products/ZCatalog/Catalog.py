@@ -681,7 +681,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
         result = []
-        append = result.append
+        r_append = result.append
+        r_insert = result.insert
         if hasattr(rs, 'keys'):
             rs = rs.keys()
         if actual_result_count is None:
@@ -754,7 +755,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             # Is this ever true?
                             intset = keys()
                         length += len(intset)
-                        append((k, intset, _self__getitem__))
+                        r_append((k, intset, _self__getitem__))
                 result.sort(reverse=reverse)
             else:
                 for k, intset in sort_index.items():
@@ -779,7 +780,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                                     pass
                             keysets[full_key].append(i)
                         for k2, v2 in keysets.items():
-                            append((k2, v2, _self__getitem__))
+                            r_append((k2, v2, _self__getitem__))
                 result = multisort(result, sort_spec)
             sequence, slen = self._limit_sequence(result, length, b_start,
                 b_size, switched_reverse)
@@ -800,7 +801,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # we do not merge now and need to intermingle the
                         # results with those of other catalogs while avoiding
                         # the cost of instantiating a LazyMap per result
-                        append((key, did, _self__getitem__))
+                        r_append((key, did, _self__getitem__))
                 if merge:
                     result.sort(reverse=reverse)
             else:
@@ -813,7 +814,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         # This document is not in the sort key index, skip it.
                         pass
                     else:
-                        append((full_key, did, _self__getitem__))
+                        r_append((full_key, did, _self__getitem__))
                 if merge:
                     result = multisort(result, sort_spec)
             if merge:
@@ -832,6 +833,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             # This is faster for large sets then a full sort
             # And uses far less memory
             keys = []
+            k_insert = keys.insert
             n = 0
             worst = None
             if sort_index_length == 1:
@@ -845,8 +847,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         if n >= limit and key <= worst:
                             continue
                         i = bisect(keys, key)
-                        keys.insert(i, key)
-                        result.insert(i, (key, did, _self__getitem__))
+                        k_insert(i, key)
+                        r_insert(i, (key, did, _self__getitem__))
                         if n == limit:
                             del keys[0], result[0]
                         else:
@@ -867,8 +869,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         if n >= limit and key <= worst:
                             continue
                         i = bisect(keys, key)
-                        keys.insert(i, key)
-                        result.insert(i, (full_key, did, _self__getitem__))
+                        k_insert(i, key)
+                        r_insert(i, (full_key, did, _self__getitem__))
                         if n == limit:
                             del keys[0], result[0]
                         else:
@@ -887,6 +889,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         elif not first_reverse:
             # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
             keys = []
+            k_insert = keys.insert
             n = 0
             best = None
             if sort_index_length == 1:
@@ -900,8 +903,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         if n >= limit and key >= best:
                             continue
                         i = bisect(keys, key)
-                        keys.insert(i, key)
-                        result.insert(i, (key, did, _self__getitem__))
+                        k_insert(i, key)
+                        r_insert(i, (key, did, _self__getitem__))
                         if n == limit:
                             del keys[-1], result[-1]
                         else:
@@ -921,8 +924,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         if n >= limit and key >= best:
                             continue
                         i = bisect(keys, key)
-                        keys.insert(i, key)
-                        result.insert(i, (full_key, did, _self__getitem__))
+                        k_insert(i, key)
+                        r_insert(i, (full_key, did, _self__getitem__))
                         if n == limit:
                             del keys[-1], result[-1]
                         else:
