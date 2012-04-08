@@ -564,6 +564,22 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         elif limit and b_size is None:
             b_size = limit
 
+        if sort_index is None:
+            sort_report_name = None
+        else:
+            if isinstance(sort_index, list):
+                sort_name = '-'.join(i.getId() for i in sort_index)
+            else:
+                sort_name = sort_index.getId()
+            if isinstance(reverse, list):
+                reverse_name = '-'.join(
+                    'desc' if r else 'asc' for r in reverse)
+            else:
+                reverse_name = 'desc' if reverse else 'asc'
+            sort_report_name = 'sort_on#' + sort_name + '#' + reverse_name
+            if limit is not None:
+                sort_report_name += '#limit-%s' % limit
+
         if rs is None:
             # None of the indexes found anything to do with the query
             # We take this to mean that the query was empty (an empty filter)
@@ -581,12 +597,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 result = LazyMap(self.instantiate, sequence, slen,
                     actual_result_count=rlen)
             else:
-                cr.start_split('sort_on')
+                cr.start_split(sort_report_name)
                 result = self.sortResults(
                     self.data, sort_index, reverse, limit, merge,
                         actual_result_count=rlen, b_start=b_start,
                         b_size=b_size)
-                cr.stop_split('sort_on', None)
+                cr.stop_split(sort_report_name, None)
         elif rs:
             # We got some results from the indexes.
             # Sort and convert to sequences.
@@ -607,7 +623,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     result = [(score, (1, score, rid), getitem)
                             for rid, score in rs.items()]
                 else:
-                    cr.start_split('sort_on')
+                    cr.start_split('sort_on#score')
 
                     # sort it by score
                     rs = rs.byValue(0)
@@ -634,7 +650,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         b_size)
                     result = LazyMap(getScoredResult, sequence, slen,
                         actual_result_count=rlen)
-                    cr.stop_split('sort_on', None)
+                    cr.stop_split('sort_on#score', None)
 
             elif sort_index is None and not hasattr(rs, 'values'):
                 # no scores
@@ -649,11 +665,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # reached, therefore 'sort-on' does not happen in the
                 # context of a text index query.  This should probably
                 # sort by relevance first, then the 'sort-on' attribute.
-                cr.start_split('sort_on')
+                cr.start_split(sort_report_name)
                 result = self.sortResults(rs, sort_index, reverse, limit,
                     merge, actual_result_count=rlen, b_start=b_start,
                     b_size=b_size)
-                cr.stop_split('sort_on', None)
+                cr.stop_split(sort_report_name, None)
         else:
             # Empty result set
             result = LazyCat([])

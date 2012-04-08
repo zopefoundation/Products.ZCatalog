@@ -4,6 +4,8 @@ Changelog
 3.0 (unreleased)
 ----------------
 
+- Expand query report, to cover details on sort indexes, order and limits.
+
 - As part of each progress handler report, also do an automatic transaction
   savepoint, to give the ZODB cache a chance to do garbage collection.
 

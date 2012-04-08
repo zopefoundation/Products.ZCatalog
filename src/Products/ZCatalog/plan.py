@@ -258,7 +258,7 @@ class CatalogPlan(object):
         self.res.append(IndexMeasurement(
             name=name, duration=dt, limit=limit))
 
-        if name == 'sort_on':
+        if name.startswith('sort_on'):
             # sort_on isn't an index. We only do time reporting on it
             return
 
