@@ -877,14 +877,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             n += 1
                         worst = keys[0]
                 result = multisort(result, sort_spec)
+            sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                switched_reverse)
             if merge:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
                 return sequence
         elif not first_reverse:
             # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
@@ -932,14 +930,12 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             n += 1
                         best = keys[-1]
                 result = multisort(result, sort_spec)
+            sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
+                switched_reverse)
             if merge:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
                 return sequence
 
         return LazyMap(self.__getitem__, result, len(result),
