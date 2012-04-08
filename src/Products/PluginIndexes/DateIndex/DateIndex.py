@@ -138,7 +138,7 @@ class DateIndex(UnIndex, PropertyManager):
                         del self._unindex[documentId]
                     except ConflictError:
                         raise
-                    except:
+                    except Exception:
                         LOG.error("Should not happen: ConvertedDate was there,"
                                   " now it's not, for document with id %s" %
                                   documentId)

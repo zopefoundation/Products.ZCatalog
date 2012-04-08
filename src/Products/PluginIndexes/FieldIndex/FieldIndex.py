@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Simple column indices.
-"""
 
 from App.special_dtml import DTMLFile
 
@@ -19,12 +17,11 @@ from Products.PluginIndexes.common.UnIndex import UnIndex
 
 
 class FieldIndex(UnIndex):
-
     """Index for simple fields.
     """
-    meta_type="FieldIndex"
+    meta_type = "FieldIndex"
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
@@ -35,8 +32,8 @@ class FieldIndex(UnIndex):
     manage_main._setName('manage_main')
     manage_browse = DTMLFile('../dtml/browseIndex', globals())
 
-
 manage_addFieldIndexForm = DTMLFile('dtml/addFieldIndex', globals())
+
 
 def manage_addFieldIndex(self, id, extra=None,
                 REQUEST=None, RESPONSE=None, URL3=None):

@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Base for bi-directional indexes.
-"""
 
 from cgi import escape
 from logging import getLogger
@@ -162,10 +160,8 @@ class UnIndex(SimpleItem):
                 if not indexRow:
                     del self._index[entry]
                     self._length.change(-1)
-
             except ConflictError:
                 raise
-
             except AttributeError:
                 # index row is an int
                 try:
@@ -173,13 +169,12 @@ class UnIndex(SimpleItem):
                 except KeyError:
                     # XXX swallow KeyError because it was probably
                     # removed and then _length AttributeError raised
-                    pass 
+                    pass
                 if isinstance(self.__len__, Length):
                     self._length = self.__len__
-                    del self.__len__ 
+                    del self.__len__
                 self._length.change(-1)
-
-            except:
+            except Exception:
                 LOG.error('%s: unindex_object could not remove '
                           'documentId %s from index %s.  This '
                           'should not happen.' % (self.__class__.__name__,
@@ -244,9 +239,9 @@ class UnIndex(SimpleItem):
                         del self._unindex[documentId]
                     except ConflictError:
                         raise
-                    except:
-                        LOG.error('Should not happen: oldDatum was there, now its not,'
-                                  'for document with id %s' % documentId)
+                    except Exception:
+                        LOG.error('Should not happen: oldDatum was there, '
+                            'now its not, for document: %s' % documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -290,9 +285,9 @@ class UnIndex(SimpleItem):
             del self._unindex[documentId]
         except ConflictError:
             raise
-        except:
+        except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s' % documentId,exc_info=True)
+                      ' with id %s' % documentId, exc_info=True)
 
     def _apply_not(self, not_parm, resultset=None):
         index = self._index

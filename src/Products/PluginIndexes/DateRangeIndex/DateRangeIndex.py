@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Date range index.
-"""
 
 import os
 from datetime import datetime
@@ -157,7 +155,7 @@ class DateRangeIndex(UnIndex):
         self._until_only = IOBTree()
         self._since = IOBTree()
         self._until = IOBTree()
-        self._unindex = IOBTree() # 'datum' will be a tuple of date ints
+        self._unindex = IOBTree()  # 'datum' will be a tuple of date ints
         self._length = Length()
 
     #
@@ -196,7 +194,7 @@ class DateRangeIndex(UnIndex):
         datum = (since, until)
 
         old_datum = self._unindex.get(documentId, None)
-        if datum == old_datum: # No change?  bail out!
+        if datum == old_datum:  # No change?  bail out!
             return 0
 
         if old_datum is not None:
@@ -396,9 +394,9 @@ class DateRangeIndex(UnIndex):
             return value
         if isinstance(value, (str, datetime)):
             dt_obj = DateTime(value)
-            value = dt_obj.millis() / 1000 / 60 # flatten to minutes
+            value = dt_obj.millis() / 1000 / 60  # flatten to minutes
         elif isinstance(value, DateTime):
-            value = value.millis() / 1000 / 60 # flatten to minutes
+            value = value.millis() / 1000 / 60  # flatten to minutes
         if value > MAX32 or value < -MAX32:
             # t_val must be integer fitting in the 32bit range
             raise OverflowError('%s is not within the range of dates allowed'

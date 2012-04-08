@@ -36,9 +36,9 @@ class UUIDIndex(UnIndex):
     For each datum only one documentId can exist.
     """
 
-    meta_type= "UUIDIndex"
+    meta_type = "UUIDIndex"
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
@@ -107,7 +107,6 @@ class UUIDIndex(UnIndex):
         if has_attr is _marker:
             return _marker
         return super(UUIDIndex, self)._get_object_datum(obj, attr)
-
 
 manage_addUUIDIndexForm = DTMLFile('dtml/addUUIDIndex', globals())
 

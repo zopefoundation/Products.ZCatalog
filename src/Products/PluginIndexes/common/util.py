@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""PluginIndexes utils.
-"""
 
 from types import InstanceType
 

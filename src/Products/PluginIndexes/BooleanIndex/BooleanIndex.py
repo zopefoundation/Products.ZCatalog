@@ -207,9 +207,9 @@ class BooleanIndex(UnIndex):
             self._length.change(-1)
         except ConflictError:
             raise
-        except:
+        except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s' % documentId,exc_info=True)
+                      ' with id %s' % documentId, exc_info=True)
 
     def _apply_index(self, request, resultset=None):
         record = parseIndexRequest(request, self.id, self.query_options)

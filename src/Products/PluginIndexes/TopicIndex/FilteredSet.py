@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Filtered set.
-"""
 
 from logging import getLogger
 import sys
@@ -33,19 +31,21 @@ class FilteredSetBase(Persistent):
     implements(IFilteredSet)
 
     def __init__(self, id, expr):
-        self.id   = id
+        self.id = id
         self.expr = expr
         self.clear()
 
     def clear(self):
-        self.ids  = IITreeSet()
+        self.ids = IITreeSet()
 
     def index_object(self, documentId, obj):
-        raise RuntimeError,'index_object not defined'
+        raise RuntimeError('index_object not defined')
 
-    def unindex_object(self,documentId):
-        try: self.ids.remove(documentId)
-        except KeyError: pass
+    def unindex_object(self, documentId):
+        try:
+            self.ids.remove(documentId)
+        except KeyError:
+            pass
 
     def getId(self):
         return self.id
@@ -66,7 +66,7 @@ class FilteredSetBase(Persistent):
         self.expr = expr
 
     def __repr__(self):
-        return '%s: (%s) %s' % (self.id,self.expr,map(None,self.ids))
+        return '%s: (%s) %s' % (self.id, self.expr, map(None, self.ids))
 
     __str__ = __repr__
 
@@ -86,16 +86,14 @@ class PythonFilteredSet(FilteredSetBase):
                     pass
         except ConflictError:
             raise
-        except:
+        except Exception:
             LOG.warn('eval() failed Object: %s, expr: %s' %\
-                     (o.getId(),self.expr), exc_info=sys.exc_info())
+                     (o.getId(), self.expr), exc_info=sys.exc_info())
 
 
 def factory(f_id, f_type, expr):
     """ factory function for FilteredSets """
-
-    if f_type=='PythonFilteredSet':
+    if f_type == 'PythonFilteredSet':
         return PythonFilteredSet(f_id, expr)
-
     else:
-        raise TypeError,'unknown type for FilteredSets: %s' % f_type
+        raise TypeError('unknown type for FilteredSets: %s' % f_type)
