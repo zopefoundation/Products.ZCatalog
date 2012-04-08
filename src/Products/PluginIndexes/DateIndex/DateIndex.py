@@ -82,7 +82,6 @@ Local = LocalTimezone()
 
 
 class DateIndex(UnIndex, PropertyManager):
-
     """Index for dates.
     """
     implements(IDateIndex)
@@ -162,12 +161,11 @@ class DateIndex(UnIndex, PropertyManager):
             return None
 
         keys = map(self._convert, record.keys)
-
         index = self._index
         r = None
         opr = None
 
-        #experimental code for specifing the operator
+        # experimental code for specifying the operator
         operator = record.get('operator', self.useOperator)
         if not operator in self.operators:
             raise RuntimeError("operator not valid: %s" % operator)
@@ -193,7 +191,7 @@ class DateIndex(UnIndex, PropertyManager):
             opr = record.usage.lower().split(':')
             opr, opr_args = opr[0], opr[1:]
 
-        if opr == "range":   # range search
+        if opr == "range":  # range search
             if 'min' in opr_args:
                 lo = min(keys)
             else:
@@ -231,8 +229,6 @@ class DateIndex(UnIndex, PropertyManager):
 
     def _convert(self, value, default=None):
         """Convert Date/Time value to our internal representation"""
-        # XXX: Code patched 20/May/2003 by Kiran Jonnalagadda to
-        # convert dates to UTC first.
         if isinstance(value, DateTime):
             t_tup = value.toZone('UTC').parts()
         elif isinstance(value, (float, int)):

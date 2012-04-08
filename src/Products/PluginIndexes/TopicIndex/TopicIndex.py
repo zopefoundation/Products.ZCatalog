@@ -33,7 +33,6 @@ LOG = getLogger('Zope.TopicIndex')
 
 
 class TopicIndex(Persistent, SimpleItem):
-
     """A TopicIndex maintains a set of FilteredSet objects.
 
     Every FilteredSet object consists of an expression and and IISet with all
@@ -86,12 +85,13 @@ class TopicIndex(Persistent, SimpleItem):
         return "n/a"
 
     def search(self, filter_id):
-        if self.filteredSets.has_key(filter_id):
-            return self.filteredSets[filter_id].getIds()
+        f = self.filteredSets.get(filter_id, None)
+        if f is not None:
+            return f.getIds()
 
     def _apply_index(self, request):
-        """ hook for (Z)Catalog
-            'request' --  mapping type (usually {"topic": "..." }
+        """hook for (Z)Catalog
+        'request' --  mapping type (usually {"topic": "..." }
         """
         record = parseIndexRequest(request, self.id, self.query_options)
         if record.keys is None:
@@ -125,7 +125,7 @@ class TopicIndex(Persistent, SimpleItem):
 
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.
-        if self.filteredSets.has_key(filter_id):
+        if filter_id in self.filteredSets:
             raise KeyError(
                 'A FilteredSet with this name already exists: %s' % filter_id)
         self.filteredSets[filter_id] = factory(filter_id,
@@ -135,17 +135,17 @@ class TopicIndex(Persistent, SimpleItem):
 
     def delFilteredSet(self, filter_id):
         # Delete the FilteredSet object specified by 'filter_id'.
-        if not self.filteredSets.has_key(filter_id):
+        if filter_id not in self.filteredSets:
             raise KeyError(
                 'no such FilteredSet:  %s' % filter_id)
         del self.filteredSets[filter_id]
 
     def clearFilteredSet(self, filter_id):
         # Clear the FilteredSet object specified by 'filter_id'.
-        if not self.filteredSets.has_key(filter_id):
-            raise KeyError(
-                'no such FilteredSet:  %s' % filter_id)
-        self.filteredSets[filter_id].clear()
+        f = self.filteredSets.get(filter_id, None)
+        if f is None:
+            raise KeyError('no such FilteredSet: %s' % filter_id)
+        f.clear()
 
     def manage_addFilteredSet(self, filter_id, typeFilteredSet, expr, URL1, \
             REQUEST=None, RESPONSE=None):

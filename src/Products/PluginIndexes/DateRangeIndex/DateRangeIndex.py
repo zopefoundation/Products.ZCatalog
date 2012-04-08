@@ -39,7 +39,7 @@ from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 
 _dtmldir = os.path.join(package_home(globals()), 'dtml')
-MAX32 = int(2**31 - 1)
+MAX32 = int(2 ** 31 - 1)
 
 
 class RequestCache(dict):
@@ -75,9 +75,9 @@ class DateRangeIndex(UnIndex):
     meta_type = "DateRangeIndex"
     query_options = ('query', )
 
-    manage_options= ({'label': 'Properties',
-                      'action': 'manage_indexProperties'},
-                    )
+    manage_options = ({'label': 'Properties',
+                       'action': 'manage_indexProperties'},
+                     )
 
     since_field = until_field = None
 
@@ -126,8 +126,7 @@ class DateRangeIndex(UnIndex):
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, REQUEST):
-        """
-        """
+        """"""
         self._edit(since_field, until_field, floor_value, ceiling_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
@@ -147,9 +146,7 @@ class DateRangeIndex(UnIndex):
 
     security.declareProtected(manage_zcatalog_indexes, 'clear')
     def clear(self):
-        """
-            Start over fresh.
-        """
+        """Start over fresh."""
         self._always = IITreeSet()
         self._since_only = IOBTree()
         self._until_only = IOBTree()
@@ -158,25 +155,17 @@ class DateRangeIndex(UnIndex):
         self._unindex = IOBTree()  # 'datum' will be a tuple of date ints
         self._length = Length()
 
-    #
-    #   PluggableIndexInterface implementation (XXX inherit assertions?)
-    #
     def getEntryForObject(self, documentId, default=None):
-        """
-            Get all information contained for the specific object
-            identified by 'documentId'.  Return 'default' if not found.
+        """Get all information contained for the specific object
+        identified by 'documentId'.  Return 'default' if not found.
         """
         return self._unindex.get(documentId, default)
 
     def index_object(self, documentId, obj, threshold=None):
-        """
-            Index an object:
-
-             - 'documentId' is the integer ID of the document
-
-             - 'obj' is the object to be indexed
-
-             - ignore threshold
+        """Index an object:
+        - 'documentId' is the integer ID of the document
+        - 'obj' is the object to be indexed
+        - ignore threshold
         """
         if self._since_field is None:
             return 0
@@ -207,8 +196,7 @@ class DateRangeIndex(UnIndex):
         return 1
 
     def unindex_object(self, documentId):
-        """
-            Remove the object corresponding to 'documentId' from the index.
+        """Remove the object corresponding to 'documentId' from the index.
         """
         datum = self._unindex.get(documentId, None)
         if datum is None:
@@ -219,11 +207,10 @@ class DateRangeIndex(UnIndex):
         del self._unindex[documentId]
 
     def uniqueValues(self, name=None, withLengths=0):
-        """
-            Return a list of unique values for 'name'.
+        """Return a list of unique values for 'name'.
 
-            If 'withLengths' is true, return a sequence of tuples, in
-            the form '(value, length)'.
+        If 'withLengths' is true, return a sequence of tuples, in
+        the form '(value, length)'.
         """
         if not name in (self._since_field, self._until_field):
             return []
@@ -264,17 +251,16 @@ class DateRangeIndex(UnIndex):
         return cid
 
     def _apply_index(self, request, resultset=None):
-        """
-            Apply the index to query parameters given in 'request', which
-            should be a mapping object.
+        """Apply the index to query parameters given in 'request', which
+        should be a mapping object.
 
-            If the request does not contain the needed parameters, then
-            return None.
+        If the request does not contain the needed parameters, then
+        return None.
 
-            Otherwise return two objects.  The first object is a ResultSet
-            containing the record numbers of the matching records.  The
-            second object is a tuple containing the names of all data fields
-            used.
+        Otherwise return two objects.  The first object is a ResultSet
+        containing the record numbers of the matching records.  The
+        second object is a tuple containing the names of all data fields
+        used.
         """
         iid = self.id
         record = parseIndexRequest(request, iid, self.query_options)
@@ -416,9 +402,8 @@ manage_addDateRangeIndexForm = DTMLFile('addDateRangeIndex', _dtmldir)
 
 def manage_addDateRangeIndex(self, id, extra=None,
         REQUEST=None, RESPONSE=None, URL3=None):
-    """
-        Add a date range index to the catalog, using the incredibly icky
-        double-indirection-which-hides-NOTHING.
+    """Add a date range index to the catalog, using the incredibly icky
+       double-indirection-which-hides-NOTHING.
     """
     return self.manage_addIndex(id, 'DateRangeIndex', extra,
         REQUEST, RESPONSE, URL3)

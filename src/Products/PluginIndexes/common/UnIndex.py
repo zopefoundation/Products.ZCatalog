@@ -88,8 +88,8 @@ class UnIndex(SimpleItem):
                 return getattr(o, k, default)
 
         self.id = id
-        self.ignore_ex=ignore_ex        # currently unimplimented
-        self.call_methods=call_methods
+        self.ignore_ex = ignore_ex  # currently unimplemented
+        self.call_methods = call_methods
 
         self.operators = ('or', 'and')
         self.useOperator = 'or'
@@ -100,8 +100,8 @@ class UnIndex(SimpleItem):
             self.indexed_attrs = ia.split(',')
         else:
             self.indexed_attrs = list(ia)
-        self.indexed_attrs = [ attr.strip()
-                               for attr in self.indexed_attrs if attr ]
+        self.indexed_attrs = [
+            attr.strip() for attr in self.indexed_attrs if attr]
         if not self.indexed_attrs:
             self.indexed_attrs = [id]
 
@@ -127,13 +127,12 @@ class UnIndex(SimpleItem):
         """
         histogram = {}
         for item in self._index.items():
-            if isinstance(item,int):
-                entry = 1 # "set" length is 1
+            if isinstance(item, int):
+                entry = 1  # "set" length is 1
             else:
                 key, value = item
                 entry = len(value)
             histogram[entry] = histogram.get(entry, 0) + 1
-
         return histogram
 
     def referencedObjects(self):
@@ -146,8 +145,7 @@ class UnIndex(SimpleItem):
         """
         if default is _marker:
             return self._unindex.get(documentId)
-        else:
-            return self._unindex.get(documentId, default)
+        return self._unindex.get(documentId, default)
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId
@@ -212,13 +210,10 @@ class UnIndex(SimpleItem):
 
     def index_object(self, documentId, obj, threshold=None):
         """ wrapper to handle indexing of multiple attributes """
-
         fields = self.getIndexSourceNames()
-
         res = 0
         for attr in fields:
             res += self._index_object(documentId, obj, threshold, attr)
-
         return res > 0
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
@@ -251,7 +246,7 @@ class UnIndex(SimpleItem):
 
         return returnStatus
 
-    def _get_object_datum(self,obj, attr):
+    def _get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
@@ -280,7 +275,6 @@ class UnIndex(SimpleItem):
             return None
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
-
         try:
             del self._unindex[documentId]
         except ConflictError:
@@ -341,8 +335,8 @@ class UnIndex(SimpleItem):
             return None
 
         index = self._index
-        r     = None
-        opr   = None
+        r = None
+        opr = None
 
         # not / exclude parameter
         not_parm = record.get('not', None)
@@ -351,32 +345,36 @@ class UnIndex(SimpleItem):
             record.keys = [k for k in index.keys() if k not in not_parm]
 
         # experimental code for specifing the operator
-        operator = record.get('operator',self.useOperator)
-        if not operator in self.operators :
+        operator = record.get('operator', self.useOperator)
+        if not operator in self.operators:
             raise RuntimeError("operator not valid: %s" % escape(operator))
 
         # Range parameter
-        range_parm = record.get('range',None)
+        range_parm = record.get('range', None)
         if range_parm:
             opr = "range"
             opr_args = []
-            if range_parm.find("min")>-1:
+            if range_parm.find("min") > -1:
                 opr_args.append("min")
-            if range_parm.find("max")>-1:
+            if range_parm.find("max") > -1:
                 opr_args.append("max")
 
-        if record.get('usage',None):
+        if record.get('usage', None):
             # see if any usage params are sent to field
             opr = record.usage.lower().split(':')
-            opr, opr_args=opr[0], opr[1:]
+            opr, opr_args = opr[0], opr[1:]
 
-        if opr=="range":   # range search
-            if 'min' in opr_args: lo = min(record.keys)
-            else: lo = None
-            if 'max' in opr_args: hi = max(record.keys)
-            else: hi = None
+        if opr == "range":  # range search
+            if 'min' in opr_args:
+                lo = min(record.keys)
+            else:
+                lo = None
+            if 'max' in opr_args:
+                hi = max(record.keys)
+            else:
+                hi = None
             if hi:
-                setlist = index.values(lo,hi)
+                setlist = index.values(lo, hi)
             else:
                 setlist = index.values(lo)
 
@@ -413,7 +411,7 @@ class UnIndex(SimpleItem):
                     # the result is bound by the resultset
                     r = intersection(r, s)
 
-        else: # not a range search
+        else:  # not a range search
             # Filter duplicates
             setlist = []
             for k in record.keys:
@@ -471,8 +469,7 @@ class UnIndex(SimpleItem):
         """has unique values for column name"""
         if name == self.id:
             return 1
-        else:
-            return 0
+        return 0
 
     def getIndexSourceNames(self):
         """ return sequence of indexed attributes """
@@ -493,7 +490,7 @@ class UnIndex(SimpleItem):
         if not withLengths:
             return tuple(self._index.keys())
         else:
-            rl=[]
+            rl = []
             for i in self._index.keys():
                 set = self._index[i]
                 if isinstance(set, int):
@@ -504,7 +501,7 @@ class UnIndex(SimpleItem):
             return tuple(rl)
 
     def keyForDocument(self, id):
-        # This method is superceded by documentToKeyMap
+        # This method is superseded by documentToKeyMap
         return self._unindex[id]
 
     def documentToKeyMap(self):
@@ -512,7 +509,7 @@ class UnIndex(SimpleItem):
 
     def items(self):
         items = []
-        for k,v in self._index.items():
+        for k, v in self._index.items():
             if isinstance(v, int):
                 v = IISet((v,))
             items.append((k, v))

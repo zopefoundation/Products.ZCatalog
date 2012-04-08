@@ -40,7 +40,7 @@ class BooleanIndex(UnIndex):
 
     meta_type = "BooleanIndex"
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings',
          'action': 'manage_main'},
         {'label': 'Browse',
