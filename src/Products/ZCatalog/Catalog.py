@@ -783,7 +783,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 b_size, switched_reverse)
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
-            # Iterate over the result set getting sort keys from the index
+            # Iterate over the result set getting sort keys from the index.
+            # If we are interested in at least 25% or more of the result set,
+            # the N-Best algorithm is slower, so we iterate over all.
             if sort_index_length == 1:
                 for did in rs:
                     try:
