@@ -19,20 +19,17 @@ Changelog
   `{'foo': 'a', 'sort_on': ('foo', 'bar'), 'sort_order': ('', 'reverse')}`
   `{'foo': 'a', 'sort_on': ('foo', 'bar', 'baz')}`
 
-- Change some internal wiring and let multiple sort_on values pass through.
-  `Catalog.sortResults` can now be called with a list of search indexes.
-
 - Added support for `not` queries in field and keyword indexes. Both
   restrictions of normal queries and range queries are supported, as well as
   purely exclusive queries. For example:
-  `{'foo': {'query': ['a', 'ab'], 'not': 'a'}}`,
-  `{'foo': {'query': 'a', 'range': 'min', 'not': ['a', 'e', 'f']}}` and
-  `{'foo': {'not': ['a', 'b']}}`. Note that negative filtering on an index
-  still restricts items to those having a value in the index. So with 10
-  documents, 5 of them in the `foo` index with a value of `1`, a query for
-  `not 1` will return no items instead of the 5 items without a value. You
-  need to index a dummy/default value if you want to consider all items for
-  a particular index.
+  `{'foo': {'query': ['a', 'ab'], 'not': 'a'}}`
+  `{'foo': {'query': 'a', 'range': 'min', 'not': ['a', 'e', 'f']}}`
+  `{'foo': {'not': ['a', 'b']}}`.
+  Note that negative filtering on an index still restricts items to those
+  having a value in the index. So with 10 documents, 5 of them in the `foo`
+  index with a value of `1`, a query for `not 1` will return no items instead
+  of the 5 items without a value. You need to index a dummy/default value if
+  you want to consider all items for a particular index.
 
 - Updated deprecation warnings to point to Zope 4 instead of 2.14.
 
