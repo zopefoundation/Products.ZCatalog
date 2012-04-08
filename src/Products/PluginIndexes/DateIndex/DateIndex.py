@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Date index.
-"""
 
 import time
 from logging import getLogger
@@ -44,14 +42,14 @@ _marker = []
 # A class capturing the platform's idea of local time.
 
 ZERO = timedelta(0)
-STDOFFSET = timedelta(seconds = -time.timezone)
+STDOFFSET = timedelta(seconds=-time.timezone)
 if time.daylight:
-    DSTOFFSET = timedelta(seconds = -time.altzone)
+    DSTOFFSET = timedelta(seconds=-time.altzone)
 else:
     DSTOFFSET = STDOFFSET
 
 DSTDIFF = DSTOFFSET - STDOFFSET
-MAX32 = int(2**31 - 1)
+MAX32 = int(2 ** 31 - 1)
 
 
 class LocalTimezone(tzinfo):
@@ -92,30 +90,26 @@ class DateIndex(UnIndex, PropertyManager):
     meta_type = 'DateIndex'
     query_options = ('query', 'range')
 
-    index_naive_time_as_local = True # False means index as UTC
-    _properties=({'id':'index_naive_time_as_local',
-                  'type':'boolean',
-                  'mode':'w'},)
+    index_naive_time_as_local = True  # False means index as UTC
+    _properties = ({'id': 'index_naive_time_as_local',
+                    'type': 'boolean',
+                    'mode': 'w'},)
 
-    manage = manage_main = DTMLFile( 'dtml/manageDateIndex', globals() )
+    manage = manage_main = DTMLFile('dtml/manageDateIndex', globals())
     manage_browse = DTMLFile('../dtml/browseIndex', globals())
 
-    manage_main._setName( 'manage_main' )
-    manage_options = ( { 'label' : 'Settings'
-                       , 'action' : 'manage_main'
-                       },
-                       {'label': 'Browse',
-                        'action': 'manage_browse',
-                       },
+    manage_main._setName('manage_main')
+    manage_options = ({'label': 'Settings', 'action': 'manage_main'},
+                      {'label': 'Browse', 'action': 'manage_browse'},
                      ) + PropertyManager.manage_options
 
-    def clear( self ):
+    def clear(self):
         """ Complete reset """
         self._index = IOBTree()
         self._unindex = IIBTree()
         self._length = Length()
 
-    def index_object( self, documentId, obj, threshold=None ):
+    def index_object(self, documentId, obj, threshold=None):
         """index an object, normalizing the indexed value to an integer
 
            o Normalized value has granularity of one minute.
@@ -126,15 +120,15 @@ class DateIndex(UnIndex, PropertyManager):
         returnStatus = 0
 
         try:
-            date_attr = getattr( obj, self.id )
-            if safe_callable( date_attr ):
+            date_attr = getattr(obj, self.id)
+            if safe_callable(date_attr):
                 date_attr = date_attr()
 
-            ConvertedDate = self._convert( value=date_attr, default=_marker )
+            ConvertedDate = self._convert(value=date_attr, default=_marker)
         except AttributeError:
             ConvertedDate = _marker
 
-        oldConvertedDate = self._unindex.get( documentId, _marker )
+        oldConvertedDate = self._unindex.get(documentId, _marker)
 
         if ConvertedDate != oldConvertedDate:
             if oldConvertedDate is not _marker:
@@ -150,7 +144,7 @@ class DateIndex(UnIndex, PropertyManager):
                                   documentId)
 
             if ConvertedDate is not _marker:
-                self.insertForwardIndexEntry( ConvertedDate, documentId )
+                self.insertForwardIndexEntry(ConvertedDate, documentId)
                 self._unindex[documentId] = ConvertedDate
 
             returnStatus = 1
@@ -167,25 +161,25 @@ class DateIndex(UnIndex, PropertyManager):
         if record.keys is None:
             return None
 
-        keys = map( self._convert, record.keys )
+        keys = map(self._convert, record.keys)
 
         index = self._index
         r = None
         opr = None
 
         #experimental code for specifing the operator
-        operator = record.get( 'operator', self.useOperator )
-        if not operator in self.operators :
+        operator = record.get('operator', self.useOperator)
+        if not operator in self.operators:
             raise RuntimeError("operator not valid: %s" % operator)
 
         # depending on the operator we use intersection or union
-        if operator=="or":
+        if operator == "or":
             set_func = union
         else:
             set_func = intersection
 
         # range parameter
-        range_arg = record.get('range',None)
+        range_arg = record.get('range', None)
         if range_arg:
             opr = "range"
             opr_args = []
@@ -194,12 +188,12 @@ class DateIndex(UnIndex, PropertyManager):
             if range_arg.find("max") > -1:
                 opr_args.append("max")
 
-        if record.get('usage',None):
+        if record.get('usage', None):
             # see if any usage params are sent to field
             opr = record.usage.lower().split(':')
             opr, opr_args = opr[0], opr[1:]
 
-        if opr=="range":   # range search
+        if opr == "range":   # range search
             if 'min' in opr_args:
                 lo = min(keys)
             else:
@@ -211,13 +205,13 @@ class DateIndex(UnIndex, PropertyManager):
                 hi = None
 
             if hi:
-                setlist = index.values(lo,hi)
+                setlist = index.values(lo, hi)
             else:
                 setlist = index.values(lo)
 
             r = multiunion(setlist)
 
-        else: # not a range search
+        else:  # not a range search
             for key in keys:
                 set = index.get(key, None)
                 if set is not None:
@@ -232,20 +226,19 @@ class DateIndex(UnIndex, PropertyManager):
             r = IISet((r,))
 
         if r is None:
-            return IISet(), (self.id,)
-        else:
-            return r, (self.id,)
+            return IISet(), (self.id, )
+        return r, (self.id, )
 
-    def _convert( self, value, default=None ):
+    def _convert(self, value, default=None):
         """Convert Date/Time value to our internal representation"""
         # XXX: Code patched 20/May/2003 by Kiran Jonnalagadda to
         # convert dates to UTC first.
         if isinstance(value, DateTime):
             t_tup = value.toZone('UTC').parts()
         elif isinstance(value, (float, int)):
-            t_tup = time.gmtime( value )
+            t_tup = time.gmtime(value)
         elif isinstance(value, str) and value:
-            t_obj = DateTime( value ).toZone('UTC')
+            t_obj = DateTime(value).toZone('UTC')
             t_tup = t_obj.parts()
         elif isinstance(value, datetime):
             if self.index_naive_time_as_local and value.tzinfo is None:
@@ -263,20 +256,19 @@ class DateIndex(UnIndex, PropertyManager):
         hr = t_tup[3]
         mn = t_tup[4]
 
-        t_val = ( ( ( ( yr * 12 + mo ) * 31 + dy ) * 24 + hr ) * 60 + mn )
+        t_val = ((((yr * 12 + mo) * 31 + dy) * 24 + hr) * 60 + mn)
 
         if t_val > MAX32:
             # t_val must be integer fitting in the 32bit range
             raise OverflowError(
                 "%s is not within the range of indexable dates (index: %s)"
                 % (value, self.id))
-
         return t_val
 
+manage_addDateIndexForm = DTMLFile('dtml/addDateIndex', globals())
 
-manage_addDateIndexForm = DTMLFile( 'dtml/addDateIndex', globals() )
 
-def manage_addDateIndex( self, id, REQUEST=None, RESPONSE=None, URL3=None):
+def manage_addDateIndex(self, id, REQUEST=None, RESPONSE=None, URL3=None):
     """Add a Date index"""
     return self.manage_addIndex(id, 'DateIndex', extra=None, \
                     REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
