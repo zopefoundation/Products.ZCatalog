@@ -538,7 +538,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 cr.start_split(intersect_id)
                 # weightedIntersection preserves the values from any mappings
                 # we get, as some indexes don't return simple sets
-                if hasattr(rs, 'items'):
+                if hasattr(rs, 'items') or hasattr(r, 'items'):
                     _, rs = weightedIntersection(rs, r)
                 else:
                     rs = intersection(rs, r)
