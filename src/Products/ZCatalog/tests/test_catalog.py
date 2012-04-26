@@ -736,6 +736,31 @@ class TestScoring(CatalogBase, unittest.TestCase):
         self.assertEqual(len(brains), 4)
         self.assertEqual(brains[0].title, '111')
 
+    def test_combined_scored_search_planned(self):
+        from ..plan import Benchmark
+        from ..plan import PriorityMap
+        cat = self._get_catalog()
+        query = dict(title='1*', true=True)
+        plan = cat.getCatalogPlan()
+        plan_key = plan.make_key(query)
+        catalog_id = plan.get_id()
+        # plan with title first
+        PriorityMap.set_entry(catalog_id, plan_key, dict(
+            title=Benchmark(1, 1, False),
+            true=Benchmark(2, 1, False),
+            ))
+        brains = cat(query)
+        self.assertEqual(len(brains), 4)
+        self.assertEqual(brains[0].title, '111')
+        # plan with true first
+        PriorityMap.set_entry(catalog_id, plan_key, dict(
+            title=Benchmark(2, 1, False),
+            true=Benchmark(1, 1, False),
+            ))
+        brains = cat(query)
+        self.assertEqual(len(brains), 4)
+        self.assertEqual(brains[0].title, '111')
+
 
 def test_suite():
     suite = unittest.TestSuite()

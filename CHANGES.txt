@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.13.23 (2012-04-26)
+--------------------
+
+- Fixed another issue with preserving score values, when a custom index was
+  queried first which was neither ILimitedResultIndex aware nor return scores,
+  and a later index was of the default ZCTextIndex type.
+
 2.13.22 (2011-11-17)
 --------------------
 
