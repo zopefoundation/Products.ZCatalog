@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.0a2 (unreleased)
+3.0a2 (2012-04-26)
 ------------------
 
 - Fixed another issue with preserving score values, when a custom index was
