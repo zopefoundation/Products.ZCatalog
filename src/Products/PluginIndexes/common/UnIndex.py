@@ -295,6 +295,9 @@ class UnIndex(SimpleItem):
             setlist.append(s)
         return multiunion(setlist)
 
+    def _convert(self, value, default=None):
+        return value
+
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in the request arg.
 
@@ -341,8 +344,13 @@ class UnIndex(SimpleItem):
         # not / exclude parameter
         not_parm = record.get('not', None)
         if not record.keys and not_parm:
+            # convert into indexed format
+            not_parm = map(self._convert, not_parm)
             # we have only a 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
+        else:
+            # convert query arguments into indexed format
+            record.keys = map(self._convert, record.keys)
 
         # experimental code for specifing the operator
         operator = record.get('operator', self.useOperator)

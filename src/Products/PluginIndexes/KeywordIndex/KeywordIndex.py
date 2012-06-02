@@ -31,13 +31,12 @@ class KeywordIndex(UnIndex):
     This should have an _apply_index that returns a relevance score
     """
     meta_type = "KeywordIndex"
+    query_options = ('query', 'range', 'not', 'operator')
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
-
-    query_options = ("query", "operator", "range", "not")
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
         """ index an object 'obj' with integer id 'i'

@@ -20,13 +20,12 @@ class FieldIndex(UnIndex):
     """Index for simple fields.
     """
     meta_type = "FieldIndex"
+    query_options = ('query', 'range', 'not')
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
-
-    query_options = ["query", "range", "not"]
 
     manage = manage_main = DTMLFile('dtml/manageFieldIndex', globals())
     manage_main._setName('manage_main')

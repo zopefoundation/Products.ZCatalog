@@ -4,6 +4,8 @@ Changelog
 3.0a3 (unreleased)
 ------------------
 
+- Unify Unindex and DateIndex search logic (`_apply_index`) adding `not`
+  support to DateIndexes.
 
 3.0a2 (2012-04-26)
 ------------------

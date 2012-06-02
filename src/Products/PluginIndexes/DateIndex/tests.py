@@ -10,8 +10,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""DateIndex unit tests.
-"""
 
 import unittest
 
@@ -205,7 +203,7 @@ class DI_Tests(unittest.TestCase):
                                    'range': 'min:max'}},
                          [])
 
-    def test_retrieval( self ):
+    def test_retrieval(self):
         from DateTime import DateTime
         index = self._makeOne()
         self._populateIndex(index)
@@ -247,6 +245,18 @@ class DI_Tests(unittest.TestCase):
                          {'date': 1072742620.0}, [values[6]])
         self._checkApply(index,
                          {'date': 1072742900}, [values[7]])
+
+
+    def test_not(self):
+        from DateTime import DateTime
+        index = self._makeOne()
+        self._populateIndex(index)
+        values = self._getValues()
+        # all but the None value
+        self._checkApply(index, {'date': {'not': 123}}, values[1:])
+        self._checkApply(index, {'date': {'not': DateTime(0)}}, values[2:])
+        self._checkApply(index, {'date': {'not':
+            [DateTime(0), DateTime('2002-05-08 15:16:17')]}}, values[3:])
 
     def test_naive_convert_to_utc(self):
         index = self._makeOne()
