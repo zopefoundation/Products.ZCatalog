@@ -4,6 +4,9 @@ Changelog
 3.0a3 (unreleased)
 ------------------
 
+- LP #727981: Fix DateIndex ZMI browsing for dates in the first month of a
+  year.
+
 - Unify Unindex and DateIndex search logic (`_apply_index`) adding `not`
   support to DateIndexes.
 
