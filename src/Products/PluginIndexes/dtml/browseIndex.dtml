@@ -41,11 +41,11 @@ The index "&dtml-getId;" contains <dtml-var items fmt=collection-length thousand
             &dtml-sequence-key; 
           </dtml-if>
         </td>
-        <td>   
+        <td>
           <ul>
             <dtml-let v="_['sequence-item']">
               <dtml-if "isinstance(v, int)">
-                <li><a href="<dtml-var "getpath(v)">"<dtml-var "getpath(v)"></a></li>    
+                <li><a href="<dtml-var "getpath(v)">"<dtml-var "getpath(v)"></a></li>
               <dtml-else>
                 <dtml-in "v.keys()">
                   <li> <a href="<dtml-var "getpath(_['sequence-item'])">"><dtml-var "getpath(_['sequence-item'])"></a></li>
