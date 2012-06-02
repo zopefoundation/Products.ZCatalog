@@ -319,7 +319,7 @@ class DateRangeIndex(UnIndex):
             until = multiunion(self._until.values(None, term - 1))
             since = multiunion(self._since.values(term + 1))
 
-            result = multiunion([until_only, since_only, until, since])
+            result = multiunion([since, since_only, until_only, until])
             if REQUEST is not None and catalog is not None:
                 cache[cachekey] = result
 
