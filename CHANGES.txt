@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.0a3 (unreleased)
+3.0b1 (2012-07-19)
 ------------------
 
 - LP #727981: Fix DateIndex ZMI browsing for dates in the first month of a
