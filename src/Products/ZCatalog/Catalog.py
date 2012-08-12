@@ -115,16 +115,22 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if isinstance(index, tuple):
             # then it contains a score...
             normalized_score, score, key = index
-            r = self._v_result_class(self.data[key]).__of__(aq_parent(self))
+        else:
+            # otherwise no score, set all scores to 1
+            normalized_score, score, key = (1, 1, index)
+
+        data = self.data[key]
+        klass = self._v_result_class
+        schema_len = len(klass.__record_schema__)
+        if schema_len == len(data) + 3:
+            # if we have complete data, create in a single pass
+            r = klass(tuple(data) + (key, score, normalized_score))
+        else:
+            r = klass(data)
             r.data_record_id_ = key
             r.data_record_score_ = score
             r.data_record_normalized_score_ = normalized_score
-        else:
-            # otherwise no score, set all scores to 1
-            r = self._v_result_class(self.data[index]).__of__(aq_parent(self))
-            r.data_record_id_ = index
-            r.data_record_score_ = 1
-            r.data_record_normalized_score_ = 1
+        r = r.__of__(aq_parent(self))
         return r
 
     def __setstate__(self, state):
@@ -638,12 +644,18 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         passed into self.useBrains.
                         """
                         score, key = item
-                        r = self._v_result_class(
-                            self.data[key]).__of__(aq_parent(self))
-                        r.data_record_id_ = key
-                        r.data_record_score_ = score
-                        r.data_record_normalized_score_ = \
-                            int(100.0 * score / max)
+                        data = self.data[key]
+                        klass = self._v_result_class
+                        schema_len = len(klass.__record_schema__)
+                        norm_score = int(100.0 * score / max)
+                        if schema_len == len(data) + 3:
+                            r = klass(tuple(data) + (key, score, norm_score))
+                        else:
+                            r = klass(data)
+                            r.data_record_id_ = key
+                            r.data_record_score_ = score
+                            r.data_record_normalized_score_ = norm_score
+                        r = r.__of__(aq_parent(self))
                         return r
 
                     sequence, slen = self._limit_sequence(rs, rlen, b_start,

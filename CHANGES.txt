@@ -4,6 +4,8 @@ Changelog
 3.0b2 (unreleased)
 ------------------
 
+- Optimize brain instantiation, by creating underlying record items in a
+  single step, instead of creation and three update calls.
 
 3.0b1 (2012-07-19)
 ------------------
