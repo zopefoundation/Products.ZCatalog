@@ -181,12 +181,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if default_value in (None, ''):
             default_value = MV
 
-        pghandler = ZLogHandler(threshold)
-        pghandler.init('Adding %s column' % name, len(self))
-        for i, (key, value) in enumerate(self.data.iteritems()):
-            pghandler.report(i)
-            self.data[key] = value + (default_value, )
-        pghandler.finish()
+        if len(self):
+            pghandler = ZLogHandler(threshold)
+            pghandler.init('Adding %s column' % name, len(self))
+            for i, (key, value) in enumerate(self.data.iteritems()):
+                pghandler.report(i)
+                self.data[key] = value + (default_value, )
+            pghandler.finish()
 
         self.names = tuple(names)
         self.schema = schema
@@ -218,13 +219,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self.updateBrains()
 
         # remove the column value from each record
-        _next_index = _index + 1
-        pghandler = ZLogHandler(threshold)
-        pghandler.init('Deleting %s column' % name, len(self))
-        for i, (key, value) in enumerate(self.data.iteritems()):
-            pghandler.report(i)
-            self.data[key] = value[:_index] + value[_next_index:]
-        pghandler.finish()
+        if len(self):
+            _next_index = _index + 1
+            pghandler = ZLogHandler(threshold)
+            pghandler.init('Deleting %s column' % name, len(self))
+            for i, (key, value) in enumerate(self.data.iteritems()):
+                pghandler.report(i)
+                self.data[key] = value[:_index] + value[_next_index:]
+            pghandler.finish()
 
     def addIndex(self, name, index_type):
         """Create a new index, given a name and a index_type.
