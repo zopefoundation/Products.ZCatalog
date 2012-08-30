@@ -4,6 +4,8 @@ Changelog
 3.0b2 (unreleased)
 ------------------
 
+- Forward compatibility for Zope 4 removal of RequestContainer.
+
 - Optimize brain instantiation, by creating underlying record items in a
   single step, instead of creation and three update calls.
 

@@ -30,7 +30,13 @@ from Record import Record
 if _GLOBALREQUEST_INSTALLED:
     from zope.globalrequest import getRequest
 from zope.interface import implements
-from ZPublisher.BaseRequest import RequestContainer
+try:
+    from ZPublisher.BaseRequest import RequestContainer
+except ImportError:
+    # BBB: Zope 4 removes RequestContainer
+    _REQUESTCONTAINER_EXISTS = False
+else:
+    _REQUESTCONTAINER_EXISTS = True
 
 
 class AbstractCatalogBrain(Record, Implicit):
@@ -64,7 +70,7 @@ class AbstractCatalogBrain(Record, Implicit):
         """
         parent = aq_parent(self)
         if (aq_get(parent, 'REQUEST', None) is None
-            and _GLOBALREQUEST_INSTALLED):
+            and _GLOBALREQUEST_INSTALLED and _REQUESTCONTAINER_EXISTS):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root
@@ -89,7 +95,7 @@ class AbstractCatalogBrain(Record, Implicit):
             return None
         parent = aq_parent(self)
         if (aq_get(parent, 'REQUEST', None) is None
-            and _GLOBALREQUEST_INSTALLED):
+            and _GLOBALREQUEST_INSTALLED and _REQUESTCONTAINER_EXISTS):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root
