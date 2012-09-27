@@ -4,6 +4,7 @@ Changelog
 2.13.24 (unreleased)
 --------------------
 
+- Strip white space from name when adding a column or index.
 
 2.13.23 (2012-04-26)
 --------------------

@@ -94,6 +94,13 @@ class TestAddDelColumn(CatalogBase, unittest.TestCase):
         from Products.ZCatalog.Catalog import CatalogError
         self.assertRaises(CatalogError, self._catalog.addColumn, '_id')
 
+    def testAddWithSpace(self):
+        self._catalog.addColumn(' space ')
+        self.assertEqual(' space ' not in self._catalog.schema, True,
+                         'space not stripped in add column')
+        self.assertEqual('space' in self._catalog.schema, True,
+                         'stripping space in add column failed')
+
     def testDel(self):
         self._catalog.addColumn('id')
         self._catalog.delColumn('id')
@@ -124,6 +131,17 @@ class TestAddDelIndexes(CatalogBase, unittest.TestCase):
         i = self._catalog.indexes['id']
         self.assert_(isinstance(i, type(KeywordIndex('id'))),
                      'add kw index failed')
+
+    def testAddWithSpace(self):
+        idx = KeywordIndex(' space ')
+        self._catalog.addIndex(' space ', idx)
+        self.assertEqual(' space ' not in self._catalog.indexes, True,
+                         'space not stripped in add index')
+        self.assertEqual('space' in self._catalog.indexes, True,
+                         'stripping space in add index failed')
+        i = self._catalog.indexes['space']
+        # Note: i.id still has spaces in it.
+        self.assert_(isinstance(i, KeywordIndex))
 
     def testDelFieldIndex(self):
         idx = FieldIndex('id')
