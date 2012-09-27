@@ -165,6 +165,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         schema = self.schema
         names = list(self.names)
 
+        if name != name.strip():
+            # Someone could have mistakenly added a space at the end
+            # of the input field.
+            LOG.warn("stripped space from new column %r -> %r", name,
+                     name.strip())
+            name = name.strip()
+
         if name in schema:
             raise CatalogError('The column %s already exists' % name)
 
@@ -246,6 +253,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         if not name:
             raise CatalogError('Name of index is empty')
+
+        if name != name.strip():
+            # Someone could have mistakenly added a space at the end
+            # of the input field.
+            LOG.warn("stripped space from new index %r -> %r", name,
+                     name.strip())
+            name = name.strip()
 
         indexes = self.indexes
 

@@ -4,6 +4,8 @@ Changelog
 3.0b2 (unreleased)
 ------------------
 
+- Strip white space from name when adding a column or index.
+
 - Forward compatibility for Zope 4 removal of RequestContainer.
 
 - Optimize brain instantiation, by creating underlying record items in a

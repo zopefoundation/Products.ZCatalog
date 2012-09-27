@@ -77,6 +77,14 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._make_one()
         self.assertRaises(CatalogError, catalog.addColumn, '_id')
 
+    def test_add_with_space(self):
+        catalog = self._make_one()
+        catalog.addColumn(' space ')
+        self.assertEqual(' space ' not in catalog.schema, True,
+                         'space not stripped in add column')
+        self.assertEqual('space' in catalog.schema, True,
+                         'stripping space in add column failed')
+
     def test_add_brains(self):
         catalog = self._make_one()
         catalog.addColumn('col1')
@@ -133,6 +141,18 @@ class TestAddDelIndexes(unittest.TestCase):
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
+        self.assert_(isinstance(i, KeywordIndex))
+
+    def test_add_with_space(self):
+        catalog = self._make_one()
+        idx = KeywordIndex(' space ')
+        catalog.addIndex(' space ', idx)
+        self.assertEqual(' space ' not in catalog.indexes, True,
+                         'space not stripped in add index')
+        self.assertEqual('space' in catalog.indexes, True,
+                         'stripping space in add index failed')
+        i = catalog.indexes['space']
+        # Note: i.id still has spaces in it.
         self.assert_(isinstance(i, KeywordIndex))
 
     def test_del_field_index(self):
