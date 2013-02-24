@@ -1,8 +1,8 @@
 Changelog
 =========
 
-3.0b2 (unreleased)
-------------------
+3.0 (2013-02-24)
+----------------
 
 - Strip white space from name when adding a column or index.
 
