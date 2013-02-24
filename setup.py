@@ -27,6 +27,18 @@ setup(
     packages=find_packages('src'),
     namespace_packages=['Products'],
     package_dir={'': 'src'},
+    classifiers=[
+        "Development Status :: 6 - Mature",
+        "Environment :: Web Environment",
+        "Framework :: Zope2",
+        "License :: OSI Approved :: Zope Public License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2 :: Only",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: Implementation :: CPython",
+    ],
     install_requires=[
         'setuptools',
         'AccessControl',
