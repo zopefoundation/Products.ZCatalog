@@ -14,19 +14,20 @@
 
 from setuptools import setup, find_packages
 
-setup(name='Products.ZCatalog',
-      version='3.0b2',
-      url='http://pypi.python.org/pypi/Products.ZCatalog',
-      license='ZPL 2.1',
-      description="Zope 2's indexing and search solution.",
-      author='Zope Foundation and Contributors',
-      author_email='zope-dev@zope.org',
-      long_description=open('README.txt').read() + '\n' +
-                       open('CHANGES.txt').read(),
-      packages=find_packages('src'),
-      namespace_packages=['Products'],
-      package_dir={'': 'src'},
-      install_requires=[
+setup(
+    name='Products.ZCatalog',
+    version='3.0b2',
+    url='http://pypi.python.org/pypi/Products.ZCatalog',
+    license='ZPL 2.1',
+    description="Zope 2's indexing and search solution.",
+    author='Zope Foundation and Contributors',
+    author_email='zope-dev@zope.org',
+    long_description=open('README.txt').read() + '\n' +
+                     open('CHANGES.txt').read(),
+    packages=find_packages('src'),
+    namespace_packages=['Products'],
+    package_dir={'': 'src'},
+    install_requires=[
         'setuptools',
         'AccessControl',
         'Acquisition',
@@ -45,7 +46,7 @@ setup(name='Products.ZCatalog',
         'zope.interface',
         'zope.schema',
         'zope.testing',
-      ],
-      include_package_data=True,
-      zip_safe=False,
-      )
+    ],
+    include_package_data=True,
+    zip_safe=False,
+)
