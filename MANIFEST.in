@@ -1,8 +1,6 @@
 include *.txt
 
-recursive-include src/Products *
+recursive-include src *
 
-global-exclude *.dll
 global-exclude *.pyc
 global-exclude *.pyo
-global-exclude *.so
