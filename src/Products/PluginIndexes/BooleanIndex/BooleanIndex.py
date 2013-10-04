@@ -118,12 +118,12 @@ class BooleanIndex(UnIndex):
         if bool(entry) is bool(self._index_value):
             # is the index (after adding the current entry) larger than 60%
             # of the total length? than switch the indexed value
+            index_length.change(1)
+            self._index.insert(documentId)
             if (index_length.value + 1) >= ((length.value + 1) * 0.6):
                 self._invert_index()
                 return
 
-            self._index.insert(documentId)
-            index_length.change(1)
 
     def removeForwardIndexEntry(self, entry, documentId, check=True):
         """Take the entry provided and remove any reference to documentId
