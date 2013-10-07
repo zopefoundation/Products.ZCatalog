@@ -4,9 +4,8 @@ Changelog
 2.13.25 (unreleased)
 --------------------
 
-- BooleanIndex was wrong when index inversion occured
-  when an existing content was reindexed with an opposite value.
-  Fixes LP #1236354.
+- Fix BooleanIndex when index inversion occurs as a result of reindexing
+  and existing document with the opposite value. Fixes LP #1236354.
 
 2.13.24 (2013-10-15)
 --------------------
