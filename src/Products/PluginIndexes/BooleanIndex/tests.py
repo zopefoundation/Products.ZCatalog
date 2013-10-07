@@ -216,3 +216,21 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertEqual(index._index_value, 0)
         self.assertEqual(index._index_length.value, 19)
         self.assertEqual(list(index._index), range(80, 99))
+
+    def test_reindexation_when_index_reversed(self):
+        index = self._makeOne()
+        obj1 = Dummy(1, False)
+        index._index_object(obj1.id, obj1, attr='truth')
+        obj2 = Dummy(2, False)
+        self.assertTrue(index._index_value)
+        index._index_object(obj2.id, obj2, attr='truth')
+        obj3 = Dummy(3, True)
+        index._index_object(obj3.id, obj3, attr='truth')
+        obj4 = Dummy(4, True)
+        index._index_object(obj4.id, obj4, attr='truth')
+        obj1.truth = True
+        index._index_object(obj1.id, obj1, attr='truth')
+        self.assertFalse(index._index_value)
+
+        res = index._apply_index({'truth': True})[0]
+        self.assertEqual(list(res), [1, 3, 4])
