@@ -4,6 +4,9 @@ Changelog
 3.0.1 (unreleased)
 ------------------
 
+- BooleanIndex was wrong when index inversion occured
+  when an existing content was reindexed with an opposite value.
+  Fixes LP #1236354.
 
 3.0 (2013-02-24)
 ----------------
