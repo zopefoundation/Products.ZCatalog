@@ -105,24 +105,27 @@ class BooleanIndex(UnIndex):
         """
         # when we get the first entry, decide to index the opposite of what
         # we got, as indexing zero items is fewer than one
-        length = self._length
-        index_length = self._index_length
         # BBB inline migration
-        if index_length is None:
+        if self._index_length is None:
             self._inline_migration()
-            length = self._length
-            index_length = self._index_length
-        if length.value == 0:
+
+        if self._length.value == 0:
             self._index_value = int(not bool(entry))
 
+        # if the added entry value is index value, insert it into index
         if bool(entry) is bool(self._index_value):
-            # is the index (after adding the current entry) larger than 60%
-            # of the total length? than switch the indexed value
-            index_length.change(1)
+            self._index_length.change(1)
             self._index.insert(documentId)
-            if (index_length.value + 1) >= ((length.value + 1) * 0.6):
+
+        # insert value into global unindex (before computing index invert)
+        self._unindex[documentId] = entry
+        self._length.change(1)
+
+        # is the index (after adding the current entry) larger than 60%
+        # of the total length? than switch the indexed value
+        if bool(entry) is bool(self._index_value):
+            if (self._index_length.value) >= ((self._length.value) * 0.6):
                 self._invert_index()
-                return
 
 
     def removeForwardIndexEntry(self, entry, documentId, check=True):
@@ -185,8 +188,6 @@ class BooleanIndex(UnIndex):
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
-                self._unindex[documentId] = datum
-                self._length.change(1)
 
             returnStatus = 1
 
