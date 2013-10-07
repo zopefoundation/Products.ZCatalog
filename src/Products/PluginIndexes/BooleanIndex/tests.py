@@ -233,6 +233,7 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertFalse(index._index_value)
 
         res = index._apply_index({'truth': True})[0]
+        self.assertEqual(list(index._index), [2])
         self.assertEqual(list(res), [1, 3, 4])
 
 
