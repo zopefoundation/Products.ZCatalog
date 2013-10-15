@@ -774,11 +774,15 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 sort_spec.append(reverse and -1 or 1)
             first_reverse = reverse
 
-        if merge and (rlen > (len(sort_index) * (rlen / 100 + 1))):
+        if merge and limit is None and (
+           rlen > (len(sort_index) * (rlen / 100 + 1))):
             # The result set is much larger than the sorted index,
             # so iterate over the sorted index for speed.
             # TODO: len(sort_index) isn't actually what we want for a keyword
             # index, as it's only the unique values, not the documents.
+            # Don't use this case while using limit, as we return results of
+            # non-flattened intsets, and would have to merge/unflattened those
+            # before limiting.
             length = 0
             try:
                 intersection(rs, IISet(()))
