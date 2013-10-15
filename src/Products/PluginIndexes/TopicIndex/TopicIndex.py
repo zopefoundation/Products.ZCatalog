@@ -186,6 +186,9 @@ class TopicIndex(Persistent, SimpleItem):
         """ return names of indexed attributes """
         return ('n/a',)
 
+    def getIndexQueryNames(self):
+        return (self.id,)
+
     def manage_clearFilteredSet(self, filter_ids=[], URL1=None, \
             REQUEST=None,RESPONSE=None):
         """  clear a list of FilteredSets"""
