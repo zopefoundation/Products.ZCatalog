@@ -688,8 +688,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         _intersection = intersection
         _self__getitem__ = self.__getitem__
         index_key_map = sort_index.documentToKeyMap()
-        _None = None
-        _keyerror = KeyError
         result = []
         append = result.append
         if hasattr(rs, 'keys'):
@@ -744,8 +742,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # get a sorted sequence of the intersections.
                 intset = _intersection(rs, intset)
                 if intset:
-                    keys = getattr(intset, 'keys', _None)
-                    if keys is not _None:
+                    keys = getattr(intset, 'keys', None)
+                    if keys is not None:
                         # Is this ever true?
                         intset = keys()
                     length += len(intset)
@@ -764,7 +762,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
@@ -798,7 +796,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
@@ -830,7 +828,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             for did in rs:
                 try:
                     key = index_key_map[did]
-                except _keyerror:
+                except KeyError:
                     # This document is not in the sort key index, skip it.
                     pass
                 else:
