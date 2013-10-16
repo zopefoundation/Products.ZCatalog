@@ -843,7 +843,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         key = index_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         # The reference back to __getitem__ is used in case
                         # we do not merge now and need to intermingle the
@@ -860,7 +860,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         r_append((full_key, did, _self__getitem__))
                 if merge:
@@ -890,7 +890,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         key = index_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         if n >= limit and key <= worst:
                             continue
@@ -912,7 +912,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         if n >= limit and key <= worst:
                             continue
@@ -944,7 +944,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         key = index_key_map[did]
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         if n >= limit and key >= best:
                             continue
@@ -965,7 +965,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             full_key += (km[did], )
                     except KeyError:
                         # This document is not in the sort key index, skip it.
-                        pass
+                        actual_result_count -= 1
                     else:
                         if n >= limit and key >= best:
                             continue

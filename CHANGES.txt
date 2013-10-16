@@ -4,6 +4,9 @@ Changelog
 3.0.2 (unreleased)
 ------------------
 
+- Adjust `actual_result_count` for sorted queries where the sort index doesn't
+  contain all the documents. Fixes LP #1237141.
+
 - Restore safeguard for using the `iterate over sort index` case and avoid
   it while using limiting at the same time. Fixes LP #1236790.
 
