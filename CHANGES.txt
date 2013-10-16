@@ -4,6 +4,8 @@ Changelog
 2.13.26 (unreleased)
 --------------------
 
+- Adjust `actual_result_count` for sorted queries where the sort index doesn't
+  contain all the documents. Fixes LP #1237141.
 
 2.13.25 (2013-10-15)
 --------------------

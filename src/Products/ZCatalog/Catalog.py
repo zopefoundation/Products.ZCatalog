@@ -764,7 +764,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     key = index_key_map[did]
                 except KeyError:
                     # This document is not in the sort key index, skip it.
-                    pass
+                    actual_result_count -= 1
                 else:
                     append((key, did, _self__getitem__))
                     # The reference back to __getitem__ is used in case
@@ -798,7 +798,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     key = index_key_map[did]
                 except KeyError:
                     # This document is not in the sort key index, skip it.
-                    pass
+                    actual_result_count -= 1
                 else:
                     if n >= limit and key <= worst:
                         continue
@@ -830,7 +830,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     key = index_key_map[did]
                 except KeyError:
                     # This document is not in the sort key index, skip it.
-                    pass
+                    actual_result_count -= 1
                 else:
                     if n >= limit and key >= best:
                         continue

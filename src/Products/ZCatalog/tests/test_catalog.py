@@ -433,6 +433,24 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], [])
 
+    def testSortedResultLengthWithMissingDocs(self):
+        # remove the `0` document from the num index only
+        num_index = self._catalog.getIndex('num')
+        pos_of_zero = self.nums.index(0)
+        uid = self._catalog.uids.get(repr(pos_of_zero))
+        self.assertEqual(self._catalog[uid].num, 0)
+        num_index.unindex_object(uid)
+        # make sure it was removed
+        self.assertEqual(len(num_index), 99)
+        # sort over the smaller num index
+        query = dict(att1='att1', sort_on='num', sort_limit=10)
+        result = self._catalog(query)
+        # the `0` document was removed
+        self.assertEqual(result[0].num, 1)
+        self.assertEqual(len(result), 10)
+        # there are only 99 documents left
+        self.assertEqual(result.actual_result_count, 99)
+
     # _get_sort_attr
     # _getSortIndex
     # searchResults
