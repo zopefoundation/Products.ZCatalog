@@ -207,7 +207,7 @@ class DateRangeIndex(UnIndex):
         del self._unindex[documentId]
 
     def uniqueValues(self, name=None, withLengths=0):
-        """Return a list of unique values for 'name'.
+        """Return a sequence of unique values for 'name'.
 
         If 'withLengths' is true, return a sequence of tuples, in
         the form '(value, length)'.
@@ -216,28 +216,21 @@ class DateRangeIndex(UnIndex):
             raise StopIteration
 
         if name == self._since_field:
-            t1 = self._since
-            t2 = self._since_only
+            sets = (self._since, self._since_only)
         else:
-            t1 = self._until
-            t2 = self._until_only
+            sets = (self._until, self._until_only)
 
         if not withLengths:
-            for key in t1.keys():
-                yield key
-            for key in t2.keys():
-                yield key
+            for s in sets:
+                for key in s.keys():
+                    yield key
         else:
-            for key, value in t1.items():
-                if isinstance(value, int):
-                    yield (key, 1)
-                else:
-                    yield (key, len(value))
-            for key, value in t2.items():
-                if isinstance(value, int):
-                    yield (key, 1)
-                else:
-                    yield (key, len(value))
+            for s in sets:
+                for key, value in s.items():
+                    if isinstance(value, int):
+                        yield (key, 1)
+                    else:
+                        yield (key, len(value))
 
     def _cache_key(self, catalog):
         cid = catalog.getId()
