@@ -183,7 +183,7 @@ class DI_Tests(unittest.TestCase):
 
         self.assertTrue(index.hasUniqueValuesFor('date'))
         self.assertFalse(index.hasUniqueValuesFor('foo'))
-        self.assertEqual(len(index.uniqueValues('date')), 0)
+        self.assertEqual(len(list(index.uniqueValues('date'))), 0)
 
         self.assertTrue(index._apply_index({'zed': 12345}) is None)
 
@@ -223,7 +223,8 @@ class DI_Tests(unittest.TestCase):
                 self.assertEqual(index.getEntryForObject(k),
                     self._convert(v.date()))
 
-        self.assertEqual(len(index.uniqueValues('date')), len(values) - 2)
+        self.assertEqual(
+            len(list(index.uniqueValues('date'))), len(values) - 2)
         self.assertTrue(index._apply_index({'bar': 123}) is None)
 
         self._checkApply(index,

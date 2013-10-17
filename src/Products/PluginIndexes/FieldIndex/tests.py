@@ -118,7 +118,7 @@ class FieldIndexTests(unittest.TestCase):
 
         assert self._index.hasUniqueValuesFor('foo')
         assert not self._index.hasUniqueValuesFor('bar')
-        assert len(self._index.uniqueValues('foo')) == 0
+        assert len(list(self._index.uniqueValues('foo'))) == 0
 
         assert self._index._apply_index(self._noop_req) is None
         self._checkApply(self._request, [])
@@ -147,7 +147,7 @@ class FieldIndexTests(unittest.TestCase):
         for k, v in values:
             assert self._index.getEntryForObject(k) == v.foo()
 
-        assert len(self._index.uniqueValues('foo')) == len(values) - 1
+        assert len(list(self._index.uniqueValues('foo'))) == len(values) - 1
 
         assert self._index._apply_index(self._noop_req) is None
 
