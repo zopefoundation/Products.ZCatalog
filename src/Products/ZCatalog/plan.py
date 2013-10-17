@@ -196,7 +196,15 @@ class CatalogPlan(object):
         for name, index in indexes.items():
             if IUniqueValueIndex.providedBy(index):
                 values = index.uniqueValues()
-                if values and len(list(values)) < MAX_DISTINCT_VALUES:
+                i = 0
+                for value in values:
+                    # the total number of unique values might be large and
+                    # expensive to load, so we only check if we can get
+                    # more than MAX_DISTINCT_VALUES
+                    if i >= MAX_DISTINCT_VALUES:
+                        break
+                    i += 1
+                if i > 0 and i < MAX_DISTINCT_VALUES:
                     # Only consider indexes which actually return a number
                     # greater than zero
                     value_indexes.add(name)
