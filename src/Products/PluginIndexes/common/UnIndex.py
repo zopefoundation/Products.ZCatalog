@@ -493,20 +493,17 @@ class UnIndex(SimpleItem):
         if name is None:
             name = self.id
         elif name != self.id:
-            return []
+            raise StopIteration
 
         if not withLengths:
-            return tuple(self._index.keys())
+            for key in self._index.keys():
+                yield key
         else:
-            rl = []
-            for i in self._index.keys():
-                set = self._index[i]
-                if isinstance(set, int):
-                    l = 1
+            for key, value in self._index.items():
+                if isinstance(value, int):
+                    yield (key, 1)
                 else:
-                    l = len(set)
-                rl.append((i, l))
-            return tuple(rl)
+                    yield (key, len(value))
 
     def keyForDocument(self, id):
         # This method is superseded by documentToKeyMap
