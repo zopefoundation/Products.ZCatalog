@@ -202,13 +202,13 @@ class PathIndex(Persistent, SimpleItem):
         """
         return name == self.id
 
-    def uniqueValues(self, name=None, withLength=0):
+    def uniqueValues(self, name=None, withLengths=0):
         """  See IUniqueValueIndex.
         """
         if name in (None, self.id, 'getPhysicalPath'):
-            if withLength:
+            if withLengths:
                 for key in self._index:
-                    yield key, len(self._search(key, -1))
+                    yield (key, len(self._search(key, -1)))
             else:
                 for key in self._index.keys():
                     yield key
