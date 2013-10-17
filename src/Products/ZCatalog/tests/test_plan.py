@@ -32,6 +32,15 @@ class dummy(object):
     def numbers(self):
         return (self.num, self.num + 1)
 
+    def getPhysicalPath(self):
+        return '/%s' % self.num
+
+    def start(self):
+        return '2013-07-%.2d' % (self.num + 1)
+
+    def end(self):
+        return '2013-07-%.2d' % (self.num + 2)
+
 
 class TestNestedDict(unittest.TestCase):
 
@@ -287,6 +296,55 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
     # Test the actual logic for determining value indexes
     # Test make_key
+
+
+class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
+
+    def _make_catalog(self):
+        from Products.PluginIndexes.BooleanIndex.BooleanIndex import \
+            BooleanIndex
+        from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
+            DateRangeIndex
+        from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
+        from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
+            KeywordIndex
+        from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
+        from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
+        from Products.ZCatalog.ZCatalog import ZCatalog
+        zcat = ZCatalog('catalog')
+        zcat._catalog.addIndex('big', BooleanIndex('big'))
+        zcat._catalog.addIndex('date', DateRangeIndex('date', 'start', 'end'))
+        zcat._catalog.addIndex('num', FieldIndex('num'))
+        zcat._catalog.addIndex('numbers', KeywordIndex('numbers'))
+        zcat._catalog.addIndex('path', PathIndex('getPhysicalPath'))
+        zcat._catalog.addIndex('uuid', UUIDIndex('num'))
+        for i in range(9):
+            obj = dummy(i)
+            zcat.catalog_object(obj, str(i))
+        return zcat
+
+    def _make_plan(self, catalog):
+        from ..plan import CatalogPlan
+        return CatalogPlan(catalog)
+
+    def test_uniquevalues(self):
+        zcat = self._make_catalog()
+        indexes = zcat._catalog.indexes
+        self.assertEqual(len(list(indexes['big'].uniqueValues())), 3)
+        self.assertEqual(len(list(indexes['date'].uniqueValues())), 0)
+        self.assertEqual(len(list(indexes['date'].uniqueValues('start'))), 9)
+        self.assertEqual(len(list(indexes['date'].uniqueValues('end'))), 9)
+        self.assertEqual(len(list(indexes['num'].uniqueValues())), 9)
+        self.assertEqual(len(list(indexes['numbers'].uniqueValues())), 10)
+        self.assertEqual(len(list(indexes['path'].uniqueValues())), 9)
+        self.assertEqual(len(list(indexes['uuid'].uniqueValues())), 9)
+
+    def test_valueindexes(self):
+        zcat = self._make_catalog()
+        plan = self._make_plan(zcat._catalog)
+        self.assertEqual(plan.valueindexes(),
+                         frozenset(['big', 'num', 'path', 'uuid']))
+
 
 class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
 
