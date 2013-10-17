@@ -4,6 +4,17 @@ Changelog
 3.0.2 (unreleased)
 ------------------
 
+- Change `CatalogPlan.valueindexes` to avoid using a `len()` call on the
+  result of each index `uniqueValues` method. This was loading entire BTrees
+  into memory and caused excessive database load on startup.
+
+- Correct `withLengths` argument name on `PathIndex.uniqueValues` to use
+  plural form, adhering to the interface specification.
+
+- Clarify the `IUniqueValueIndex.uniqueValues` method description and
+  explicitly mention generators/iterators as potential return values.
+  The PathIndex was one example returning a generator for some time.
+
 - Adjust `actual_result_count` for sorted queries where the sort index doesn't
   contain all the documents. Fixes LP #1237141.
 
