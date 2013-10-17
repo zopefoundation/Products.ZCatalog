@@ -99,10 +99,11 @@ class IUniqueValueIndex(IPluggableIndex):
         """Return true if the index can return the unique values for name"""
 
     def uniqueValues(name=None, withLengths=0):
-        """Return the unique values for name.
+        """Return an iterable/sequence of unique values for name.
 
-        If 'withLengths' is true, returns a sequence of tuples of
-        (value, length)."""
+        If 'withLengths' is true, returns a iterable/sequence of tuples of
+        (value, length).
+        """
 
 
 class ISortIndex(IPluggableIndex):
