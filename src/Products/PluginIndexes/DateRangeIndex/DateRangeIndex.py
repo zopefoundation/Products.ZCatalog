@@ -213,7 +213,7 @@ class DateRangeIndex(UnIndex):
         the form '(value, length)'.
         """
         if not name in (self._since_field, self._until_field):
-            return []
+            raise StopIteration
 
         if name == self._since_field:
             t1 = self._since
@@ -222,26 +222,22 @@ class DateRangeIndex(UnIndex):
             t1 = self._until
             t2 = self._until_only
 
-        result = []
         if not withLengths:
-            result.extend(t1.keys())
-            result.extend(t2.keys())
-        else:
             for key in t1.keys():
-                set = t1[key]
-                if isinstance(set, int):
-                    length = 1
-                else:
-                    length = len(set)
-                result.append((key, length))
+                yield key
             for key in t2.keys():
-                set = t2[key]
-                if isinstance(set, int):
-                    length = 1
+                yield key
+        else:
+            for key, value in t1.items():
+                if isinstance(value, int):
+                    yield (key, 1)
                 else:
-                    length = len(set)
-                result.append((key, length))
-        return tuple(result)
+                    yield (key, len(value))
+            for key, value in t2.items():
+                if isinstance(value, int):
+                    yield (key, 1)
+                else:
+                    yield (key, len(value))
 
     def _cache_key(self, catalog):
         cid = catalog.getId()

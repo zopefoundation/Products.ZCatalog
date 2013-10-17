@@ -84,8 +84,8 @@ class DRI_Tests(unittest.TestCase):
         self.assertTrue(empty.getEntryForObject(1234) is None)
         empty.unindex_object(1234) # shouldn't throw
 
-        self.assertFalse(empty.uniqueValues('foo'))
-        self.assertFalse(empty.uniqueValues('foo', 1))
+        self.assertFalse(list(empty.uniqueValues('foo')))
+        self.assertFalse(list(empty.uniqueValues('foo', withLengths=True)))
         self.assertTrue(empty._apply_index({'zed': 12345}) is None)
 
         result, used = empty._apply_index({'empty': 12345})

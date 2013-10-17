@@ -69,12 +69,15 @@ class UUIDIndex(UnIndex):
         if name is None:
             name = self.id
         elif name != self.id:
-            return []
+            raise StopIteration
 
         if not withLengths:
-            return tuple(self._index.keys())
-        # We know the length for each value is one
-        return [(k, 1) for k in self._index.keys()]
+            for key in self._index.keys():
+                yield key
+        else:
+            # We know the length for each value is one
+            for key in self._index.keys():
+                yield (key, 1)
 
     def insertForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and put it in the correct place
