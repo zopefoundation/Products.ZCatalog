@@ -399,7 +399,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
     def uniqueValuesFor(self, name):
         """ return unique values for FieldIndex name """
-        return self.getIndex(name).uniqueValues()
+        return tuple(self.getIndex(name).uniqueValues())
 
     def hasuid(self, uid):
         """ return the rid if catalog contains an object with uid """
