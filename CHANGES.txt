@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.26 (unreleased)
+2.13.26 (2013-10-19)
 --------------------
 
 - Adjust `actual_result_count` for sorted queries where the sort index doesn't
