@@ -50,6 +50,7 @@ class dummy(ExtensionClass.Base):
     att1 = 'att1'
     att2 = 'att2'
     att3 = ['att3']
+    foo = 'foo'
 
     def __init__(self, num):
         self.num = num
@@ -62,6 +63,12 @@ class dummy(ExtensionClass.Base):
 
     def col3(self):
         return ['col3']
+
+
+class MultiFieldIndex(FieldIndex):
+
+    def getIndexQueryNames(self):
+        return [self.id, 'bar']
 
 
 class objRS(ExtensionClass.Base):
@@ -198,11 +205,13 @@ class TestCatalog(CatalogBase, unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         num = FieldIndex('num')
+        foo = MultiFieldIndex('foo')
 
         self._catalog.addIndex('att1', att1)
         self._catalog.addIndex('att2', att2)
         self._catalog.addIndex('att3', att3)
         self._catalog.addIndex('num', num)
+        self._catalog.addIndex('foo', foo)
         self._catalog.addColumn('att1')
         self._catalog.addColumn('att2')
         self._catalog.addColumn('att3')
@@ -302,6 +311,15 @@ class TestCatalog(CatalogBase, unittest.TestCase):
         query = {'att1': 'a', 'att2': 'b', 'col2': 'c'}
         result = self._catalog._sorted_search_indexes(query)
         self.assertEquals(result.index('att1'), 2)
+
+    def test_sorted_search_indexes_match_alternate_attr(self):
+        query = {'bar': 'b'}
+        result = self._catalog._sorted_search_indexes(query)
+        self.assertEquals(result, ['foo'])
+
+    def test_sorted_search_indexes_no_match(self):
+        result = self._catalog._sorted_search_indexes({'baz': 'a'})
+        self.assertEquals(result, [])
 
     # search
 
