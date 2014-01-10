@@ -4,6 +4,8 @@ Changelog
 2.13.27 (unreleased)
 --------------------
 
+- Restore ability for indexes to use extra query params.
+  See PR #1.
 
 2.13.26 (2013-10-19)
 --------------------
