@@ -484,6 +484,10 @@ class UnIndex(SimpleItem):
         # BBB:  older indexes didn't have 'indexed_attrs'
         return getattr(self, 'indexed_attrs', [self.id])
 
+    def getIndexQueryNames(self):
+        """Indicate that this index applies to queries for the index's name."""
+        return (self.id,)
+
     def uniqueValues(self, name=None, withLengths=0):
         """returns the unique values for name
 

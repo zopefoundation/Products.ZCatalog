@@ -151,6 +151,11 @@ class CatalogPlan(object):
     def __init__(self, catalog, query=None, threshold=0.1):
         self.catalog = catalog
         self.cid = self.get_id()
+        querykey_to_index = {}
+        for index in self.catalog.indexes.values():
+            for querykey in self.catalog._get_index_query_names(index):
+                querykey_to_index[querykey] = index.getId()
+        self.querykey_to_index = querykey_to_index
         self.query = query
         self.key = self.make_key(query)
         self.benchmark = {}
@@ -289,6 +294,7 @@ class CatalogPlan(object):
         self.duration = self.end_time - self.start_time
         # Make absolutely sure we never omit query keys from the plan
         for key in self.query.keys():
+            key = self.querykey_to_index.get(key, key)
             if key not in self.benchmark.keys():
                 self.benchmark[key] = Benchmark(0, 0, False)
         PriorityMap.set_entry(self.cid, self.key, self.benchmark)

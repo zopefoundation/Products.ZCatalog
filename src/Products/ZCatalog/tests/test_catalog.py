@@ -39,6 +39,7 @@ class dummy(ExtensionClass.Base):
     att1 = 'att1'
     att2 = 'att2'
     att3 = ['att3']
+    foo = 'foo'
 
     def __init__(self, num):
         self.num = num
@@ -53,6 +54,12 @@ class dummy(ExtensionClass.Base):
 
     def col3(self):
         return ['col3']
+
+
+class MultiFieldIndex(FieldIndex):
+
+    def getIndexQueryNames(self):
+        return [self.id, 'bar']
 
 
 class objRS(ExtensionClass.Base):
@@ -348,6 +355,9 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog.addIndex('num', num)
         catalog.addColumn('num')
 
+        foo = MultiFieldIndex('foo')
+        catalog.addIndex('foo', foo)
+
         if extra is not None:
             extra(catalog)
 
@@ -372,12 +382,23 @@ class TestCatalogSortBatch(unittest.TestCase):
         self.assertEquals(set(result), set(['att1', 'att2', 'num']))
 
     def test_sorted_search_indexes_priority(self):
-        # att2 doesn't support ILimitedResultIndex, att1 does
+        # att2 and col2 don't support ILimitedResultIndex, att1 does
         catalog = self._make_one()
-        query = {'att1': 'a', 'att2': 'b'}
+        query = {'att1': 'a', 'att2': 'b', 'col2': 'c'}
         result = catalog._sorted_search_indexes(query)
         self.assertEquals(result.index('att2'), 0)
         self.assertEquals(result.index('att1'), 1)
+
+    def test_sorted_search_indexes_match_alternate_attr(self):
+        catalog = self._make_one()
+        query = {'bar': 'b'}
+        result = catalog._sorted_search_indexes(query)
+        self.assertEquals(result, ['foo'])
+
+    def test_sorted_search_indexes_no_match(self):
+        catalog = self._make_one()
+        result = catalog._sorted_search_indexes({'baz': 'a'})
+        self.assertEquals(result, [])
 
     def test_sortResults(self):
         catalog = self._make_one()
@@ -1112,7 +1133,7 @@ class TestScoring(unittest.TestCase):
         PriorityMap.set_entry(catalog_id, plan_key, dict(
             title=Benchmark(1, 1, False),
             true=Benchmark(2, 1, False),
-            ))
+        ))
         brains = cat(query)
         self.assertEqual(len(brains), 4)
         self.assertEqual(brains[0].title, '111')
@@ -1120,7 +1141,7 @@ class TestScoring(unittest.TestCase):
         PriorityMap.set_entry(catalog_id, plan_key, dict(
             title=Benchmark(2, 1, False),
             true=Benchmark(1, 1, False),
-            ))
+        ))
         brains = cat(query)
         self.assertEqual(len(brains), 4)
         self.assertEqual(brains[0].title, '111')

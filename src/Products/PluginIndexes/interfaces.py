@@ -29,6 +29,10 @@ class IPluggableIndex(Interface):
         """Get a sequence of attribute names that are indexed by the index.
         """
 
+    def getIndexQueryNames():
+        """Get a sequence of query parameter names to which this index applies.
+        """
+
     def index_object(documentId, obj, threshold=None):
         """Index an object.
 

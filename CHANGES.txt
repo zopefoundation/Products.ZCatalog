@@ -4,6 +4,9 @@ Changelog
 3.0.2 (unreleased)
 ------------------
 
+- Restore ability for indexes to use extra query params.
+  See PR #1.
+
 - Change `CatalogPlan.valueindexes` to avoid using a `len()` call on the
   result of each index `uniqueValues` method. This was loading entire BTrees
   into memory and caused excessive database load on startup.

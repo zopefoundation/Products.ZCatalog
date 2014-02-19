@@ -127,7 +127,6 @@ class BooleanIndex(UnIndex):
             if (self._index_length.value) >= ((self._length.value) * 0.6):
                 self._invert_index()
 
-
     def removeForwardIndexEntry(self, entry, documentId, check=True):
         """Take the entry provided and remove any reference to documentId
         in its entry in the index.

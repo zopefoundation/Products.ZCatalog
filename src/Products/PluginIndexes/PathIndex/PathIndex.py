@@ -83,6 +83,9 @@ class PathIndex(Persistent, SimpleItem):
         """
         return (self.id, 'getPhysicalPath', )
 
+    def getIndexQueryNames(self):
+        return (self.id,)
+
     def index_object(self, docid, obj, threshold=100):
         """ See IPluggableIndex.
         """

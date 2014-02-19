@@ -475,14 +475,19 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     query[iid] = value
         return query
 
+    def _get_index_query_names(self, index):
+        if hasattr(index, 'getIndexQueryNames'):
+            return index.getIndexQueryNames()
+        return (index.getId(),)
+
     def _sorted_search_indexes(self, query):
         # Simple implementation ordering only by limited result support
         query_keys = query.keys()
         order = []
         for name, index in self.indexes.items():
-            if name not in query_keys:
-                continue
-            order.append((ILimitedResultIndex.providedBy(index), name))
+            for attr in self._get_index_query_names(index):
+                if attr in query_keys:
+                    order.append((ILimitedResultIndex.providedBy(index), name))
         order.sort()
         return [i[1] for i in order]
 
