@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.0.2 (unreleased)
+3.0.2 (2014-03-04)
 ------------------
 
 - Restore ability for indexes to use extra query params.
