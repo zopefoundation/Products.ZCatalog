@@ -46,8 +46,7 @@ class FieldIndexTests(unittest.TestCase):
                         (4, Dummy('abcd')),
                         (5, Dummy('abce')),
                         (6, Dummy('abce')),
-                        (7, Dummy(0)),  # Collector #1959
-                        (8, Dummy(None))]
+                        (7, Dummy(0))]
         self._forward = {}
         self._backward = {}
         for k, v in self._values:
@@ -64,7 +63,7 @@ class FieldIndexTests(unittest.TestCase):
         self._max_req   = {'foo':
             {'query': 'abc', 'range': 'max'}}
         self._max_req_n = {'foo':
-            {'query': 'abc', 'range': 'max', 'not': ['a', 'b', None, 0]}}
+            {'query': 'abc', 'range': 'max', 'not': ['a', 'b', 0]}}
         self._range_req = {'foo':
             {'query': ('abc', 'abcd'), 'range': 'min:max'}}
         self._range_ren = {'foo':
@@ -72,11 +71,10 @@ class FieldIndexTests(unittest.TestCase):
         self._range_non = {'foo':
             {'query': ('a', 'aa'), 'range': 'min:max', 'not': 'a'}}
         self._zero_req  = {'foo': 0 }
-        self._none_req  = {'foo': None }
         self._not_1     = {'foo': {'query': 'a', 'not': 'a'}}
         self._not_2     = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
         self._not_3     = {'foo': {'not': 'a'}}
-        self._not_4     = {'foo': {'not': [0, None]}}
+        self._not_4     = {'foo': {'not': [0]}}
         self._not_5     = {'foo': {'not': ['a', 'b']}}
         self._not_6     = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
@@ -151,10 +149,10 @@ class FieldIndexTests(unittest.TestCase):
 
         assert self._index._apply_index(self._noop_req) is None
 
-        self._checkApply(self._request, values[-4:-2])
-        self._checkApply(self._min_req, values[2:-2])
-        self._checkApply(self._min_req_n, values[2:3] + values[4:-2])
-        self._checkApply(self._max_req, values[:3] + values[-2:])
+        self._checkApply(self._request, values[-3:-1])
+        self._checkApply(self._min_req, values[2:-1])
+        self._checkApply(self._min_req_n, values[2:3] + values[4:-1])
+        self._checkApply(self._max_req, values[:3] + values[-1:])
         self._checkApply(self._max_req_n, values[1:3])
         self._checkApply(self._range_req, values[2:5])
         self._checkApply(self._range_ren, values[2:4])
@@ -171,15 +169,15 @@ class FieldIndexTests(unittest.TestCase):
         """ Make sure 0 gets indexed """
         self._populateIndex()
         values = self._values
-        self._checkApply(self._zero_req, values[-2:-1])
+        self._checkApply(self._zero_req, values[-1:])
         assert 0 in self._index.uniqueValues('foo')
 
     def testNone(self):
         """ make sure None gets indexed """
         self._populateIndex()
         values = self._values
-        self._checkApply(self._none_req, values[-1:])
-        assert None in self._index.uniqueValues('foo')
+        self._checkApply({'foo': None}, [])
+        assert None not in self._index.uniqueValues('foo')
 
     def testReindex(self):
         self._populateIndex()
