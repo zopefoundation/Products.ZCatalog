@@ -1,8 +1,12 @@
 Changelog
 =========
 
-3.0.3 (unreleased)
-------------------
+3.1 (unreleased)
+----------------
+
+- Raise a TypeError when trying to index or lookup `None` in an UnIndex.
+  This is a required change for BTrees 4.0+ compatibility, which prevents
+  objects without a clear ordering definition from being inserted in a tree.
 
 - No longer try to insert a None value into a field index in tests.
 

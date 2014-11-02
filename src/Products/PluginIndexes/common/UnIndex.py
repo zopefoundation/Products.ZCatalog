@@ -222,6 +222,12 @@ class UnIndex(SimpleItem):
 
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
+        if datum is None:
+            # Prevent None from being indexed. None doesn't have a valid
+            # ordering definition compared to any other object.
+            # BTrees 4.0+ will throw a TypeError
+            # "object has default comparison" and won't let it be indexed.
+            raise TypeError('None cannot be indexed.')
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
@@ -423,6 +429,8 @@ class UnIndex(SimpleItem):
             # Filter duplicates
             setlist = []
             for k in record.keys:
+                if k is None:
+                    raise TypeError('None cannot be in an index.')
                 s = index.get(k, None)
                 # If None, try to bail early
                 if s is None:

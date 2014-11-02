@@ -98,8 +98,20 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply({'foo': ['a', 'ab']}, values[:2])
 
     def test_none(self):
-        self._index.index_object(10, Dummy(None))
-        self._checkApply({'foo': None}, [])
+        try:
+            self._index.index_object(10, Dummy(None))
+        except TypeError as exc:
+            self.assertEqual(exc.message, 'None cannot be indexed.')
+        else:
+            self.assertTrue(False, 'TypeError not raised')
+
+        try:
+            self._checkApply({'foo': None}, [])
+        except TypeError as exc:
+            self.assertEqual(exc.message, 'None cannot be in an index.')
+        else:
+            self.assertTrue(False, 'TypeError not raised')
+
         self.assertFalse(None in self._index.uniqueValues('foo'))
 
     def test_reindex(self):

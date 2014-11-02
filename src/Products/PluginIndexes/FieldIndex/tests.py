@@ -173,11 +173,22 @@ class FieldIndexTests(unittest.TestCase):
         assert 0 in self._index.uniqueValues('foo')
 
     def testNone(self):
-        """ make sure None gets indexed """
-        self._populateIndex()
-        values = self._values
-        self._checkApply({'foo': None}, [])
-        assert None not in self._index.uniqueValues('foo')
+        # make sure None cannot get indexed
+        try:
+            self._index.index_object(10, Dummy(None))
+        except TypeError as exc:
+            self.assertEqual(exc.message, 'None cannot be indexed.')
+        else:
+            self.assertTrue(False, 'TypeError not raised')
+
+        try:
+            self._checkApply({'foo': None}, [])
+        except TypeError as exc:
+            self.assertEqual(exc.message, 'None cannot be in an index.')
+        else:
+            self.assertTrue(False, 'TypeError not raised')
+
+        self.assertFalse(None in self._index.uniqueValues('foo'))
 
     def testReindex(self):
         self._populateIndex()
