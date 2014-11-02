@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.1 (unreleased)
+3.1 (2014-11-02)
 ----------------
 
 - Raise a TypeError when trying to index or lookup `None` in an UnIndex.
