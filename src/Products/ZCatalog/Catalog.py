@@ -415,10 +415,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             record.append(attr)
         return tuple(record)
 
+    def _maintain_zodb_cache(self):
+        parent = aq_parent(self)
+        if hasattr(aq_base(parent), 'maintain_zodb_cache'):
+            parent.maintain_zodb_cache()
+
     def instantiate(self, record, score_data=None):
         """ internal method: create and initialise search result object.
         record should be a tuple of (document RID, metadata columns tuple),
         score_data can be a tuple of (scode, normalized score) or be omitted"""
+        self._maintain_zodb_cache()
         key, data = record
         klass = self._v_result_class
         if score_data:
