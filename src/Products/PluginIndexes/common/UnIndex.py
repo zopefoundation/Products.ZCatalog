@@ -510,6 +510,9 @@ class UnIndex(SimpleItem):
                 for s in setlist:
                     # the result is bound by the resultset
                     r = intersection(r, s)
+                    # If intersection, we can't possibly get a smaller result
+                    if not r:
+                        break
                     
         else:  # not a range search
             # Filter duplicates
@@ -563,6 +566,9 @@ class UnIndex(SimpleItem):
                 r = resultset
                 for s in setlist:
                     r = intersection(r, s)
+                    # If intersection, we can't possibly get a smaller result
+                    if not r:
+                        break
 
         if isinstance(r, int):
             r = IISet((r, ))
