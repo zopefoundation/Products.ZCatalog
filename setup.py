@@ -52,7 +52,6 @@ setup(
         'Record',
         'RestrictedPython',
         'zExceptions',
-        'ZODB3',
         'Zope2',
         'zope.dottedname',
         'zope.interface',
