@@ -35,17 +35,12 @@ from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.PluginIndexes.common.UnIndex import RequestCache
 from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 
 _dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2 ** 31 - 1)
-
-
-class RequestCache(dict):
-
-    def __str__(self):
-        return "<RequestCache %s items>" % len(self)
 
 
 class DateRangeIndex(UnIndex):
@@ -231,13 +226,6 @@ class DateRangeIndex(UnIndex):
                         yield (key, 1)
                     else:
                         yield (key, len(value))
-
-    def _cache_key(self, catalog):
-        cid = catalog.getId()
-        counter = getattr(aq_base(catalog), 'getCounter', None)
-        if counter is not None:
-            return '%s_%s' % (cid, counter())
-        return cid
 
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in 'request', which
