@@ -108,12 +108,12 @@ class DateRangeIndex(UnIndex):
 
     security.declareProtected(view, 'getFloorValue')
     def getFloorValue(self):
-        """"""
+        """ """
         return self.floor_value
 
     security.declareProtected(view, 'getCeilingValue')
     def getCeilingValue(self):
-        """"""
+        """ """
         return self.ceiling_value
 
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
@@ -121,7 +121,7 @@ class DateRangeIndex(UnIndex):
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, REQUEST):
-        """"""
+        """ """
         self._edit(since_field, until_field, floor_value, ceiling_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
@@ -245,28 +245,22 @@ class DateRangeIndex(UnIndex):
             return None
 
         term = self._convertDateTime(record.keys[0])
-        REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
-            catalog = aq_parent(aq_parent(aq_inner(self)))
-            if catalog is not None:
-                key = self._cache_key(catalog)
-                cache = REQUEST.get(key, None)
-                tid = isinstance(term, int) and term / 10 or 'None'
+        cache = self._getCache()
+        if cache is not None:
+            tid = isinstance(term, int) and term / 10 or 'None'
+            if resultset is None:
+                cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+            else:
+                cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
+
+            cached = cache.get(cachekey, None)
+            if cached is not None:
                 if resultset is None:
-                    cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+                    return (cached,
+                            (self._since_field, self._until_field))
                 else:
-                    cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
-                if cache is None:
-                    cache = REQUEST[key] = RequestCache()
-                else:
-                    cached = cache.get(cachekey, None)
-                    if cached is not None:
-                        if resultset is None:
-                            return (cached,
-                                    (self._since_field, self._until_field))
-                        else:
-                            return (difference(resultset, cached),
-                                    (self._since_field, self._until_field))
+                    return (difference(resultset, cached),
+                            (self._since_field, self._until_field))
 
         if resultset is None:
             # Aggregate sets for each bucket separately, to avoid
@@ -276,7 +270,7 @@ class DateRangeIndex(UnIndex):
             until = multiunion(self._until.values(term))
 
             # Total result is bound by resultset
-            if REQUEST is None:
+            if cache is None:
                 until = intersection(resultset, until)
 
             since = multiunion(self._since.values(None, term))
@@ -285,7 +279,7 @@ class DateRangeIndex(UnIndex):
             # Merge from smallest to largest.
             result = multiunion([bounded, until_only, since_only,
                                  self._always])
-            if REQUEST is not None and catalog is not None:
+            if cache is not None:
                 cache[cachekey] = result
 
             return (result, (self._since_field, self._until_field))
@@ -297,7 +291,7 @@ class DateRangeIndex(UnIndex):
             since = multiunion(self._since.values(term + 1))
 
             result = multiunion([since, since_only, until_only, until])
-            if REQUEST is not None and catalog is not None:
+            if cache is not None:
                 cache[cachekey] = result
 
             return (difference(resultset, result),
