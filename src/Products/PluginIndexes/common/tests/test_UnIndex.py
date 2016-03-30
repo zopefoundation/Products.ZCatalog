@@ -13,6 +13,11 @@
 
 import unittest
 
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
+from BTrees.IIBTree import difference
+
+from Products.PluginIndexes.common.util import parseIndexRequest
 
 class UnIndexTests(unittest.TestCase):
 
@@ -21,7 +26,22 @@ class UnIndexTests(unittest.TestCase):
         return UnIndex
 
     def _makeOne(self, *args, **kw):
-        return self._getTargetClass()(*args, **kw)
+        index = self._getTargetClass()(*args, **kw)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+            def getCounter(self):
+                return 1
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
 
     def _makeConflicted(self):
         from ZODB.POSException import ConflictError
@@ -70,3 +90,49 @@ class UnIndexTests(unittest.TestCase):
 
         dummy.exc = TypeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
+
+    def test_cache(self):
+        idx = self._makeOne(id = 'foo')
+        idx.query_options = ('query', 'range', 'not', 'operator')
+
+        def testQuery(record, expect=1):
+            cache = idx._getCache()
+            cache.clear()
+
+            # First query
+            res1 = idx._apply_index(record)
+
+            # Cache set?
+            self.assertEqual(cache._sets, expect) 
+
+            # Second Query
+            res2 = idx._apply_index(record)
+
+            # Cache hit?
+            self.assertEqual(cache._hits, expect) 
+
+            # Check if result of second query is equal to first query
+            result = difference(res1[0], res2[0])
+            self.assertEqual(len(result),0)
+
+       
+        # Dummy tests, result is always empty. 
+        # TODO: Sophisticated tests have to be placed on tests 
+        # of inherited classes (FieldIndex, KeywordIndex etc.)
+
+        # 'or' operator
+        record = {'foo': {'query': ['e', 'f'], 'operator': 'or'}}
+        testQuery(record)
+
+        # 'and' operator (currently not supported)
+        record = {'foo': {'query': ['e', 'f'], 'operator': 'and'}}
+        testQuery(record,0)
+        
+        # 'range' option
+        record = {'foo': {'query': ('abc', 'abcd'), 'range': 'min:max'}}
+        testQuery(record)
+
+        # 'not' option
+        record = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
+        testQuery(record)
+
