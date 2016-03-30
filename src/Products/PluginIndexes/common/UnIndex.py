@@ -353,7 +353,7 @@ class UnIndex(SimpleItem):
             return '%s_%s' % (cid, counter())
         return cid
 
-    def _record_cache_key(self,record):
+    def _record_cache_key(self, record, resultset=None):
         params = []
 
         operator = record.get('operator', self.useOperator)

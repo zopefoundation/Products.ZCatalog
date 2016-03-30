@@ -227,6 +227,16 @@ class DateRangeIndex(UnIndex):
                     else:
                         yield (key, len(value))
 
+    def _record_cache_key(self, record, resultset=None):
+        iid = self.id
+        term = self._convertDateTime(record.keys[0])
+        tid = isinstance(term, int) and term / 10 or 'None'
+        if resultset is None:
+            cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+        else:
+            cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
+        return cachekey
+
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in 'request', which
         should be a mapping object.
@@ -240,19 +250,14 @@ class DateRangeIndex(UnIndex):
         used.
         """
         iid = self.id
-        record = parseIndexRequest(request, iid, self.query_options)
+        record = parseIndexRequest(request, self.id, self.query_options)
         if record.keys is None:
             return None
 
         term = self._convertDateTime(record.keys[0])
         cache = self._getCache()
         if cache is not None:
-            tid = isinstance(term, int) and term / 10 or 'None'
-            if resultset is None:
-                cachekey = '_daterangeindex_%s_%s' % (iid, tid)
-            else:
-                cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
-
+            cachekey = self._record_cache_key(self,record,resultset)
             cached = cache.get(cachekey, None)
             if cached is not None:
                 if resultset is None:
