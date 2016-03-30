@@ -42,8 +42,42 @@ _marker = []
 LOG = getLogger('Zope.UnIndex')
 
 class RequestCache(dict):
+    _hits = 0
+    _misses = 0
+    _sets = 0
+
+    def get(self, key, default=None):
+        value = super(RequestCache, self).get(key,_marker)
+        
+        if value is _marker:
+            self._misses +=1
+            return default
+        
+        self._hits += 1
+        return value
+
+    def __getitem__(self, key):
+        try:
+            value = super(RequestCache, self).__getitem__(key)
+        except KeyError, e:
+            self._misses +=1
+            raise KeyError, e
+        
+        self._hits += 1
+        return value
+
+    def __setitem__(self, key, value):
+        super(RequestCache, self).__setitem__(key, value)
+        self._sets +=1
+
+    def clear(self):
+        super(RequestCache, self).clear()
+        self._hits = 0
+        self._misses = 0
+        self._sets = 0
+
     def __str__(self):
-        return "<RequestCache %s items>" % len(self)
+        return "<RequestCache %s items (set: %s, hits: %s, misses: %s)>" % (len(self), self._sets, self._hits, self._misses)
 
 class UnIndex(SimpleItem):
 
@@ -324,7 +358,7 @@ class UnIndex(SimpleItem):
 
         operator = record.get('operator', self.useOperator)
         if operator != 'or':
-            # operator is not supported
+            # only operator 'or' is supported for caching
             return None
 
         not_parm = record.get('not', None)
@@ -335,9 +369,9 @@ class UnIndex(SimpleItem):
             elif not isinstance(not_parm,tuple):
                 not_parm = (not_parm,)
 
-            not_parm = list(kw)
+            not_parm = list(not_parm)
             not_parm.sort()
-            not_parm = tuple(not_parm )
+            not_parm = tuple(not_parm)
             params.append(('not', not_parm))
         
         range_parm = record.get('range', None)
@@ -360,6 +394,20 @@ class UnIndex(SimpleItem):
         key = tuple(kl)
 
         return (self.id,key)
+
+    def _getCache(self):
+        
+        cache = None
+        REQUEST = aq_get(self, 'REQUEST', None)
+        if REQUEST is not None:
+            catalog = aq_parent(aq_parent(aq_inner(self)))
+            if catalog is not None:
+                key = self._catalog_cache_key(catalog)
+                cache = REQUEST.get(key, None)
+                if cache is None:
+                    cache = REQUEST[key] = RequestCache()
+                    
+        return cache
 
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in the request arg.
@@ -406,27 +454,21 @@ class UnIndex(SimpleItem):
 
         # not / exclude parameter
         not_parm = record.get('not', None)
-        cachekey = None
-        REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
-            catalog = aq_parent(aq_parent(aq_inner(self)))
-            if catalog is not None:
-                key = self._catalog_cache_key(catalog)
-                cache = REQUEST.get(key, None)
-                cachekey = self._record_cache_key(record)
-                if cache is None:
-                    cache = REQUEST[key] = RequestCache()
-                elif cachekey is not None:
-                    cached = cache.get(cachekey, None)
-                    if cached is not None:
-                        LOG.debug('%s catalog: %s index: %s cachekey: %s -> hit' % (self.__class__.__name__,key, str(self.id), str(cachekey)))
-                        if not_parm:
-                            not_parm = map(self._convert, not_parm)
-                            exclude = self._apply_not(not_parm, resultset)
-                            r = difference(cached, exclude)
-                            return r, (self.id,)
 
-                        return cached, (self.id,)
+        cachekey = None
+        cache = self._getCache()
+        if cache is not None:
+            cachekey = self._record_cache_key(record)
+            if cachekey is not None:
+                cached = cache.get(cachekey, None)
+                if cached is not None:
+                    if not_parm:
+                        not_parm = map(self._convert, not_parm)
+                        exclude = self._apply_not(not_parm, resultset)
+                        r = difference(cached, exclude)
+                        return r, (self.id,)
+
+                    return cached, (self.id,)
 
         if not record.keys and not_parm:
             # convert into indexed format
