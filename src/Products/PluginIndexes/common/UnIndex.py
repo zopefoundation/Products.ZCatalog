@@ -42,6 +42,7 @@ class UnIndex(SimpleItem):
     """Simple forward and reverse index.
     """
     implements(ILimitedResultIndex, IUniqueValueIndex, ISortIndex)
+    _counter = None
 
     def __init__(
         self, id, ignore_ex=None, call_methods=None, extra=None, caller=None):
@@ -117,6 +118,7 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+        self._counter = Length()
 
     def __nonzero__(self):
         return not not self._unindex
@@ -175,14 +177,16 @@ class UnIndex(SimpleItem):
             except Exception:
                 LOG.error('%s: unindex_object could not remove '
                           'documentId %s from index %s.  This '
-                          'should not happen.' % (self.__class__.__name__,
+                          'should not happen.' %
+                          (self.__class__.__name__,
                            str(documentId), str(self.id)),
-                           exc_info=sys.exc_info())
+                          exc_info=sys.exc_info())
         else:
             LOG.error('%s: unindex_object tried to retrieve set %s '
                       'from index %s but couldn\'t.  This '
-                      'should not happen.' % (self.__class__.__name__,
-                      repr(entry), str(self.id)))
+                      'should not happen.' %
+                      (self.__class__.__name__,
+                       repr(entry), str(self.id)))
 
     def insertForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and put it in the correct place
@@ -210,6 +214,7 @@ class UnIndex(SimpleItem):
 
     def index_object(self, documentId, obj, threshold=None):
         """ wrapper to handle indexing of multiple attributes """
+        self._increment_counter()
         fields = self.getIndexSourceNames()
         res = 0
         for attr in fields:
@@ -242,7 +247,7 @@ class UnIndex(SimpleItem):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, '
-                            'now its not, for document: %s' % documentId)
+                                  'now its not, for document: %s' % documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -264,6 +269,14 @@ class UnIndex(SimpleItem):
             datum = _marker
         return datum
 
+    def _increment_counter(self):
+        if self._counter is None:
+            self._counter = Length()
+        self._counter.change(1)
+
+    def getCounter(self):
+        return self._counter is not None and self._counter() or 0
+
     def numObjects(self):
         """Return the number of indexed objects."""
         return len(self._unindex)
@@ -276,6 +289,7 @@ class UnIndex(SimpleItem):
         """ Unindex the object with integer id 'documentId' and don't
         raise an exception if we fail
         """
+        self._increment_counter()
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
             return None
