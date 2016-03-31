@@ -25,12 +25,14 @@ class UnIndexTests(unittest.TestCase):
 
     def _makeConflicted(self):
         from ZODB.POSException import ConflictError
+
         class Conflicted:
             def __str__(self):
                 return 'Conflicted'
             __repr__ = __str__
+
             def __getattr__(self, id, default=object()):
-                raise ConflictError, 'testing'
+                raise ConflictError('testing')
         return Conflicted()
 
     def test_empty(self):
@@ -54,16 +56,19 @@ class UnIndexTests(unittest.TestCase):
         class DummyContent2(object):
             interesting = 'GOT IT'
         dummy = DummyContent2()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         class DummyContent3(object):
             exc = None
+
             def interesting(self):
                 if self.exc:
                     raise self.exc
                 return 'GOT IT'
         dummy = DummyContent3()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         dummy.exc = AttributeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
