@@ -122,6 +122,7 @@ class KeywordIndex(UnIndex):
 
     def unindex_object(self, documentId):
         """ carefully unindex the object with integer id 'documentId'"""
+        self._increment_counter()
 
         keywords = self._unindex.get(documentId, None)
         self.unindex_objectKeywords(documentId, keywords)

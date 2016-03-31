@@ -107,6 +107,7 @@ class DateIndex(UnIndex, PropertyManager):
         self._index = IOBTree()
         self._unindex = IIBTree()
         self._length = Length()
+        self._counter = Length()
 
     def index_object(self, documentId, obj, threshold=None):
         """index an object, normalizing the indexed value to an integer
@@ -116,6 +117,7 @@ class DateIndex(UnIndex, PropertyManager):
            o Objects which have 'None' as indexed value are *omitted*,
              by design.
         """
+        self._increment_counter()
         returnStatus = 0
 
         try:
