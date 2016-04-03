@@ -25,12 +25,16 @@ class UnIndexTests(unittest.TestCase):
 
     def _makeConflicted(self):
         from ZODB.POSException import ConflictError
+
         class Conflicted:
+
             def __str__(self):
                 return 'Conflicted'
             __repr__ = __str__
+
             def __getattr__(self, id, default=object()):
-                raise ConflictError, 'testing'
+                raise ConflictError('testing')
+
         return Conflicted()
 
     def test_empty(self):

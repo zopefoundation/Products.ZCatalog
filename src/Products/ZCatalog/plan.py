@@ -108,7 +108,10 @@ class PriorityMap(NestedDict):
         path = os.path.abspath(path)
         _globals = {}
         _locals = {}
-        execfile(path, _globals, _locals)
+
+        with open(path, 'rb') as fd:
+            exec(fd.read(), _globals, _locals)
+
         pmap = _locals['queryplan'].copy()
         cls.load_pmap(path, pmap)
 

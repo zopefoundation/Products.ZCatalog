@@ -37,6 +37,17 @@ from .CatalogBrains import AbstractCatalogBrain, NoBrainer
 from .plan import CatalogPlan
 from .ProgressHandler import ZLogHandler
 
+try:
+    from functools import cmp_to_key
+except ImportError:
+    cmp_to_key = None
+
+try:
+    xrange
+except NameError:
+    # Python 3 compatibility
+    xrange = range
+
 LOG = logging.getLogger('Zope.ZCatalog')
 
 
@@ -1176,9 +1187,17 @@ def multisort(items, sort_spec):
 
     def comparer(left, right):
         for func, order in comparers:
-            result = cmp(func(left[0]), func(right[0]))
+            # emulate cmp even in Python 3
+            a = func(left[0])
+            b = func(right[0])
+            result = ((a > b) - (a < b))
             if result:
                 return order * result
         return 0
-    items.sort(cmp=comparer)
+
+    if cmp_to_key is None:
+        items.sort(cmp=comparer)
+    else:
+        items.sort(key=cmp_to_key(comparer))
+
     return items

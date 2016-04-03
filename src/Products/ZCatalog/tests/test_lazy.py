@@ -88,8 +88,8 @@ class TestLazyCat(unittest.TestCase, BaseSequenceTest):
         seq1 = range(10)
         seq2 = list(hexdigits)
         seq3 = list(letters)
-        lcat = apply(self._createLSeq,
-            [self._createLSeq(seq) for seq in (seq1, seq2, seq3)])
+        lcat = self._createLSeq(
+            *[self._createLSeq(seq) for seq in (seq1, seq2, seq3)])
         self._compare(lcat, seq1 + seq2 + seq3)
 
     def test_slicing(self):
@@ -97,8 +97,8 @@ class TestLazyCat(unittest.TestCase, BaseSequenceTest):
         seq1 = range(10)
         seq2 = list(hexdigits)
         seq3 = list(letters)
-        lcat = apply(self._createLSeq,
-            [self._createLSeq(seq) for seq in (seq1, seq2, seq3)])
+        lcat = self._createLSeq(
+            *[self._createLSeq(seq) for seq in (seq1, seq2, seq3)])
         self._compare(lcat[5:-5], seq1[5:] + seq2 + seq3[:-5])
 
     def test_length(self):

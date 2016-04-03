@@ -272,7 +272,7 @@ class PathIndex(Persistent, SimpleItem):
             # Search at every level, return the union of all results
             return multiunion(
                 [self._search(path, level)
-                 for level in xrange(self._depth + 1)])
+                 for level in range(self._depth + 1)])
 
         comps = filter(None, path.split('/'))
 

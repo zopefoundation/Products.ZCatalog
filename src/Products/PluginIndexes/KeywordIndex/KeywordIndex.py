@@ -22,6 +22,12 @@ from Products.PluginIndexes.common.UnIndex import UnIndex
 
 LOG = getLogger('Zope.KeywordIndex')
 
+try:
+    basestring
+except NameError:
+    # Python 3 compatibility
+    basestring = (bytes, str)
+
 
 class KeywordIndex(UnIndex):
     """Like an UnIndex only it indexes sequences of items.

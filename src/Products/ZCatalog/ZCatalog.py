@@ -50,6 +50,12 @@ from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
 from .plan import PriorityMap
 
+try:
+    xrange
+except NameError:
+    # Python 3 compatibility
+    xrange = range
+
 LOG = logging.getLogger('Zope.ZCatalog')
 
 manage_addZCatalogForm = DTMLFile('dtml/addZCatalog', globals())
@@ -243,8 +249,8 @@ class ZCatalog(Folder, Persistent, Implicit):
             URL1 +
             '/manage_catalogAdvanced?manage_tabs_message=' +
             urllib.quote('Catalog Updated \n'
-                         'Total time: %s\n'
-                         'Total CPU time: %s' % (`elapse`, `c_elapse`)))
+                         'Total time: %r\n'
+                         'Total CPU time: %r' % (elapse, c_elapse)))
 
     security.declareProtected(manage_zcatalog_entries, 'refreshCatalog')
     def refreshCatalog(self, clear=0, pghandler=None):
@@ -328,9 +334,9 @@ class ZCatalog(Folder, Persistent, Implicit):
             URL1 +
             '/manage_catalogView?manage_tabs_message=' +
             urllib.quote('Catalog Updated\n'
-                         'Total time: %s\n'
-                         'Total CPU time: %s'
-                         % (`elapse`, `c_elapse`)))
+                         'Total time: %r\n'
+                         'Total CPU time: %r'
+                         % (elapse, c_elapse)))
 
     security.declareProtected(manage_zcatalog_entries, 'manage_addColumn')
     def manage_addColumn(self, name, REQUEST=None, RESPONSE=None, URL1=None):
@@ -706,7 +712,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 p = id
 
             dflag = 0
-            if hasattr(ob, '_p_changed') and (ob._p_changed == None):
+            if hasattr(ob, '_p_changed') and (ob._p_changed is None):
                 dflag = 1
 
             bs = aq_base(ob)

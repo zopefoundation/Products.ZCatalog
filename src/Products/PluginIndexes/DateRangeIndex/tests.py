@@ -11,6 +11,7 @@
 #
 ##############################################################################
 
+import operator
 import unittest
 
 
@@ -107,14 +108,14 @@ class DRI_Tests(unittest.TestCase):
             self.assertEqual(used, ('start', 'stop'))
             self.assertEqual(len(matches), len(results))
 
-            matches.sort(lambda x, y: cmp(x.name(), y.name()))
+            matches = sorted(matches, key=operator.methodcaller('name'))
 
             for result, match in map(None, results, matches):
                 self.assertEqual(index.getEntryForObject(result), match.datum())
 
     def test_longdates(self):
-        too_large = long(2**31)
-        too_small = - long(2**31)
+        too_large = 2 ** 31
+        too_small = -2 ** 31
         index = self._makeOne('work', 'start', 'stop')
         bad = Dummy('bad', too_large, too_large)
         self.assertRaises(OverflowError, index.index_object, 0, bad)
