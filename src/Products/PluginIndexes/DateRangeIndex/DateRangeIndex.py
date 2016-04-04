@@ -35,17 +35,12 @@ from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.PluginIndexes.common.UnIndex import RequestCache
 from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 
 _dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2 ** 31 - 1)
-
-
-class RequestCache(dict):
-
-    def __str__(self):
-        return "<RequestCache %s items>" % len(self)
 
 
 class DateRangeIndex(UnIndex):
@@ -113,12 +108,12 @@ class DateRangeIndex(UnIndex):
 
     security.declareProtected(view, 'getFloorValue')
     def getFloorValue(self):
-        """"""
+        """ """
         return self.floor_value
 
     security.declareProtected(view, 'getCeilingValue')
     def getCeilingValue(self):
-        """"""
+        """ """
         return self.ceiling_value
 
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
@@ -126,7 +121,7 @@ class DateRangeIndex(UnIndex):
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, REQUEST):
-        """"""
+        """ """
         self._edit(since_field, until_field, floor_value, ceiling_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
@@ -232,12 +227,15 @@ class DateRangeIndex(UnIndex):
                     else:
                         yield (key, len(value))
 
-    def _cache_key(self, catalog):
-        cid = catalog.getId()
-        counter = getattr(aq_base(catalog), 'getCounter', None)
-        if counter is not None:
-            return '%s_%s' % (cid, counter())
-        return cid
+    def _record_cache_key(self, record, resultset=None):
+        iid = self.id
+        term = self._convertDateTime(record.keys[0])
+        tid = isinstance(term, int) and term / 10 or 'None'
+        if resultset is None:
+            cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+        else:
+            cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
+        return cachekey
 
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in 'request', which
@@ -252,33 +250,22 @@ class DateRangeIndex(UnIndex):
         used.
         """
         iid = self.id
-        record = parseIndexRequest(request, iid, self.query_options)
+        record = parseIndexRequest(request, self.id, self.query_options)
         if record.keys is None:
             return None
 
         term = self._convertDateTime(record.keys[0])
-        REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
-            catalog = aq_parent(aq_parent(aq_inner(self)))
-            if catalog is not None:
-                key = self._cache_key(catalog)
-                cache = REQUEST.get(key, None)
-                tid = isinstance(term, int) and term / 10 or 'None'
+        cache = self._getCache()
+        if cache is not None:
+            cachekey = self._record_cache_key(self,record,resultset)
+            cached = cache.get(cachekey, None)
+            if cached is not None:
                 if resultset is None:
-                    cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+                    return (cached,
+                            (self._since_field, self._until_field))
                 else:
-                    cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
-                if cache is None:
-                    cache = REQUEST[key] = RequestCache()
-                else:
-                    cached = cache.get(cachekey, None)
-                    if cached is not None:
-                        if resultset is None:
-                            return (cached,
-                                    (self._since_field, self._until_field))
-                        else:
-                            return (difference(resultset, cached),
-                                    (self._since_field, self._until_field))
+                    return (difference(resultset, cached),
+                            (self._since_field, self._until_field))
 
         if resultset is None:
             # Aggregate sets for each bucket separately, to avoid
@@ -288,7 +275,7 @@ class DateRangeIndex(UnIndex):
             until = multiunion(self._until.values(term))
 
             # Total result is bound by resultset
-            if REQUEST is None:
+            if cache is None:
                 until = intersection(resultset, until)
 
             since = multiunion(self._since.values(None, term))
@@ -297,7 +284,7 @@ class DateRangeIndex(UnIndex):
             # Merge from smallest to largest.
             result = multiunion([bounded, until_only, since_only,
                                  self._always])
-            if REQUEST is not None and catalog is not None:
+            if cache is not None:
                 cache[cachekey] = result
 
             return (result, (self._since_field, self._until_field))
@@ -309,7 +296,7 @@ class DateRangeIndex(UnIndex):
             since = multiunion(self._since.values(term + 1))
 
             result = multiunion([since, since_only, until_only, until])
-            if REQUEST is not None and catalog is not None:
+            if cache is not None:
                 cache[cachekey] = result
 
             return (difference(resultset, result),

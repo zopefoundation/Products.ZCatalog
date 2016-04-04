@@ -15,6 +15,11 @@ from cgi import escape
 from logging import getLogger
 import sys
 
+from Acquisition import aq_base
+from Acquisition import aq_inner
+from Acquisition import aq_parent
+from Acquisition import aq_get
+
 from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import IITreeSet
@@ -36,6 +41,43 @@ from Products.PluginIndexes.interfaces import IUniqueValueIndex
 _marker = []
 LOG = getLogger('Zope.UnIndex')
 
+class RequestCache(dict):
+    _hits = 0
+    _misses = 0
+    _sets = 0
+
+    def get(self, key, default=None):
+        value = super(RequestCache, self).get(key,_marker)
+        
+        if value is _marker:
+            self._misses +=1
+            return default
+        
+        self._hits += 1
+        return value
+
+    def __getitem__(self, key):
+        try:
+            value = super(RequestCache, self).__getitem__(key)
+        except KeyError, e:
+            self._misses +=1
+            raise KeyError, e
+        
+        self._hits += 1
+        return value
+
+    def __setitem__(self, key, value):
+        super(RequestCache, self).__setitem__(key, value)
+        self._sets +=1
+
+    def clear(self):
+        super(RequestCache, self).clear()
+        self._hits = 0
+        self._misses = 0
+        self._sets = 0
+
+    def __str__(self):
+        return "<RequestCache %s items (set: %s, hits: %s, misses: %s)>" % (len(self), self._sets, self._hits, self._misses)
 
 class UnIndex(SimpleItem):
 
@@ -304,6 +346,69 @@ class UnIndex(SimpleItem):
     def _convert(self, value, default=None):
         return value
 
+    def _catalog_cache_key(self, catalog):
+        cid = catalog.getId()
+        counter = getattr(aq_base(catalog), 'getCounter', None)
+        if counter is not None:
+            return '%s_%s' % (cid, counter())
+        return cid
+
+    def _record_cache_key(self, record, resultset=None):
+        params = []
+
+        operator = record.get('operator', self.useOperator)
+        if operator != 'or':
+            # only operator 'or' is supported for caching
+            return None
+
+        not_parm = record.get('not', None)
+        if not_parm:
+
+            if isinstance(not_parm,list):
+                not_parm = tuple(not_parm)
+            elif not isinstance(not_parm,tuple):
+                not_parm = (not_parm,)
+
+            not_parm = list(not_parm)
+            not_parm.sort()
+            not_parm = tuple(not_parm)
+            params.append(('not', not_parm))
+        
+        range_parm = record.get('range', None)
+        if range_parm:
+            params.append(('range_parm', range_parm))
+
+        usage_parm = record.get('usage', None)
+        if usage_parm:
+            params.append(('usage_parm', usage_parm))
+
+        kw = record.keys
+        if isinstance(kw,list):
+            kw = tuple(kw)
+        elif not isinstance(kw,tuple):
+            kw = (kw,)
+             
+        kl = list(kw)
+        kl.extend(params)
+        kl.sort()
+        key = tuple(kl)
+
+        return (self.id,key)
+
+    def _getCache(self):
+        
+        cache = None
+        REQUEST = aq_get(self, 'REQUEST', None)
+        if REQUEST is not None:
+            catalog = aq_parent(aq_parent(aq_inner(self)))
+            if catalog is not None:
+                key = self._catalog_cache_key(catalog)
+                cache = REQUEST.get(key, None)
+                if cache is None:
+                    cache = REQUEST[key] = RequestCache()
+                    
+        return cache
+
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in the request arg.
 
@@ -349,6 +454,22 @@ class UnIndex(SimpleItem):
 
         # not / exclude parameter
         not_parm = record.get('not', None)
+
+        cachekey = None
+        cache = self._getCache()
+        if cache is not None:
+            cachekey = self._record_cache_key(record)
+            if cachekey is not None:
+                cached = cache.get(cachekey, None)
+                if cached is not None:
+                    if not_parm:
+                        not_parm = map(self._convert, not_parm)
+                        exclude = self._apply_not(not_parm, resultset)
+                        r = difference(cached, exclude)
+                        return r, (self.id,)
+
+                    return cached, (self.id,)
+
         if not record.keys and not_parm:
             # convert into indexed format
             not_parm = map(self._convert, not_parm)
@@ -397,6 +518,10 @@ class UnIndex(SimpleItem):
                 result = setlist[0]
                 if isinstance(result, int):
                     result = IISet((result,))
+                
+                if cachekey is not None:
+                    cache[cachekey] = result               
+
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
@@ -409,6 +534,9 @@ class UnIndex(SimpleItem):
                         s = IISet((s,))
                     tmp.append(s)
                 r = multiunion(tmp)
+
+                if cachekey is not None:
+                    cache[cachekey] = r
             else:
                 # For intersection, sort with smallest data set first
                 tmp = []
@@ -424,7 +552,10 @@ class UnIndex(SimpleItem):
                 for s in setlist:
                     # the result is bound by the resultset
                     r = intersection(r, s)
-
+                    # If intersection, we can't possibly get a smaller result
+                    if not r:
+                        break
+                    
         else:  # not a range search
             # Filter duplicates
             setlist = []
@@ -448,6 +579,10 @@ class UnIndex(SimpleItem):
                 result = setlist[0]
                 if isinstance(result, int):
                     result = IISet((result,))
+
+                if cachekey is not None:
+                    cache[cachekey] = result
+
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
@@ -457,13 +592,15 @@ class UnIndex(SimpleItem):
                 # If we already get a small result set passed in, intersecting
                 # the various indexes with it and doing the union later is
                 # faster than creating a multiunion first.
-                if resultset is not None and len(resultset) < 200:
+                if cachekey is None and resultset is not None and len(resultset) < 200:
                     smalllist = []
                     for s in setlist:
                         smalllist.append(intersection(resultset, s))
                     r = multiunion(smalllist)
                 else:
                     r = multiunion(setlist)
+                    if cachekey is not None:
+                        cache[cachekey] = r                    
             else:
                 # For intersection, sort with smallest data set first
                 if len(setlist) > 2:
@@ -471,6 +608,9 @@ class UnIndex(SimpleItem):
                 r = resultset
                 for s in setlist:
                     r = intersection(r, s)
+                    # If intersection, we can't possibly get a smaller result
+                    if not r:
+                        break
 
         if isinstance(r, int):
             r = IISet((r, ))
