@@ -214,11 +214,15 @@ class UnIndex(SimpleItem):
 
     def index_object(self, documentId, obj, threshold=None):
         """ wrapper to handle indexing of multiple attributes """
-        self._increment_counter()
+
         fields = self.getIndexSourceNames()
         res = 0
         for attr in fields:
             res += self._index_object(documentId, obj, threshold, attr)
+
+        if res > 0:
+            self._increment_counter()
+
         return res > 0
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
@@ -289,10 +293,11 @@ class UnIndex(SimpleItem):
         """ Unindex the object with integer id 'documentId' and don't
         raise an exception if we fail
         """
-        self._increment_counter()
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
             return None
+
+        self._increment_counter()
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
         try:

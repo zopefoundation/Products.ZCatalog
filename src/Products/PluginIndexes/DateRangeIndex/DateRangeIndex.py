@@ -170,7 +170,6 @@ class DateRangeIndex(UnIndex):
         """
         if self._since_field is None:
             return 0
-        self._increment_counter()
 
         since = getattr(obj, self._since_field, None)
         if safe_callable(since):
@@ -188,6 +187,8 @@ class DateRangeIndex(UnIndex):
         if datum == old_datum:  # No change?  bail out!
             return 0
 
+        self._increment_counter()
+
         if old_datum is not None:
             old_since, old_until = old_datum
             self._removeForwardIndexEntry(old_since, old_until, documentId)
@@ -200,10 +201,12 @@ class DateRangeIndex(UnIndex):
     def unindex_object(self, documentId):
         """Remove the object corresponding to 'documentId' from the index.
         """
-        self._increment_counter()
+
         datum = self._unindex.get(documentId, None)
         if datum is None:
             return
+
+        self._increment_counter()
 
         since, until = datum
         self._removeForwardIndexEntry(since, until, documentId)

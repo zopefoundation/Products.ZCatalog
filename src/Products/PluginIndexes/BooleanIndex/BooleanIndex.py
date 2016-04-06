@@ -197,10 +197,11 @@ class BooleanIndex(UnIndex):
         """ Unindex the object with integer id 'documentId' and don't
         raise an exception if we fail
         """
-        self._increment_counter()
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
             return None
+
+        self._increment_counter()
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
 

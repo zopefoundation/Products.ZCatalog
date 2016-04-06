@@ -117,7 +117,6 @@ class DateIndex(UnIndex, PropertyManager):
            o Objects which have 'None' as indexed value are *omitted*,
              by design.
         """
-        self._increment_counter()
         returnStatus = 0
 
         try:
@@ -149,6 +148,9 @@ class DateIndex(UnIndex, PropertyManager):
                 self._unindex[documentId] = ConvertedDate
 
             returnStatus = 1
+
+        if returnStatus > 0:
+            self._increment_counter()
 
         return returnStatus
 

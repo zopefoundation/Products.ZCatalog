@@ -122,9 +122,15 @@ class KeywordIndex(UnIndex):
 
     def unindex_object(self, documentId):
         """ carefully unindex the object with integer id 'documentId'"""
-        self._increment_counter()
 
         keywords = self._unindex.get(documentId, None)
+
+        # Couldn't we return 'None' immediately
+        # if keywords is 'None' (or _marker)???
+
+        if keywords is not None:
+            self._increment_counter()
+
         self.unindex_objectKeywords(documentId, keywords)
         try:
             del self._unindex[documentId]
