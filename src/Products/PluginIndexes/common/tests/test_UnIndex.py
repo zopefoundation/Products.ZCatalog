@@ -58,16 +58,19 @@ class UnIndexTests(unittest.TestCase):
         class DummyContent2(object):
             interesting = 'GOT IT'
         dummy = DummyContent2()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         class DummyContent3(object):
             exc = None
+
             def interesting(self):
                 if self.exc:
                     raise self.exc
                 return 'GOT IT'
         dummy = DummyContent3()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         dummy.exc = AttributeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
