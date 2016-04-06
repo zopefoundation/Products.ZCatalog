@@ -253,3 +253,23 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
         self.assertFalse(self._index._unindex.get(10))
+
+    def test_getCounter(self):
+        index = self._index
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = Dummy(['hello'])
+        index.index_object(10, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(10)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

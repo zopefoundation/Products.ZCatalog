@@ -78,20 +78,25 @@ class UnIndexTests(unittest.TestCase):
         dummy.exc = TypeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
 
-        def test_getCounter(self):
-            idx = self._makeOne('counter')
+    def test_getCounter(self):
+        index = self._makeOne('counter')
 
-            self.assertEqual(idx.getCounter(), 0)
+        self.assertEqual(index.getCounter(), 0)
 
-            class DummyContent(object):
-                counter = 'first'
-            dummy = DummyContent()
+        class Dummy(object):
+            id = 1
+            counter = 'counter'
 
-            idx.index_object(dummy)
-            self.assertEqual(idx.getCounter(), 1)
+        obj = Dummy()
+        index.index_object(obj.id, obj)
+        self.assertEqual(index.getCounter(), 1)
 
-            idx.unindex_object(dummy)
-            self.assertEqual(idx.getCounter(), 2)
+        index.unindex_object(obj.id)
+        self.assertEqual(index.getCounter(), 2)
 
-            idx.clear()
-            self.assertEqual(idx.getCounter(), 0)
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

@@ -143,3 +143,23 @@ class UUIDIndexTests(unittest.TestCase):
         # second index call fails and logs
         self._index.index_object(1, obj)
         self._checkApply({'foo': 'a'}, [(0, obj)])
+
+    def test_getCounter(self):
+        index = self._index
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = Dummy('a')
+        index.index_object(10, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(10)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
