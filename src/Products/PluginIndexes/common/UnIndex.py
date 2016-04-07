@@ -44,8 +44,8 @@ class UnIndex(SimpleItem):
     implements(ILimitedResultIndex, IUniqueValueIndex, ISortIndex)
     _counter = None
 
-    def __init__(
-        self, id, ignore_ex=None, call_methods=None, extra=None, caller=None):
+    def __init__(self, id, ignore_ex=None, call_methods=None,
+                 extra=None, caller=None):
         """Create an unindex
 
         UnIndexes are indexes that contain two index components, the
@@ -279,6 +279,7 @@ class UnIndex(SimpleItem):
         self._counter.change(1)
 
     def getCounter(self):
+        """Return a counter which is increased on index changes"""
         return self._counter is not None and self._counter() or 0
 
     def numObjects(self):
