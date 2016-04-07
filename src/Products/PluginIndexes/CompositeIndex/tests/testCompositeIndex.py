@@ -11,6 +11,10 @@ from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.CompositeIndex.CompositeIndex import CompositeIndex
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 
+import sys
+import logging
+
+logger = logging.getLogger('zope.testCompositeIndex')
 
 states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
@@ -120,6 +124,10 @@ class CompositeIndexTests(unittest.TestCase):
 
         return set(rs)
 
+    def enableLog(self):
+        logger.root.setLevel(logging.INFO)
+        logger.root.addHandler(logging.StreamHandler(sys.stdout))
+
     def _populateIndexes(self, k, v):
         self._index.index_object(k, v)
         for index in self._field_indexes:
@@ -130,13 +138,12 @@ class CompositeIndexTests(unittest.TestCase):
             size = index.indexSize()
             n_obj = index.numObjects()
             ratio = float(size)/float(n_obj)
-            print ('<id: %s S: %s N: %s R: %.3f pm>' %
+            logger.info('<id: %s S: %s N: %s R: %.3f pm>' %
                    (index.id, size, n_obj, ratio*1000))
-        print ''
+
         info(self._index)
         for index in self._field_indexes:
             info(index)
-        print ''
 
     def _clearIndexes(self):
         self._index.clear()
@@ -144,8 +151,9 @@ class CompositeIndexTests(unittest.TestCase):
             index.clear()
 
     def testPerformance(self):
+        self.enableLog()
 
-        lengths = [1000, ]
+        lengths = [10000, ]
 
         queries = [
             {'portal_type': {'query': 'Document'},
@@ -182,42 +190,47 @@ class CompositeIndexTests(unittest.TestCase):
             res1 = self._defaultSearch(query)
             duration1 = (time()-st)*1000
             if verbose:
-                print "atomic:    %s hits in %3.2fms" % (len(res1), duration1)
+                logger.info("atomic:    %s hits in %3.2fms" %
+                            (len(res1), duration1))
 
             st = time()
             res2 = self._compositeSearch(query)
             duration2 = (time()-st)*1000
             if verbose:
-                print "composite: %s hits in %3.2fms" % (len(res2), duration2)
+                logger.info("composite: %s hits in %3.2fms" %
+                            (len(res2), duration2))
 
             if verbose:
-                print ('[composite/atomic] factor %3.2f\n' %
-                       (duration1/duration2,))
+                logger.info('[composite/atomic] factor %3.2f\n' %
+                            (duration1/duration2,))
 
+            # composite search must be faster than default search
+            assert duration2 < duration1
+
+            # is result identical
             self.assertEqual(len(res1), len(res2))
-
             self.assertEqual(res1, res2)
 
         for l in lengths:
             self._clearIndexes()
-            print "************************************"
-            print "indexing %s objects" % l
+            logger.info('************************************\n'
+                        'indexing %s objects' % l)
             for i in range(l):
                 name = '%s' % i
                 obj = RandomTestObject(name)
                 self._populateIndexes(i, obj)
-            print "indexing finished"
+            logger.info('indexing finished\n')
             self.printIndexInfo()
-            print "start queries"
+            logger.info('\nstart queries')
             for query in queries:
-                print "query %s" % query.keys()
+                logger.info("query %s" % query.keys())
                 # warming up indexes
                 profileSearch(query)
                 # in memory measure
                 profileSearch(query, verbose=True)
-            print "queries finished"
+            logger.info('queries finished')
 
-        print "************************************"
+        logger.info('************************************')
 
     def testSearch(self):
 
