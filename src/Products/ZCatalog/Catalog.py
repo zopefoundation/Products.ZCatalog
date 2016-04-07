@@ -129,20 +129,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         else:
             # otherwise no score, set all scores to 1
             normalized_score, score, key = (1, 1, index)
-
-        data = self.data[key]
-        klass = self._v_result_class
-        schema_len = len(klass.__record_schema__)
-        if schema_len == len(data) + 3:
-            # if we have complete data, create in a single pass
-            r = klass(tuple(data) + (key, score, normalized_score))
-        else:
-            r = klass(data)
-            r.data_record_id_ = key
-            r.data_record_score_ = score
-            r.data_record_normalized_score_ = normalized_score
-        r = r.__of__(aq_parent(self))
-        return r
+        return self.instantiate((key, self.data[key]),
+                                score_data=(score, normalized_score))
 
     def __setstate__(self, state):
         """ initialize your brains.  This method is called when the
@@ -427,9 +415,29 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             record.append(attr)
         return tuple(record)
 
-    def instantiate(self, record):
-        r = self._v_result_class(record[1])
-        r.data_record_id_ = record[0]
+    def instantiate(self, record, score_data=None):
+        """ internal method: create and initialise search result object.
+        record should be a tuple of (document RID, metadata columns tuple),
+        score_data can be a tuple of (scode, normalized score) or be omitted"""
+        key, data = record
+        klass = self._v_result_class
+        if score_data:
+            score, normalized_score = score_data
+            schema_len = len(klass.__record_schema__)
+            if schema_len == len(data) + 3:
+                # if we have complete data, create in a single pass
+                data = tuple(data) + (key, score, normalized_score)
+                return klass(data).__of__(aq_parent(self))
+        r = klass(data)
+        r.data_record_id_ = key
+        if score_data:
+            # preserved during refactoring for compatibility reasons:
+            # can only be reached if score_data is present,
+            # but schema length is not equal to len(data) + 3
+            # no known use cases
+            r.data_record_score_ = score
+            r.data_record_normalized_score_ = normalized_score
+            return r.__of__(aq_parent(self))
         return r.__of__(self)
 
     def getMetadataForRID(self, rid):
@@ -676,19 +684,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         passed into self.useBrains.
                         """
                         score, key = item
-                        data = self.data[key]
-                        klass = self._v_result_class
-                        schema_len = len(klass.__record_schema__)
                         norm_score = int(100.0 * score / max)
-                        if schema_len == len(data) + 3:
-                            r = klass(tuple(data) + (key, score, norm_score))
-                        else:
-                            r = klass(data)
-                            r.data_record_id_ = key
-                            r.data_record_score_ = score
-                            r.data_record_normalized_score_ = norm_score
-                        r = r.__of__(aq_parent(self))
-                        return r
+                        return self.instantiate((key, self.data[key]),
+                                                score_data=(score, norm_score))
 
                     sequence, slen = self._limit_sequence(rs, rlen, b_start,
                         b_size)
