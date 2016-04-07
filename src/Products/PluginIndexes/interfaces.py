@@ -233,6 +233,7 @@ class ITopicIndex(Interface):
 # order to perform introspection on indexes in a defined way.
 # (ajung)
 
+
 class IIndexConfiguration(Interface):
     """ Introspection API for pluggable indexes """
 
@@ -241,3 +242,16 @@ class IIndexConfiguration(Interface):
             E.g. {'indexed_attrs' : ('SearchableText', )}.
             The interface does not define any specifc mapping keys.
         """
+
+# ITransposeQuery was added to support multicolumn indexes for field and
+# keyword indexes, eg. CompositeIndex. (andbag)
+
+
+class ITransposeQuery(Interface):
+    """ Optimization API for queries and indexing """
+
+    def make_query(query):
+        """ returns an optimized query for given index """
+
+    def getIndexNames():
+        """ returns index names that are optimized by index """
