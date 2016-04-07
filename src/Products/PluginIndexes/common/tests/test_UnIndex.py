@@ -58,19 +58,45 @@ class UnIndexTests(unittest.TestCase):
         class DummyContent2(object):
             interesting = 'GOT IT'
         dummy = DummyContent2()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         class DummyContent3(object):
             exc = None
+
             def interesting(self):
                 if self.exc:
                     raise self.exc
                 return 'GOT IT'
         dummy = DummyContent3()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), 'GOT IT')
+        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
+                          'GOT IT')
 
         dummy.exc = AttributeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
 
         dummy.exc = TypeError
         self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
+
+    def test_getCounter(self):
+        index = self._makeOne('counter')
+
+        self.assertEqual(index.getCounter(), 0)
+
+        class Dummy(object):
+            id = 1
+            counter = 'counter'
+
+        obj = Dummy()
+        index.index_object(obj.id, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(obj.id)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

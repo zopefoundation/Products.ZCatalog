@@ -246,3 +246,22 @@ class DRI_Tests(unittest.TestCase):
         results, used = index._apply_index({'work': 11},
             resultset=IISet([0, 5, 7]))
         self.assertEqual(set(results), set([0, 5]))
+
+    def test_getCounter(self):
+
+        index = self._makeOne('work', 'start', 'stop')
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = dummies[0]
+        index.index_object(1, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(1)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

@@ -113,12 +113,12 @@ class DateRangeIndex(UnIndex):
 
     security.declareProtected(view, 'getFloorValue')
     def getFloorValue(self):
-        """"""
+        """ """
         return self.floor_value
 
     security.declareProtected(view, 'getCeilingValue')
     def getCeilingValue(self):
-        """"""
+        """ """
         return self.ceiling_value
 
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
@@ -126,7 +126,7 @@ class DateRangeIndex(UnIndex):
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, REQUEST):
-        """"""
+        """ """
         self._edit(since_field, until_field, floor_value, ceiling_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
@@ -154,6 +154,7 @@ class DateRangeIndex(UnIndex):
         self._until = IOBTree()
         self._unindex = IOBTree()  # 'datum' will be a tuple of date ints
         self._length = Length()
+        self._counter = Length()
 
     def getEntryForObject(self, documentId, default=None):
         """Get all information contained for the specific object
@@ -186,6 +187,8 @@ class DateRangeIndex(UnIndex):
         if datum == old_datum:  # No change?  bail out!
             return 0
 
+        self._increment_counter()
+
         if old_datum is not None:
             old_since, old_until = old_datum
             self._removeForwardIndexEntry(old_since, old_until, documentId)
@@ -198,9 +201,12 @@ class DateRangeIndex(UnIndex):
     def unindex_object(self, documentId):
         """Remove the object corresponding to 'documentId' from the index.
         """
+
         datum = self._unindex.get(documentId, None)
         if datum is None:
             return
+
+        self._increment_counter()
 
         since, until = datum
         self._removeForwardIndexEntry(since, until, documentId)

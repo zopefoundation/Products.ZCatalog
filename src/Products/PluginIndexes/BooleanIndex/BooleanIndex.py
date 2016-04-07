@@ -62,6 +62,7 @@ class BooleanIndex(UnIndex):
         self._index_value = 1
         self._unindex = IIBTree()
         self._length = BTrees.Length.Length()
+        self._counter = BTrees.Length.Length()
 
     def histogram(self):
         """Return a mapping which provides a histogram of the number of
@@ -199,6 +200,8 @@ class BooleanIndex(UnIndex):
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
             return None
+
+        self._increment_counter()
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
 

@@ -285,3 +285,22 @@ class DI_Tests(unittest.TestCase):
                          {'date': 1072742900}, [values[7]])
         index.index_object(7, None)
         self.assertFalse(7 in index.documentToKeyMap().keys())
+
+    def test_getCounter(self):
+        from DateTime import DateTime
+
+        index = self._makeOne()
+        self.assertEqual(index.getCounter(), 0)
+
+        index.index_object(1, Dummy('b', DateTime(0)))
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(1)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)    
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
