@@ -41,11 +41,12 @@ class parseIndexRequest:
 
       other parameters depend on the the index
 
-   - record-style parameters specify a query for an index as instance of the
-     Record class. This happens usually when parameters from a web form use
-     the "record" type e.g. <input type="text" name="path.query:record:string">.
-     All restrictions of the dictionary-style parameters apply to the record-style
-     parameters
+   - record-style parameters specify a query for an index as instance
+     of the Record class. This happens usually when parameters from a
+     web form use the "record" type e.g.
+           <input type="text" name="path.query:record:string">.
+     All restrictions of the dictionary-style parameters apply to the
+     record-style parameters
     """
 
     ParserException = IndexRequestParseError
@@ -60,7 +61,7 @@ class parseIndexRequest:
         """
 
         self.id = iid
-        if not request.has_key(iid):
+        if iid not in request:
             self.keys = None
             return
 
@@ -82,7 +83,8 @@ class parseIndexRequest:
                 keys = [keys.strip()]
 
             for op in options:
-                if op == "query": continue
+                if op == "query":
+                    continue
 
                 if hasattr(record, op):
                     setattr(self, op, getattr(record, op))
@@ -94,12 +96,13 @@ class parseIndexRequest:
             if isinstance(query, (tuple, list)):
                 keys = query
             else:
-                keys = [ query ]
+                keys = [query]
 
             for op in options:
-                if op == "query": continue
+                if op == "query":
+                    continue
 
-                if param.has_key(op):
+                if op in param:
                     setattr(self, op, param[op])
 
         else:
@@ -112,7 +115,7 @@ class parseIndexRequest:
 
             for op in options:
                 field = iid + "_" + op
-                if request.has_key(field):
+                if field in request:
                     setattr(self, op, request[field])
 
         self.keys = keys
