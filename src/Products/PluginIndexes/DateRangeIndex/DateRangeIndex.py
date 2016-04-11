@@ -229,7 +229,6 @@ class DateRangeIndex(UnIndex):
                         yield (key, len(value))
 
     def _record_cache_key(self, record, resultset=None):
-        iid = self.id
         term = self._convertDateTime(record.keys[0])
 
         # why flatten to 10 minutes? 'term' is already flattened
@@ -237,11 +236,16 @@ class DateRangeIndex(UnIndex):
         # tid = isinstance(term, int) and term / 10 or 'None'
         tid = str(term)
 
+        # unique index identifier
+        iid = '_%s_%s_%s' % (self.__class__.__name__,
+                             self.id, self.getCounter())
+        # record identifier
         if resultset is None:
-            cachekey = '_daterangeindex_%s_%s' % (iid, tid)
+            rid = '_%s' % (tid, )
         else:
-            cachekey = '_daterangeindex_inverse_%s_%s' % (iid, tid)
-        return cachekey
+            rid = '_inverse_%s' % (tid, )
+
+        return (iid, rid)
 
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in 'request', which
