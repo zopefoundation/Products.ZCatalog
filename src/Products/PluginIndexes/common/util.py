@@ -15,6 +15,7 @@ from types import InstanceType
 
 from DateTime.DateTime import DateTime
 
+_marker = []
 
 class IndexRequestParseError(Exception):
     pass
@@ -131,3 +132,51 @@ class parseIndexRequest:
             if v != '':
                 return v
         return default_v
+
+
+class RequestCache(dict):
+
+    # stats info needed for testing
+    _hits = 0
+    _misses = 0
+    _sets = 0
+
+    def get(self, key, default=None):
+        value = super(RequestCache, self).get(key, _marker)
+
+        if value is _marker:
+            self._misses += 1
+            return default
+
+        self._hits += 1
+        return value
+
+    def __getitem__(self, key):
+        try:
+            value = super(RequestCache, self).__getitem__(key)
+        except KeyError as e:
+            self._misses += 1
+            raise e
+
+        self._hits += 1
+        return value
+
+    def __setitem__(self, key, value):
+        super(RequestCache, self).__setitem__(key, value)
+        self._sets += 1
+
+    def clear(self):
+        super(RequestCache, self).clear()
+        self._hits = 0
+        self._misses = 0
+        self._sets = 0
+
+    def stats(self):
+        stats = {'hits': self._hits,
+                 'misses': self._misses,
+                 'sets': self._sets}
+        return stats
+
+    def __str__(self):
+        return "<RequestCache %s items (hits: %s, misses: %s, sets: %s)>" % \
+            (len(self), self._hits, self._misses, self._sets)

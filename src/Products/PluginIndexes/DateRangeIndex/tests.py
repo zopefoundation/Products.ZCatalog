@@ -14,6 +14,9 @@
 import operator
 import unittest
 
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
+
 
 class Dummy(object):
 
@@ -265,3 +268,65 @@ class DRI_Tests(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
+
+
+class DRI_Cache_Tests(DRI_Tests):
+
+    def _makeOne(self, id, since_field=None, until_field=None,
+                 caller=None, extra=None):
+
+        index = super(DRI_Cache_Tests, self).\
+            _makeOne(id, since_field, until_field, caller, extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
+    def test_cache(self):
+        from BTrees.IIBTree import IISet
+
+        index = self._makeOne('work', 'start', 'stop')
+        for i in range(len(dummies)):
+            index.index_object(i, dummies[i])
+
+        cache = index.getRequestCache()
+
+        # without resultset
+        cache.clear()
+
+        # first call
+        results_1, used = index._apply_index({'work': 20})
+        self.assertEqual(set(results_1), set([0, 1, 2, 3]))
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        results_2, used = index._apply_index({'work': 20})
+        self.assertEqual(set(results_1), set(results_2))
+        self.assertEqual(cache._hits, 1)
+
+        # with resultset
+        cache.clear()
+
+        # first call
+        results_1, used = index._apply_index({'work': 20},
+            resultset=IISet(range(len(dummies))))
+        self.assertEqual(set(results_1), set([0, 1, 2, 3]))
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        results_2, used = index._apply_index({'work': 20},
+            resultset=IISet(range(len(dummies))))
+        self.assertEqual(set(results_1), set(results_2))
+        self.assertEqual(cache._hits, 1)
