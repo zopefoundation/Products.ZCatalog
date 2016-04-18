@@ -282,11 +282,6 @@ class DateRangeIndex(UnIndex):
             until_only = multiunion(self._until_only.values(term))
             since_only = multiunion(self._since_only.values(None, term))
             until = multiunion(self._until.values(term))
-
-            # Total result is bound by resultset
-            if cache is None:
-                until = intersection(resultset, until)
-
             since = multiunion(self._since.values(None, term))
             bounded = intersection(until, since)
 
