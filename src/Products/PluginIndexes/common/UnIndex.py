@@ -359,7 +359,7 @@ class UnIndex(SimpleItem):
         params.append(('operator', operator))
 
         # not / exclude operator
-        not_value = getattr(self, 'not', None)
+        not_value = record.get('not', None)
         if not_value is not None:
             not_value = frozenset(not_value)
             params.append(('not', not_value))
@@ -380,7 +380,6 @@ class UnIndex(SimpleItem):
         # unique index identifier
         iid = '_%s_%s_%s' % (self.__class__.__name__,
                              self.id, self.getCounter())
-
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):
