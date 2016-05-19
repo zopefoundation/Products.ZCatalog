@@ -37,6 +37,7 @@ from Products.PluginIndexes.common.util import RequestCache
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 from Products.PluginIndexes.interfaces import ISortIndex
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
+from Products.PluginIndexes.interfaces import IRequestCacheIndex
 
 _marker = []
 LOG = getLogger('Zope.UnIndex')
@@ -46,7 +47,9 @@ class UnIndex(SimpleItem):
 
     """Simple forward and reverse index.
     """
-    implements(ILimitedResultIndex, IUniqueValueIndex, ISortIndex)
+    implements(ILimitedResultIndex, IUniqueValueIndex,
+               ISortIndex, IRequestCacheIndex)
+
     _counter = None
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
@@ -121,9 +124,9 @@ class UnIndex(SimpleItem):
 
     def clear(self):
         self._length = Length()
+        self._counter = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
-        self._counter = Length()
 
     def __nonzero__(self):
         return not not self._unindex
@@ -333,53 +336,45 @@ class UnIndex(SimpleItem):
         """returns dict for caching per request for interim results
         of an index search. Returns 'None' if no REQUEST attribute
         is available"""
+
         cache = None
         REQUEST = aq_get(self, 'REQUEST', None)
         if REQUEST is not None:
             catalog = aq_parent(aq_parent(aq_inner(self)))
             if catalog is not None:
-                key = self._catalog_cache_key(catalog)
+                # unique catalog identifier
+                key = '_catalogcache_%s_%s' % (catalog.getId(), id(catalog))
                 cache = REQUEST.get(key, None)
                 if cache is None:
                     cache = REQUEST[key] = RequestCache()
 
         return cache
 
-    def _catalog_cache_key(self, catalog):
-        # unique catalog identifier
-        cid = '_%s_%s' % (catalog.getId(), id(catalog))
-        return cid
-
-    def _record_cache_key(self, record, resultset=None):
+    def getRequestCacheKey(self, record, resultset=None):
+        """returns an unique key of a search record"""
         params = []
 
+        # record operator (or, and)
         operator = record.get('operator', self.useOperator)
         params.append(('operator', operator))
 
-        not_parm = record.get('not', None)
-        if not_parm:
-            if not isinstance(not_parm, (list, tuple)):
-                not_parm = (not_parm,)
+        # not / exclude operator
+        not_value = getattr(self, 'not', None)
+        if not_value is not None:
+            not_value = frozenset(not_value)
+            params.append(('not', not_value))
 
-            not_parm = frozenset(not_parm)
-            params.append(('not', not_parm))
+        # record options
+        for op in ['range', 'usage']:
+            op_value = record.get(op, None)
+            if op_value is not None:
+                params.append((op, op_value))
 
-        range_parm = record.get('range', None)
-        if range_parm:
-            params.append(('range_parm', range_parm))
+        # record keys
+        rec_keys = frozenset(record.keys)
+        params.append(('keys', rec_keys))
 
-        usage_parm = record.get('usage', None)
-        if usage_parm:
-            params.append(('usage_parm', usage_parm))
-
-        kw = record.keys
-        if not isinstance(kw, (list, tuple)):
-            kw = (kw,)
-
-        kw = frozenset(kw)
-        params.append(('keys', kw))
-
-        # record identifier
+        # build record identifier
         rid = frozenset(params)
 
         # unique index identifier
@@ -442,7 +437,7 @@ class UnIndex(SimpleItem):
         cachekey = None
         cache = self.getRequestCache()
         if cache is not None:
-            cachekey = self._record_cache_key(record)
+            cachekey = self.getRequestCacheKey(record)
             if cachekey is not None:
                 cached = None
                 if operator == 'or':

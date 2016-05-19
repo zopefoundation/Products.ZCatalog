@@ -228,7 +228,7 @@ class DateRangeIndex(UnIndex):
                     else:
                         yield (key, len(value))
 
-    def _record_cache_key(self, record, resultset=None):
+    def getRequestCacheKey(self, record, resultset=None):
         term = self._convertDateTime(record.keys[0])
 
         # why flatten to 10 minutes? 'term' is already flattened
@@ -265,7 +265,7 @@ class DateRangeIndex(UnIndex):
 
         cache = self.getRequestCache()
         if cache is not None:
-            cachekey = self._record_cache_key(record, resultset)
+            cachekey = self.getRequestCacheKey(record, resultset)
             cached = cache.get(cachekey, None)
             if cached is not None:
                 if resultset is None:
