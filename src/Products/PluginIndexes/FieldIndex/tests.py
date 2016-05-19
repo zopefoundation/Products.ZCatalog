@@ -108,11 +108,15 @@ class FieldIndexTests(unittest.TestCase):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, self._getTargetClass())
-        verifyClass(ISortIndex, self._getTargetClass())
-        verifyClass(IUniqueValueIndex, self._getTargetClass())
+        klass = self._getTargetClass()
+
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def testEmpty(self):
         "Test an empty FieldIndex."
