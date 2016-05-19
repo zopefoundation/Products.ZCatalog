@@ -54,29 +54,32 @@ class FieldIndexTests(unittest.TestCase):
             keys = self._forward.get(v, [])
             self._forward[v] = keys
 
-        self._noop_req  = {'bar': 123}
-        self._request   = {'foo': 'abce'}
-        self._min_req   = {'foo':
-            {'query': 'abc', 'range': 'min'}}
-        self._min_req_n = {'foo':
-            {'query': 'abc', 'range': 'min', 'not': 'abca'}}
-        self._max_req   = {'foo':
-            {'query': 'abc', 'range': 'max'}}
-        self._max_req_n = {'foo':
-            {'query': 'abc', 'range': 'max', 'not': ['a', 'b', 0]}}
-        self._range_req = {'foo':
-            {'query': ('abc', 'abcd'), 'range': 'min:max'}}
-        self._range_ren = {'foo':
-            {'query': ('abc', 'abcd'), 'range': 'min:max', 'not': 'abcd'}}
-        self._range_non = {'foo':
-            {'query': ('a', 'aa'), 'range': 'min:max', 'not': 'a'}}
-        self._zero_req  = {'foo': 0 }
-        self._not_1     = {'foo': {'query': 'a', 'not': 'a'}}
-        self._not_2     = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
-        self._not_3     = {'foo': {'not': 'a'}}
-        self._not_4     = {'foo': {'not': [0]}}
-        self._not_5     = {'foo': {'not': ['a', 'b']}}
-        self._not_6     = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
+        self._noop_req = {'bar': 123}
+        self._request = {'foo': 'abce'}
+        self._min_req = {'foo': {'query': 'abc', 'range': 'min'}}
+        self._min_req_n = {'foo': {'query': 'abc',
+                                   'range': 'min',
+                                   'not': 'abca'}}
+        self._max_req = {'foo': {'query': 'abc',
+                                 'range': 'max'}}
+        self._max_req_n = {'foo': {'query': 'abc',
+                                   'range': 'max',
+                                   'not': ['a', 'b', 0]}}
+        self._range_req = {'foo': {'query': ('abc', 'abcd'),
+                                   'range': 'min:max'}}
+        self._range_ren = {'foo': {'query': ('abc', 'abcd'),
+                                   'range': 'min:max',
+                                   'not': 'abcd'}}
+        self._range_non = {'foo': {'query': ('a', 'aa'),
+                                   'range': 'min:max',
+                                   'not': 'a'}}
+        self._zero_req = {'foo': 0}
+        self._not_1 = {'foo': {'query': 'a', 'not': 'a'}}
+        self._not_2 = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
+        self._not_3 = {'foo': {'not': 'a'}}
+        self._not_4 = {'foo': {'not': [0]}}
+        self._not_5 = {'foo': {'not': ['a', 'b']}}
+        self._not_6 = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
     def _populateIndex(self):
         for k, v in self._values:
@@ -88,7 +91,7 @@ class FieldIndexTests(unittest.TestCase):
             result = result.keys()
         assert used == ('foo', )
         assert len(result) == len(expectedValues), \
-          '%s | %s' % (map(None, result), expectedValues)
+            '%s | %s' % (map(None, result), expectedValues)
         for k, v in expectedValues:
             assert k in result
 
@@ -111,7 +114,7 @@ class FieldIndexTests(unittest.TestCase):
 
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-                  is self._marker)
+                is self._marker)
         self._index.unindex_object(1234)  # nothrow
 
         assert self._index.hasUniqueValuesFor('foo')
@@ -134,12 +137,12 @@ class FieldIndexTests(unittest.TestCase):
         values = self._values
 
         assert len(self._index) == len(values) - 1  # 'abce' is duplicate
-        assert len(self._index.referencedObjects() ) == len(values)
+        assert len(self._index.referencedObjects()) == len(values)
         self.assertEqual(self._index.indexSize(), len(values) - 1)
 
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-                  is self._marker)
+                is self._marker)
         self._index.unindex_object(1234)  # nothrow
 
         for k, v in values:

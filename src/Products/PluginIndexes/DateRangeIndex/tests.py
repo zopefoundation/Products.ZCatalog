@@ -38,22 +38,24 @@ class Dummy(object):
         return (self._start, self._stop)
 
 
-dummies = [ Dummy( 'a', None,   None )
-          , Dummy( 'b', None,   None )
-          , Dummy( 'c', 0,      None )
-          , Dummy( 'd', 10,     None )
-          , Dummy( 'e', None,   4    )
-          , Dummy( 'f', None,   11   )
-          , Dummy( 'g', 0,      11   )
-          , Dummy( 'h', 2,      9    )
-          ]
+dummies = [Dummy('a', None, None),
+           Dummy('b', None, None),
+           Dummy('c', 0, None),
+           Dummy('d', 10, None),
+           Dummy('e', None, 4),
+           Dummy('f', None, 11),
+           Dummy('g', 0, 11),
+           Dummy('h', 2, 9),
+           ]
 
 
 def matchingDummies(value):
     result = []
     for dummy in dummies:
-        if ((dummy.start() is None or dummy.start() <= value)
-            and (dummy.stop() is None or dummy.stop() >= value)):
+        if ((dummy.start() is None
+             or dummy.start() <= value) and
+            (dummy.stop() is None
+             or dummy.stop() >= value)):
             result.append(dummy)
     return result
 
@@ -86,7 +88,7 @@ class DRI_Tests(unittest.TestCase):
         empty = self._makeOne('empty')
 
         self.assertTrue(empty.getEntryForObject(1234) is None)
-        empty.unindex_object(1234) # shouldn't throw
+        empty.unindex_object(1234)  # shouldn't throw
 
         self.assertFalse(list(empty.uniqueValues('foo')))
         self.assertFalse(list(empty.uniqueValues('foo', withLengths=True)))
@@ -114,7 +116,8 @@ class DRI_Tests(unittest.TestCase):
             matches = sorted(matches, key=operator.methodcaller('name'))
 
             for result, match in map(None, results, matches):
-                self.assertEqual(index.getEntryForObject(result), match.datum())
+                self.assertEqual(index.getEntryForObject(result),
+                                 match.datum())
 
     def test_longdates(self):
         too_large = 2 ** 31
@@ -218,12 +221,14 @@ class DRI_Tests(unittest.TestCase):
         self.assertEqual(set(results), set([0, 1, 2, 3]))
 
         # a resultset with everything doesn't actually limit
-        results, used = index._apply_index({'work': 20},
+        results, used = index._apply_index(
+            {'work': 20},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results), set([0, 1, 2, 3]))
 
         # a small resultset limits
-        results, used = index._apply_index({'work': 20},
+        results, used = index._apply_index(
+            {'work': 20},
             resultset=IISet([1, 2]))
         self.assertEqual(set(results), set([1, 2]))
 
@@ -236,17 +241,20 @@ class DRI_Tests(unittest.TestCase):
         self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
 
         # the specified value is included with a large resultset
-        results, used = index._apply_index({'work': 11},
+        results, used = index._apply_index(
+            {'work': 11},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
 
         # this also works for _since_only
-        results, used = index._apply_index({'work': 10},
+        results, used = index._apply_index(
+            {'work': 10},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
 
         # the specified value is included with a small resultset
-        results, used = index._apply_index({'work': 11},
+        results, used = index._apply_index(
+            {'work': 11},
             resultset=IISet([0, 5, 7]))
         self.assertEqual(set(results), set([0, 5]))
 
@@ -318,7 +326,8 @@ class DRI_Cache_Tests(DRI_Tests):
         cache.clear()
 
         # first call
-        results_1, used = index._apply_index({'work': 20},
+        results_1, used = index._apply_index(
+            {'work': 20},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results_1), set([0, 1, 2, 3]))
         self.assertEqual(cache._hits, 0)
@@ -326,7 +335,8 @@ class DRI_Cache_Tests(DRI_Tests):
         self.assertEqual(cache._misses, 1)
 
         # second call
-        results_2, used = index._apply_index({'work': 20},
+        results_2, used = index._apply_index(
+            {'work': 20},
             resultset=IISet(range(len(dummies))))
         self.assertEqual(set(results_1), set(results_2))
         self.assertEqual(cache._hits, 1)
