@@ -15,8 +15,8 @@
 
 import unittest
 
-from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 class Dummy(object):
 
@@ -35,9 +35,17 @@ class Dummy(object):
 class FieldIndexTests(unittest.TestCase):
     """Test FieldIndex objects.
     """
+    def _getTargetClass(self):
+        from Products.PluginIndexes.FieldIndex.FieldIndex \
+            import FieldIndex
+        return FieldIndex
+
+    def _makeOne(self, id, extra=None):
+        klass = self._getTargetClass()
+        return klass(id, extra=extra)
 
     def setUp(self):
-        self._index = FieldIndex('foo')
+        self._index = self._makeOne('foo')
         self._marker = []
         self._values = [(0, Dummy('a')),
                         (1, Dummy('ab')),
@@ -101,9 +109,9 @@ class FieldIndexTests(unittest.TestCase):
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, FieldIndex)
-        verifyClass(ISortIndex, FieldIndex)
-        verifyClass(IUniqueValueIndex, FieldIndex)
+        verifyClass(IPluggableIndex, self._getTargetClass())
+        verifyClass(ISortIndex, self._getTargetClass())
+        verifyClass(IUniqueValueIndex, self._getTargetClass())
 
     def testEmpty(self):
         "Test an empty FieldIndex."
@@ -218,7 +226,7 @@ class FieldIndexTests(unittest.TestCase):
 
     def testRange(self):
         """Test a range search"""
-        index = FieldIndex('foo')
+        index = self._makeOne('foo')
         for i in range(100):
             index.index_object(i, Dummy(i % 10))
 
@@ -241,3 +249,41 @@ class FieldIndexTests(unittest.TestCase):
         r2, ignore = index._apply_index(record)
         r2 = list(r2.keys())
         assert r2 == r
+
+
+class FieldIndexCacheTests(FieldIndexTests):
+
+    def _makeOne(self, id, extra=None):
+            
+        index = super(FieldIndexCacheTests, self).\
+            _makeOne(id, extra=extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+ 
+    def _checkApply(self, req, expectedValues):
+        
+        checkApply = super(FieldIndexCacheTests, self)._checkApply
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 1)
