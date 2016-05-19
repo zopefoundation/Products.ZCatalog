@@ -18,6 +18,7 @@ import unittest
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
+
 class Dummy(object):
 
     def __init__(self, foo):
@@ -226,35 +227,33 @@ class FieldIndexTests(unittest.TestCase):
 
     def testRange(self):
         """Test a range search"""
-        index = self._makeOne('foo')
-        for i in range(100):
-            index.index_object(i, Dummy(i % 10))
+        index = self._index
+        index.clear()
 
         record = {'foo': {'query': [-99, 3], 'range': 'min:max'}}
-        r = index._apply_index(record)
 
-        assert tuple(r[1]) == ('foo', ), r[1]
-        r = list(r[0].keys())
+        expect = []
+        for i in range(100):
+            val = i % 10
+            obj = Dummy(val)
 
-        expect = [
-            0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 30, 31, 32, 33,
-            40, 41, 42, 43, 50, 51, 52, 53, 60, 61, 62, 63, 70, 71, 72, 73,
-            80, 81, 82, 83, 90, 91, 92, 93
-            ]
-        assert r == expect, r
+            if val >= -99 and val <= 3:
+                expect.append((i, obj))
+
+            index.index_object(i, obj)
+
+        self._checkApply(record, expect)
 
         # Make sure that range tests with incompatible paramters
         # don't return empty sets.
         record['foo']['operator'] = 'and'
-        r2, ignore = index._apply_index(record)
-        r2 = list(r2.keys())
-        assert r2 == r
+        self._checkApply(record, expect)
 
 
 class FieldIndexCacheTests(FieldIndexTests):
 
     def _makeOne(self, id, extra=None):
-            
+
         index = super(FieldIndexCacheTests, self).\
             _makeOne(id, extra=extra)
 
@@ -269,9 +268,9 @@ class FieldIndexCacheTests(FieldIndexTests):
         index = index.__of__(indexes)
 
         return index
- 
+
     def _checkApply(self, req, expectedValues):
-        
+
         checkApply = super(FieldIndexCacheTests, self)._checkApply
         index = self._index
 
