@@ -233,6 +233,7 @@ class ITopicIndex(Interface):
 # order to perform introspection on indexes in a defined way.
 # (ajung)
 
+
 class IIndexConfiguration(Interface):
     """ Introspection API for pluggable indexes """
 
@@ -241,3 +242,16 @@ class IIndexConfiguration(Interface):
             E.g. {'indexed_attrs' : ('SearchableText', )}.
             The interface does not define any specifc mapping keys.
         """
+
+
+class IRequestCacheIndex(Interface):
+    """ Request cache API for pluggable indexes """
+
+    def getRequestCache():
+        """ Returns dict for caching per request for interim results
+            of an index search. Returns 'None' if no REQUEST attribute
+            is available
+        """
+
+    def getRequestCacheKey(record, resultset=None):
+        """ Returns an unique key of a search record """
