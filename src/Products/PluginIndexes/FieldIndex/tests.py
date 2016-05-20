@@ -208,18 +208,15 @@ class FieldIndexTests(unittest.TestCase):
 
     def testReindex(self):
         self._populateIndex()
-        result, used = self._index._apply_index({'foo': 'abc'})
-        assert list(result) == [2]
+        self._checkApply({'foo': 'abc'}, [self._values[2], ])
         assert self._index.keyForDocument(2) == 'abc'
         d = Dummy('world')
         self._index.index_object(2, d)
-        result, used = self._index._apply_index({'foo': 'world'})
-        assert list(result) == [2]
+        self._checkApply({'foo': 'world'}, [(2, d), ])
         assert self._index.keyForDocument(2) == 'world'
         del d._foo
         self._index.index_object(2, d)
-        result, used = self._index._apply_index({'foo': 'world'})
-        assert list(result) == []
+        self._checkApply({'foo': 'world'}, [])
         try:
             should_not_be = self._index.keyForDocument(2)
         except KeyError:
