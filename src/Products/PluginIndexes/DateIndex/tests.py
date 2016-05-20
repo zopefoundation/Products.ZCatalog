@@ -33,13 +33,14 @@ class Dummy:
 # excerpted from the Python module docs
 ###############################################################################
 
+
 def _getEastern():
-    from datetime import date
     from datetime import datetime
     from datetime import timedelta
     from datetime import tzinfo
     ZERO = timedelta(0)
     HOUR = timedelta(hours=1)
+
     def first_sunday_on_or_after(dt):
         days_to_go = 6 - dt.weekday()
         if days_to_go:
@@ -112,18 +113,18 @@ class DI_Tests(unittest.TestCase):
         from datetime import date
         from datetime import datetime
         return [
-            (0, Dummy('a', None)),                            # None
-            (1, Dummy('b', DateTime(0))),                     # 1055335680
-            (2, Dummy('c', DateTime('2002-05-08 15:16:17'))), # 1072667236
-            (3, Dummy('d', DateTime('2032-05-08 15:16:17'))), # 1088737636
-            (4, Dummy('e', DateTime('2062-05-08 15:16:17'))), # 1018883325
-            (5, Dummy('e', DateTime('2062-05-08 15:16:17'))), # 1018883325
-            (6, Dummy('f', 1072742620.0)),                    # 1073545923
-            (7, Dummy('f', 1072742900)),                      # 1073545928
-            (8, Dummy('g', date(2034,2,5))),                  # 1073599200
-            (9, Dummy('h', datetime(2034,2,5,15,20,5))),      # (varies)
-            (10, Dummy('i', datetime(2034,2,5,10,17,5,
-                                     tzinfo=_getEastern()))), # 1073600117
+            (0, Dummy('a', None)),                             # None
+            (1, Dummy('b', DateTime(0))),                      # 1055335680
+            (2, Dummy('c', DateTime('2002-05-08 15:16:17'))),  # 1072667236
+            (3, Dummy('d', DateTime('2032-05-08 15:16:17'))),  # 1088737636
+            (4, Dummy('e', DateTime('2062-05-08 15:16:17'))),  # 1018883325
+            (5, Dummy('e', DateTime('2062-05-08 15:16:17'))),  # 1018883325
+            (6, Dummy('f', 1072742620.0)),                     # 1073545923
+            (7, Dummy('f', 1072742900)),                       # 1073545928
+            (8, Dummy('g', date(2034, 2, 5))),                 # 1073599200
+            (9, Dummy('h', datetime(2034, 2, 5, 15, 20, 5))),  # (varies)
+            (10, Dummy('i', datetime(2034, 2, 5, 10, 17, 5,
+                                     tzinfo=_getEastern()))),  # 1073600117
         ]
 
     def _populateIndex(self, index):
@@ -136,7 +137,7 @@ class DI_Tests(unittest.TestCase):
             result = result.keys()
         self.assertEqual(used, ('date',))
         self.assertEqual(len(result), len(expectedValues),
-            '%s | %s' % (result, expectedValues))
+                         '%s | %s' % (result, expectedValues))
         for k, v in expectedValues:
             self.assertTrue(k in result)
 
@@ -150,7 +151,7 @@ class DI_Tests(unittest.TestCase):
         elif type(dt) is date:
             yr, mo, dy, hr, mn = dt.timetuple()[:5]
         elif type(dt) is datetime:
-            if dt.tzinfo is None: # default behavior of index
+            if dt.tzinfo is None:  # default behavior of index
                 dt = dt.replace(tzinfo=Local)
             yr, mo, dy, hr, mn = dt.utctimetuple()[:5]
         else:
@@ -179,7 +180,7 @@ class DI_Tests(unittest.TestCase):
         self.assertTrue(index.getEntryForObject(1234) is None)
         marker = []
         self.assertTrue(index.getEntryForObject(1234, marker) is marker)
-        index.unindex_object(1234) # shouldn't throw
+        index.unindex_object(1234)  # shouldn't throw
 
         self.assertTrue(index.hasUniqueValuesFor('date'))
         self.assertFalse(index.hasUniqueValuesFor('foo'))
@@ -198,8 +199,9 @@ class DI_Tests(unittest.TestCase):
                                    'range': 'max'}},
                          [])
         self._checkApply(index,
-                         {'date': {'query':(DateTime('2002-05-08 15:16:17'),
-                                            DateTime('2062-05-08 15:16:17')),
+                         {'date': {'query':
+                                   (DateTime('2002-05-08 15:16:17'),
+                                    DateTime('2062-05-08 15:16:17')),
                                    'range': 'min:max'}},
                          [])
 
@@ -209,19 +211,19 @@ class DI_Tests(unittest.TestCase):
         self._populateIndex(index)
         values = self._getValues()
 
-        self.assertEqual(len(index), len(values) - 2) # One dupe, one empty
+        self.assertEqual(len(index), len(values) - 2)  # One dupe, one empty
         self.assertEqual(len(index.referencedObjects()), len(values) - 1)
             # One empty
 
         self.assertTrue(index.getEntryForObject(1234) is None)
         marker = []
         self.assertTrue(index.getEntryForObject(1234, marker) is marker)
-        index.unindex_object(1234) # shouldn't throw
+        index.unindex_object(1234)  # shouldn't throw
 
         for k, v in values:
             if v.date():
                 self.assertEqual(index.getEntryForObject(k),
-                    self._convert(v.date()))
+                                 self._convert(v.date()))
 
         self.assertEqual(
             len(list(index.uniqueValues('date'))), len(values) - 2)
@@ -238,15 +240,15 @@ class DI_Tests(unittest.TestCase):
                                    'range': 'max'}},
                          values[1:4] + values[6:8])
         self._checkApply(index,
-                         {'date': {'query':(DateTime('2002-05-08 15:16:17'),
-                                            DateTime('2062-05-08 15:16:17')),
+                         {'date': {'query':
+                                   (DateTime('2002-05-08 15:16:17'),
+                                    DateTime('2062-05-08 15:16:17')),
                                    'range': 'min:max'}},
-                         values[2:] )
+                         values[2:])
         self._checkApply(index,
                          {'date': 1072742620.0}, [values[6]])
         self._checkApply(index,
                          {'date': 1072742900}, [values[7]])
-
 
     def test_not(self):
         from DateTime import DateTime
@@ -256,8 +258,10 @@ class DI_Tests(unittest.TestCase):
         # all but the None value
         self._checkApply(index, {'date': {'not': 123}}, values[1:])
         self._checkApply(index, {'date': {'not': DateTime(0)}}, values[2:])
-        self._checkApply(index, {'date': {'not':
-            [DateTime(0), DateTime('2002-05-08 15:16:17')]}}, values[3:])
+        self._checkApply(index, {'date':
+                                 {'not': [DateTime(0),
+                                          DateTime('2002-05-08 15:16:17')]}},
+                         values[3:])
 
     def test_naive_convert_to_utc(self):
         index = self._makeOne()
@@ -300,7 +304,7 @@ class DI_Tests(unittest.TestCase):
 
         # unknown id
         index.unindex_object(1234)
-        self.assertEqual(index.getCounter(), 2)    
+        self.assertEqual(index.getCounter(), 2)
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
