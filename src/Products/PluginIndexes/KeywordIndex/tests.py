@@ -13,7 +13,8 @@
 
 import unittest
 
-from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 
 class Dummy(object):
@@ -43,8 +44,17 @@ class TestKeywordIndex(unittest.TestCase):
 
     _old_log_write = None
 
+    def _getTargetClass(self):
+        from Products.PluginIndexes.KeywordIndex.KeywordIndex \
+            import KeywordIndex
+        return KeywordIndex
+
+    def _makeOne(self, id, extra=None):
+        klass = self._getTargetClass()
+        return klass(id, extra=extra)
+
     def setUp(self):
-        self._index = KeywordIndex('foo')
+        self._index = self._makeOne('foo')
         self._marker = []
         self._values = [(0, Dummy(['a'])),
                         (1, Dummy(['a', 'b'])),
@@ -77,8 +87,8 @@ class TestKeywordIndex(unittest.TestCase):
         result, used = self._index._apply_index(req)
         assert used == ('foo', )
         assert len(result) == len(expectedValues), \
-          '%s | %s' % (map(None, result),
-                       map(lambda x: x[0], expectedValues))
+            '%s | %s' % (map(None, result),
+                         map(lambda x: x[0], expectedValues))
 
         if hasattr(result, 'keys'):
             result = result.keys()
@@ -89,11 +99,15 @@ class TestKeywordIndex(unittest.TestCase):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, KeywordIndex)
-        verifyClass(ISortIndex, KeywordIndex)
-        verifyClass(IUniqueValueIndex, KeywordIndex)
+        klass = self._getTargetClass()
+
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def testAddObjectWOKeywords(self):
         self._populateIndex()
@@ -106,7 +120,7 @@ class TestKeywordIndex(unittest.TestCase):
 
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-                  is self._marker), self._index.getEntryForObject(1234)
+                is self._marker), self._index.getEntryForObject(1234)
         self._index.unindex_object(1234)  # nothrow
 
         assert self._index.hasUniqueValuesFor('foo')
@@ -126,7 +140,7 @@ class TestKeywordIndex(unittest.TestCase):
         assert len(self._index.referencedObjects()) == len(values)
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-            is self._marker)
+                is self._marker)
         self._index.unindex_object(1234)  # nothrow
         self.assertEqual(self._index.indexSize(), len(values) - 1)
 
@@ -273,3 +287,41 @@ class TestKeywordIndex(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
+
+
+class TestKeywordIndexCache(TestKeywordIndex):
+
+    def _makeOne(self, id, extra=None):
+
+        index = super(TestKeywordIndexCache, self).\
+            _makeOne(id, extra=extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
+    def _checkApply(self, req, expectedValues):
+
+        checkApply = super(TestKeywordIndexCache, self)._checkApply
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 1)
