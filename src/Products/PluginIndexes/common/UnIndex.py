@@ -455,11 +455,13 @@ class UnIndex(SimpleItem):
                         cached = r
 
                 if cached is not None:
+                    if isinstance(cached, int):
+                        cached = IISet((cached, ))
+
                     if not_parm:
                         not_parm = map(self._convert, not_parm)
                         exclude = self._apply_not(not_parm, resultset)
-                        r = difference(cached, exclude)
-                        return r, (self.id,)
+                        cached = difference(cached, exclude)
 
                     return cached, (self.id,)
 
