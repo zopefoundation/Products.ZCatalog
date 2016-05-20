@@ -13,6 +13,9 @@
 
 import unittest
 
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
+
 
 class Dummy:
 
@@ -163,12 +166,16 @@ class DI_Tests(unittest.TestCase):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IDateIndex, self._getTargetClass())
-        verifyClass(IPluggableIndex, self._getTargetClass())
-        verifyClass(ISortIndex, self._getTargetClass())
-        verifyClass(IUniqueValueIndex, self._getTargetClass())
+        klass = self._getTargetClass()
+
+        verifyClass(IDateIndex, klass)
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def test_empty(self):
         from DateTime import DateTime
@@ -308,3 +315,40 @@ class DI_Tests(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
+
+
+class DI_Cache_Tests(DI_Tests):
+
+    def _makeOne(self, id='date'):
+
+        index = super(DI_Cache_Tests, self).\
+            _makeOne(id)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
+    def _checkApply(self, index, req, expectedValues):
+
+        checkApply = super(DI_Cache_Tests, self)._checkApply
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call
+        checkApply(index, req, expectedValues)
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        checkApply(index, req, expectedValues)
+        self.assertEqual(cache._hits, 1)
