@@ -230,10 +230,6 @@ class DateRangeIndex(UnIndex):
 
     def getRequestCacheKey(self, record, resultset=None):
         term = self._convertDateTime(record.keys[0])
-
-        # why flatten to 10 minutes? 'term' is already flattened
-        # to minutes by _convertDateTime.
-        # tid = isinstance(term, int) and term / 10 or 'None'
         tid = str(term)
 
         # unique index identifier
