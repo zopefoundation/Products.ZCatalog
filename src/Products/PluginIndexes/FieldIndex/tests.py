@@ -253,6 +253,14 @@ class FieldIndexTests(unittest.TestCase):
 
 class FieldIndexCacheTests(FieldIndexTests):
 
+    def _dummy_test(self):
+        # dummy function
+        pass
+
+    # following methods do not require a cache test
+    test_interfaces = _dummy_test
+    test_getCounter = _dummy_test
+
     def _makeOne(self, id, extra=None):
 
         index = super(FieldIndexCacheTests, self).\

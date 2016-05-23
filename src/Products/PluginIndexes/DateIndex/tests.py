@@ -319,6 +319,15 @@ class DI_Tests(unittest.TestCase):
 
 class DI_Cache_Tests(DI_Tests):
 
+    def _dummy_test(self):
+        # dummy function
+        pass
+
+    # following methods do not require a cache test
+    test_interfaces = _dummy_test
+    test_naive_convert_to_utc = _dummy_test
+    test_getCounter = _dummy_test
+
     def _makeOne(self, id='date'):
 
         index = super(DI_Cache_Tests, self).\

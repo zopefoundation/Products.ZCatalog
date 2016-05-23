@@ -64,7 +64,7 @@ class TestKeywordIndex(unittest.TestCase):
                         (5, Dummy(['a', 'b', 'c', 'e'])),
                         (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
                         (7, Dummy([0])),
-                       ]
+                        ]
         self._noop_req = {'bar': 123}
         self._all_req = {'foo': ['a']}
         self._some_req = {'foo': ['e']}
@@ -173,32 +173,22 @@ class TestKeywordIndex(unittest.TestCase):
 
     def testReindexChange(self):
         self._populateIndex()
+        values = self._values
+
         expected = Dummy(['x', 'y'])
         self._index.index_object(6, expected)
-        result, used = self._index._apply_index({'foo': ['x', 'y']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 6
-        result, used = self._index._apply_index(
-            {'foo': ['a', 'b', 'c', 'e', 'f']})
-        result = result.keys()
-        assert 6 not in result
+        self._checkApply({'foo': ['x', 'y']}, [(6, expected), ])
+        self._checkApply({'foo': ['a', 'b', 'c', 'e', 'f']}, values[:6])
 
     def testReindexNoChange(self):
         self._populateIndex()
         expected = Dummy(['foo', 'bar'])
+
         self._index.index_object(8, expected)
-        result, used = self._index._apply_index(
-            {'foo': ['foo', 'bar']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 8
+        self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
+
         self._index.index_object(8, expected)
-        result, used = self._index._apply_index(
-            {'foo': ['foo', 'bar']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 8
+        self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
 
     def testIntersectionWithRange(self):
         # Test an 'and' search, ensuring that 'range' doesn't mess it up.
@@ -290,6 +280,20 @@ class TestKeywordIndex(unittest.TestCase):
 
 
 class TestKeywordIndexCache(TestKeywordIndex):
+
+    def _dummy_test(self):
+        # dummy function
+        pass
+
+    # following methods do not require a cache test
+    test_interfaces = _dummy_test
+    testAddObjectWOKeywords = _dummy_test
+    testDuplicateKeywords = _dummy_test
+    test_noindexing_when_noattribute = _dummy_test
+    test_noindexing_when_raising_attribute = _dummy_test
+    test_noindexing_when_raising_typeeror = _dummy_test
+    test_value_removes = _dummy_test
+    test_getCounter = _dummy_test
 
     def _makeOne(self, id, extra=None):
 
