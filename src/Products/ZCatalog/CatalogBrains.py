@@ -11,24 +11,12 @@
 #
 ##############################################################################
 
-from pkg_resources import DistributionNotFound
-from pkg_resources import get_distribution
-
-try:
-    get_distribution('five.globalrequest')
-except DistributionNotFound:
-    _GLOBALREQUEST_INSTALLED = False
-else:
-    _GLOBALREQUEST_INSTALLED = True
-
-from .interfaces import ICatalogBrain
 from Acquisition import aq_base
 from Acquisition import aq_get
 from Acquisition import aq_parent
 from Acquisition import Implicit
 from Record import Record
-if _GLOBALREQUEST_INSTALLED:
-    from zope.globalrequest import getRequest
+from zope.globalrequest import getRequest
 from zope.interface import implements
 try:
     from ZPublisher.BaseRequest import RequestContainer
@@ -37,6 +25,8 @@ except ImportError:
     _REQUESTCONTAINER_EXISTS = False
 else:
     _REQUESTCONTAINER_EXISTS = True
+
+from .interfaces import ICatalogBrain
 
 
 class AbstractCatalogBrain(Record, Implicit):
@@ -59,7 +49,7 @@ class AbstractCatalogBrain(Record, Implicit):
     def getURL(self, relative=0):
         """Generate a URL for this record"""
         request = aq_get(self, 'REQUEST', None)
-        if request is None and _GLOBALREQUEST_INSTALLED:
+        if request is None:
             request = getRequest()
         return request.physicalPathToURL(self.getPath(), relative)
 
@@ -69,8 +59,8 @@ class AbstractCatalogBrain(Record, Implicit):
         Same as getObject, but does not do security checks.
         """
         parent = aq_parent(self)
-        if (aq_get(parent, 'REQUEST', None) is None
-            and _GLOBALREQUEST_INSTALLED and _REQUESTCONTAINER_EXISTS):
+        if (aq_get(parent, 'REQUEST', None) is None and
+                _REQUESTCONTAINER_EXISTS):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root
@@ -94,8 +84,8 @@ class AbstractCatalogBrain(Record, Implicit):
         if not path:
             return None
         parent = aq_parent(self)
-        if (aq_get(parent, 'REQUEST', None) is None
-            and _GLOBALREQUEST_INSTALLED and _REQUESTCONTAINER_EXISTS):
+        if (aq_get(parent, 'REQUEST', None) is None and
+                _REQUESTCONTAINER_EXISTS):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root

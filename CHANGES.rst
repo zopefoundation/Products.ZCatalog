@@ -4,6 +4,7 @@ Changelog
 3.2 (unreleased)
 ----------------
 
+- Add dependency on `five.globalrequest`.
 
 3.1.2 (2016-07-17)
 ------------------
@@ -19,7 +20,7 @@ Changelog
 
 - #5: Ignore None values in UnIndex instead of raising a TypeError.
 
-- Add a new getCounter methods to indices.
+- Add a new getCounter method to indices.
 
 - Update to ZODB 4.0 as direct dependency.
 
