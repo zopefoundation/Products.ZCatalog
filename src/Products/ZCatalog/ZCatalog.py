@@ -463,6 +463,30 @@ class ZCatalog(Folder, Persistent, Implicit):
                 '/manage_catalogIndexes'
                 '?manage_tabs_message=Reindexing%20Performed')
 
+    security.declarePrivate('maintain_zodb_cache')
+    def maintain_zodb_cache(self):
+        # self.threshold represents the number of times that catalog_object
+        # needs to be called in order for the catalog to commit
+        # a subtransaction.
+        if self.threshold is not None:
+            # figure out whether or not to commit a subtransaction.
+            t = id(transaction.get())
+            if t != self._v_transaction:
+                self._v_total = 0
+            self._v_transaction = t
+            self._v_total = self._v_total + 1
+            # increment the _v_total counter for this thread only and get a
+            # reference to the current transaction.  the _v_total counter is
+            # zeroed if we notice that we're in a different transaction than the
+            # last one that came by. The semantics here mean that we should GC
+            # the cache if our threshhold is exceeded within the boundaries of
+            # the current transaction.
+            if self._v_total > self.threshold:
+                self._p_jar.cacheGC()
+                self._v_total = 0
+                return True
+        return False
+
     security.declareProtected(manage_zcatalog_entries, 'catalog_object')
     def catalog_object(self, obj, uid=None, idxs=None, update_metadata=1,
                        pghandler=None):
@@ -486,28 +510,10 @@ class ZCatalog(Folder, Persistent, Implicit):
         # catalogObject (which is a word count), because it's
         # worthless to us here.
 
-        if self.threshold is not None:
-            # figure out whether or not to commit a subtransaction.
-            t = id(transaction.get())
-            if t != self._v_transaction:
-                self._v_total = 0
-            self._v_transaction = t
-            self._v_total = self._v_total + 1
-            # increment the _v_total counter for this thread only and get
-            # a reference to the current transaction.
-            # the _v_total counter is zeroed if we notice that we're in
-            # a different transaction than the last one that came by.
-            # self.threshold represents the number of times that
-            # catalog_object needs to be called in order for the catalog
-            # to commit a subtransaction.  The semantics here mean that
-            # we should commit a subtransaction if our threshhold is
-            # exceeded within the boundaries of the current transaction.
-            if self._v_total > self.threshold:
-                transaction.savepoint(optimistic=True)
-                self._p_jar.cacheGC()
-                self._v_total = 0
-                if pghandler:
-                    pghandler.info('committing subtransaction')
+        if self.maintain_zodb_cache():
+            transaction.savepoint(optimistic=True)
+            if pghandler:
+                pghandler.info('committing subtransaction')
 
     security.declareProtected(manage_zcatalog_entries, 'uncatalog_object')
     def uncatalog_object(self, uid):

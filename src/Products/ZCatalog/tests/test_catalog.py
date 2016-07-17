@@ -933,8 +933,13 @@ class TestCatalogReturnAll(unittest.TestCase):
         for x in range(0, 10):
             catalog.catalogObject(dummy(x), repr(x))
         self.assertEqual(len(catalog), 10)
-        length = len(catalog({}))
-        self.assertEqual(length, 10)
+        all_data = catalog({})
+        self.assertEqual(len(all_data), 10)
+        for rec in all_data:
+            self.assertEqual(rec.aq_parent, catalog)
+            self.assertNotEqual(rec.data_record_id_, None)
+            self.assertEqual(rec.data_record_score_, None)
+            self.assertEqual(rec.data_record_normalized_score_, None)
 
 
 class TestCatalogSearchArgumentsMap(unittest.TestCase):
