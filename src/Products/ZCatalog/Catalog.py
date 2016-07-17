@@ -175,6 +175,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         """Adds a row to the meta data schema"""
         schema = self.schema
         names = list(self.names)
+        threshold = threshold if threshold is not None else 10000
 
         if name != name.strip():
             # Someone could have mistakenly added a space at the end
@@ -217,6 +218,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         """Deletes a row from the meta data schema"""
         names = list(self.names)
         _index = names.index(name)
+        threshold = threshold if threshold is not None else 10000
 
         if not name in self.schema:
             LOG.error('delColumn attempted to delete nonexistent '

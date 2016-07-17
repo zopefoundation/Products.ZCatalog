@@ -103,6 +103,13 @@ class TestAddDelColumn(unittest.TestCase):
         self.assert_('col2' in catalog.schema, 'add column failed')
         self.assertTrue('new' in catalog.data.values()[0])
 
+    def test_add_threshold(self):
+        catalog = self._make_one()
+        catalog.addColumn('col1')
+        for i in range(3):
+            catalog.catalogObject(dummy(3), repr(i))
+        catalog.addColumn('col2', threshold=None)
+
     def test_del(self):
         catalog = self._make_one()
         catalog.addColumn('id')
@@ -120,6 +127,13 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.delColumn('col2')
         self.assert_('col2' not in catalog.schema, 'del column failed')
         self.assertTrue('col2' not in catalog.data.values()[0])
+
+    def test_del_threshold(self):
+        catalog = self._make_one()
+        catalog.addColumn('col1')
+        for i in range(3):
+            catalog.catalogObject(dummy(3), repr(i))
+        catalog.delColumn('col1', threshold=None)
 
 
 class TestAddDelIndexes(unittest.TestCase):
