@@ -4,6 +4,8 @@ Changelog
 3.1.2 (unreleased)
 ------------------
 
+- #6, #7, #11: Run ZODB cache garbage collection during queries.
+
 - #13: Deal with threshold value of None in add/delColum.
 
 3.1.1 (2016-07-17)
