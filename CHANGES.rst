@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.1.2 (unreleased)
+3.1.2 (2016-07-17)
 ------------------
 
 - #6, #7, #11: Run ZODB cache garbage collection during queries.
