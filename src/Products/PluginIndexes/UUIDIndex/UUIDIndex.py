@@ -96,7 +96,7 @@ class UUIDIndex(UnIndex):
                          "exists in the index.'" % entry)
 
     def removeForwardIndexEntry(self, entry, documentId):
-        """Take the entry parovided and remove any reference to documentId
+        """Take the entry provided and remove any reference to documentId
         in its entry in the index.
         """
         old_docid = self._index.get(entry, _marker)

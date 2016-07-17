@@ -510,7 +510,10 @@ class UnIndex(SimpleItem):
                     result = IISet((result,))
 
                 if cachekey is not None:
-                    cache[cachekey] = result
+                    if operator == 'or':
+                        cache[cachekey] = result
+                    else:
+                        cache[cachekey] = [result]
 
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
@@ -585,7 +588,10 @@ class UnIndex(SimpleItem):
                     result = IISet((result,))
 
                 if cachekey is not None:
-                    cache[cachekey] = result
+                    if operator == 'or':
+                        cache[cachekey] = result
+                    else:
+                        cache[cachekey] = [result]
 
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)

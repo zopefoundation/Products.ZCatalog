@@ -4,6 +4,8 @@ Changelog
 3.2 (unreleased)
 ----------------
 
+- #12: Add request cache for index results to all UnIndex subclasses.
+
 - Add dependency on `five.globalrequest`.
 
 3.1.2 (2016-07-17)
