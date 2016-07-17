@@ -1155,7 +1155,6 @@ class TestScoring(unittest.TestCase):
         ))
         brains = cat(query)
         self.assertEqual(len(brains), 4)
-        self.assertEqual(brains[0].title, '111')
         # plan with true first
         PriorityMap.set_entry(catalog_id, plan_key, dict(
             title=Benchmark(2, 1, False),
@@ -1163,4 +1162,3 @@ class TestScoring(unittest.TestCase):
         ))
         brains = cat(query)
         self.assertEqual(len(brains), 4)
-        self.assertEqual(brains[0].title, '111')
