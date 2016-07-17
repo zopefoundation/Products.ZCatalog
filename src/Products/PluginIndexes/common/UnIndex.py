@@ -236,7 +236,7 @@ class UnIndex(SimpleItem):
             # ordering definition compared to any other object.
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
-            raise TypeError('None cannot be indexed.')
+            return 0
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
@@ -450,7 +450,11 @@ class UnIndex(SimpleItem):
             setlist = []
             for k in record.keys:
                 if k is None:
-                    raise TypeError('None cannot be in an index.')
+                    # Prevent None from being looked up. None doesn't
+                    # have a valid ordering definition compared to any
+                    # other object. BTrees 4.0+ will throw a TypeError
+                    # "object has default comparison".
+                    continue
                 s = index.get(k, None)
                 # If None, try to bail early
                 if s is None:
