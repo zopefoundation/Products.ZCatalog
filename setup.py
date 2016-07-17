@@ -16,14 +16,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='Products.ZCatalog',
-    version='3.1.2.dev',
+    version='3.1.2.dev0',
     url='https://pypi.python.org/pypi/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope 2's indexing and search solution.",
     author='Zope Foundation and Contributors',
     author_email='zope-dev@zope.org',
-    long_description=open('README.txt').read() + '\n' +
-                     open('CHANGES.txt').read(),
+    long_description=open('README.rst').read() + '\n' +
+                     open('CHANGES.rst').read(),
     packages=find_packages('src'),
     namespace_packages=['Products'],
     package_dir={'': 'src'},
@@ -35,7 +35,6 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2 :: Only",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
