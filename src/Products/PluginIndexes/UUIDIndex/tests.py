@@ -13,7 +13,8 @@
 
 import unittest
 
-from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 
 class Dummy:
@@ -32,8 +33,17 @@ class Dummy:
 
 class UUIDIndexTests(unittest.TestCase):
 
+    def _getTargetClass(self):
+        from Products.PluginIndexes.UUIDIndex.UUIDIndex \
+            import UUIDIndex
+        return UUIDIndex
+
+    def _makeOne(self, id):
+        klass = self._getTargetClass()
+        return klass(id)
+
     def setUp(self):
-        self._index = UUIDIndex('foo')
+        self._index = self._makeOne('foo')
         self._marker = []
         self._values = [
             (0, Dummy('a')),
@@ -68,11 +78,15 @@ class UUIDIndexTests(unittest.TestCase):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, UUIDIndex)
-        verifyClass(ISortIndex, UUIDIndex)
-        verifyClass(IUniqueValueIndex, UUIDIndex)
+        klass = self._getTargetClass()
+
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def test_empty(self):
         self.assertEqual(len(self._index), 0)
@@ -88,7 +102,7 @@ class UUIDIndexTests(unittest.TestCase):
         self.assertTrue(self._index.getEntryForObject(10) is None)
         self._checkApply({'foo': 'not'}, [])
 
-        self._index.unindex_object(10) # nothrow
+        self._index.unindex_object(10)  # nothrow
 
         for k, v in values:
             self.assertEqual(self._index.getEntryForObject(k), v.foo())
@@ -152,3 +166,51 @@ class UUIDIndexTests(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
+
+
+class UUIDIndexTestsCache(UUIDIndexTests):
+
+    def _dummy_test(self):
+        # dummy function
+        pass
+
+    # not required for cache test
+    test_interfaces = _dummy_test
+    test_getCounter = _dummy_test
+
+    def _makeOne(self, id, extra=None):
+
+        index = super(UUIDIndexTestsCache, self).\
+            _makeOne(id)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
+    def _checkApply(self, req, expectedValues):
+
+        checkApply = super(UUIDIndexTestsCache, self)._checkApply
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call
+        checkApply(req, expectedValues)
+        self.assertEqual(cache._hits, 1)
+
+ 

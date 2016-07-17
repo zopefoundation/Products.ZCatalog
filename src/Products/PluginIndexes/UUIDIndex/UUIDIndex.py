@@ -93,10 +93,10 @@ class UUIDIndex(UnIndex):
             self._length.change(1)
         elif old_docid != documentId:
             logger.error("A different document with value '%s' already "
-                "exists in the index.'" % entry)
+                         "exists in the index.'" % entry)
 
     def removeForwardIndexEntry(self, entry, documentId):
-        """Take the entry provided and remove any reference to documentId
+        """Take the entry parovided and remove any reference to documentId
         in its entry in the index.
         """
         old_docid = self._index.get(entry, _marker)
@@ -116,7 +116,7 @@ manage_addUUIDIndexForm = DTMLFile('dtml/addUUIDIndex', globals())
 
 
 def manage_addUUIDIndex(self, id, extra=None,
-                REQUEST=None, RESPONSE=None, URL3=None):
+                        REQUEST=None, RESPONSE=None, URL3=None):
     """Add an uuid index"""
-    return self.manage_addIndex(id, 'UUIDIndex', extra=extra, \
-             REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'UUIDIndex', extra=extra,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)

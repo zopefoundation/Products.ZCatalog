@@ -34,8 +34,8 @@ class FieldIndex(UnIndex):
 manage_addFieldIndexForm = DTMLFile('dtml/addFieldIndex', globals())
 
 
-def manage_addFieldIndex(self, id, extra=None,
-                REQUEST=None, RESPONSE=None, URL3=None):
+def manage_addFieldIndex(self, id, extra=None, REQUEST=None,
+                         RESPONSE=None, URL3=None):
     """Add a field index"""
-    return self.manage_addIndex(id, 'FieldIndex', extra=extra, \
-             REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'FieldIndex', extra=extra, REQUEST=REQUEST,
+                                RESPONSE=RESPONSE, URL1=URL3)

@@ -18,10 +18,6 @@ from datetime import tzinfo, timedelta
 
 from App.special_dtml import DTMLFile
 from BTrees.IIBTree import IIBTree
-from BTrees.IIBTree import IISet
-from BTrees.IIBTree import union
-from BTrees.IIBTree import intersection
-from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from DateTime.DateTime import DateTime
@@ -31,7 +27,6 @@ from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateIndex
 
 LOG = getLogger('DateIndex')
@@ -100,7 +95,7 @@ class DateIndex(UnIndex, PropertyManager):
     manage_main._setName('manage_main')
     manage_options = ({'label': 'Settings', 'action': 'manage_main'},
                       {'label': 'Browse', 'action': 'manage_browse'},
-                     ) + PropertyManager.manage_options
+                      ) + PropertyManager.manage_options
 
     def clear(self):
         """ Complete reset """
@@ -193,5 +188,5 @@ manage_addDateIndexForm = DTMLFile('dtml/addDateIndex', globals())
 
 def manage_addDateIndex(self, id, REQUEST=None, RESPONSE=None, URL3=None):
     """Add a Date index"""
-    return self.manage_addIndex(id, 'DateIndex', extra=None, \
-                    REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'DateIndex', extra=None,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
