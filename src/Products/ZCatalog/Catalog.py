@@ -144,7 +144,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         Btree.
         """
 
-        class mybrains(AbstractCatalogBrain, brains):
+        class mybrains(AbstractCatalogBrain, brains):  # NOQA
             pass
 
         scopy = self.schema.copy()
@@ -208,7 +208,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         _index = names.index(name)
         threshold = threshold if threshold is not None else 10000
 
-        if not name in self.schema:
+        if name not in self.schema:
             LOG.error('delColumn attempted to delete nonexistent '
                       'column %s.' % str(name))
             return
@@ -275,7 +275,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
     def delIndex(self, name):
         """ deletes an index """
 
-        if not name in self.indexes:
+        if name not in self.indexes:
             raise CatalogError('The index %s does not exist' % name)
 
         indexes = self.indexes
@@ -528,8 +528,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             sequence.reverse()
         return (sequence, slen)
 
-    def search(self,
-            query, sort_index=None, reverse=False, limit=None, merge=True):
+    def search(self, query,
+               sort_index=None, reverse=False, limit=None, merge=True):
         """Iterate through the indexes, applying the query to each one. If
         merge is true then return a lazy result set (sorted if appropriate)
         otherwise return the raw (possibly scored) results for later merging.
@@ -646,16 +646,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
             rlen = len(self)
             if sort_index is None:
-                sequence, slen = self._limit_sequence(self.data.items(), rlen,
-                    b_start, b_size)
-                result = LazyMap(self.instantiate, sequence, slen,
+                sequence, slen = self._limit_sequence(
+                    self.data.items(), rlen, b_start, b_size)
+                result = LazyMap(
+                    self.instantiate, sequence, slen,
                     actual_result_count=rlen)
             else:
                 cr.start_split(sort_report_name)
                 result = self.sortResults(
                     self.data, sort_index, reverse, limit, merge,
-                        actual_result_count=rlen, b_start=b_start,
-                        b_size=b_size)
+                    actual_result_count=rlen, b_start=b_start, b_size=b_size)
                 cr.stop_split(sort_report_name, None)
         elif rs:
             # We got some results from the indexes.
@@ -675,7 +675,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     # calculated and will always be 1 in this case
                     getitem = self.__getitem__
                     result = [(score, (1, score, rid), getitem)
-                            for rid, score in rs.items()]
+                              for rid, score in rs.items()]
                 else:
                     cr.start_split('sort_on#score')
 
@@ -696,29 +696,29 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         return self.instantiate((key, self.data[key]),
                                                 score_data=(score, norm_score))
 
-                    sequence, slen = self._limit_sequence(rs, rlen, b_start,
-                        b_size)
+                    sequence, slen = self._limit_sequence(
+                        rs, rlen, b_start, b_size)
                     result = LazyMap(getScoredResult, sequence, slen,
-                        actual_result_count=rlen)
+                                     actual_result_count=rlen)
                     cr.stop_split('sort_on#score', None)
 
             elif sort_index is None and not hasattr(rs, 'values'):
                 # no scores
                 if hasattr(rs, 'keys'):
                     rs = rs.keys()
-                sequence, slen = self._limit_sequence(rs, rlen, b_start,
-                    b_size)
+                sequence, slen = self._limit_sequence(
+                    rs, rlen, b_start, b_size)
                 result = LazyMap(self.__getitem__, sequence, slen,
-                    actual_result_count=rlen)
+                                 actual_result_count=rlen)
             else:
                 # sort.  If there are scores, then this block is not
                 # reached, therefore 'sort-on' does not happen in the
                 # context of a text index query.  This should probably
                 # sort by relevance first, then the 'sort-on' attribute.
                 cr.start_split(sort_report_name)
-                result = self.sortResults(rs, sort_index, reverse, limit,
-                    merge, actual_result_count=rlen, b_start=b_start,
-                    b_size=b_size)
+                result = self.sortResults(
+                    rs, sort_index, reverse, limit, merge,
+                    actual_result_count=rlen, b_start=b_start, b_size=b_size)
                 cr.stop_split(sort_report_name, None)
         else:
             # Empty result set
@@ -726,8 +726,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         cr.stop()
         return result
 
-    def sortResults(self, rs, sort_index, reverse=False, limit=None,
-            merge=True, actual_result_count=None, b_start=0, b_size=None):
+    def sortResults(self, rs, sort_index,
+                    reverse=False, limit=None, merge=True,
+                    actual_result_count=None, b_start=0, b_size=None):
         # Sort a result set using one or more sort indexes. Both sort_index
         # and reverse can be lists of indexes and reverse specifications.
         # Return a lazy result set in sorted order if merge is true otherwise
@@ -852,8 +853,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         for k2, v2 in keysets.items():
                             r_append((k2, v2, _self__getitem__))
                 result = multisort(result, sort_spec)
-            sequence, slen = self._limit_sequence(result, length, b_start,
-                b_size, switched_reverse)
+            sequence, slen = self._limit_sequence(
+                result, length, b_start, b_size, switched_reverse)
             result = LazyCat(LazyValues(sequence), slen, actual_result_count)
         elif limit is None or (limit * 4 > rlen):
             # Iterate over the result set getting sort keys from the index.
@@ -890,13 +891,13 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             if merge:
                 if limit is not None:
                     result = result[:limit]
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
+                sequence, _ = self._limit_sequence(
+                    result, 0, b_start, b_size, switched_reverse)
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
             else:
-                sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                    switched_reverse)
+                sequence, _ = self._limit_sequence(
+                    result, 0, b_start, b_size, switched_reverse)
                 return sequence
         elif first_reverse:
             # Limit / sort results using N-Best algorithm
@@ -947,8 +948,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             n += 1
                         worst = keys[0]
                 result = multisort(result, sort_spec)
-            sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                switched_reverse)
+            sequence, _ = self._limit_sequence(
+                result, 0, b_start, b_size, switched_reverse)
             if merge:
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
@@ -1000,8 +1001,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             n += 1
                         best = keys[-1]
                 result = multisort(result, sort_spec)
-            sequence, _ = self._limit_sequence(result, 0, b_start, b_size,
-                switched_reverse)
+            sequence, _ = self._limit_sequence(
+                result, 0, b_start, b_size, switched_reverse)
             if merge:
                 result = LazyValues(sequence)
                 result.actual_result_count = actual_result_count
@@ -1009,7 +1010,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 return sequence
 
         return LazyMap(self.__getitem__, result, len(result),
-            actual_result_count=actual_result_count)
+                       actual_result_count=actual_result_count)
 
     def _get_sort_attr(self, attr, kw):
         """Helper function to find sort-on or sort-order."""
@@ -1043,7 +1044,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                                        repr(name))
                 else:
                     if not hasattr(sort_index, 'documentToKeyMap'):
-                        raise CatalogError('The index chosen for sort_on is '
+                        raise CatalogError(
+                            'The index chosen for sort_on is '
                             'not capable of being used as a sort index: '
                             '%s' % repr(name))
                 sort_indexes.append(sort_index)
@@ -1138,7 +1140,7 @@ class CatalogSearchArgumentsMap(object):
             return True
 
     def __contains__(self, name):
-        return self.has_key(name)
+        return self.has_key(name)  # NOQA
 
 
 def mergeResults(results, has_sort_keys, reverse):

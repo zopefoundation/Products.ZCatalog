@@ -147,7 +147,7 @@ manage_addKeywordIndexForm = DTMLFile('dtml/addKeywordIndex', globals())
 
 
 def manage_addKeywordIndex(self, id, extra=None,
-        REQUEST=None, RESPONSE=None, URL3=None):
+                           REQUEST=None, RESPONSE=None, URL3=None):
     """Add a keyword index"""
-    return self.manage_addIndex(id, 'KeywordIndex', extra=extra, \
-              REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'KeywordIndex', extra=extra,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)

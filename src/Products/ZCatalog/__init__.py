@@ -27,4 +27,4 @@ def initialize(context):
         constructors=(ZCatalog.manage_addZCatalogForm,
                       ZCatalog.manage_addZCatalog),
         icon='www/ZCatalog.gif',
-        )
+    )

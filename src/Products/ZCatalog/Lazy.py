@@ -58,7 +58,7 @@ class Lazy(object):
 
     def __getslice__(self, i1, i2):
         r = []
-        for i in islice(count(i1), i2-i1):
+        for i in islice(count(i1), i2 - i1):
             try:
                 r.append(self[i])
             except IndexError:

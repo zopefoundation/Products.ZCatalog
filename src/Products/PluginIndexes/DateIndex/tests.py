@@ -17,7 +17,7 @@ from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
 
-class Dummy:
+class Dummy(object):
 
     def __init__(self, name, date):
         self._name = name
@@ -97,12 +97,12 @@ def _getEastern():
             else:
                 return ZERO
 
-    return USTimeZone(-5, "Eastern",  "EST", "EDT")
+    return USTimeZone(-5, "Eastern", "EST", "EDT")
 
 ###############################################################################
 
 
-class DI_Tests(unittest.TestCase):
+class DateIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
         from Products.PluginIndexes.DateIndex.DateIndex import DateIndex
@@ -218,9 +218,10 @@ class DI_Tests(unittest.TestCase):
         self._populateIndex(index)
         values = self._getValues()
 
-        self.assertEqual(len(index), len(values) - 2)  # One dupe, one empty
+        # One dupe, one empty
+        self.assertEqual(len(index), len(values) - 2)
+        # One empty
         self.assertEqual(len(index.referencedObjects()), len(values) - 1)
-            # One empty
 
         self.assertTrue(index.getEntryForObject(1234) is None)
         marker = []
@@ -317,7 +318,7 @@ class DI_Tests(unittest.TestCase):
         self.assertEqual(index.getCounter(), 0)
 
 
-class DI_Cache_Tests(DI_Tests):
+class DateIndexCacheTests(DateIndexTests):
 
     def _dummy_test(self):
         # dummy function
@@ -329,9 +330,7 @@ class DI_Cache_Tests(DI_Tests):
     test_getCounter = _dummy_test
 
     def _makeOne(self, id='date'):
-
-        index = super(DI_Cache_Tests, self).\
-            _makeOne(id)
+        index = super(DateIndexCacheTests, self)._makeOne(id)
 
         class DummyZCatalog(SimpleItem):
             id = 'DummyZCatalog'
@@ -346,8 +345,7 @@ class DI_Cache_Tests(DI_Tests):
         return index
 
     def _checkApply(self, index, req, expectedValues):
-
-        checkApply = super(DI_Cache_Tests, self)._checkApply
+        checkApply = super(DateIndexCacheTests, self)._checkApply
 
         cache = index.getRequestCache()
         cache.clear()

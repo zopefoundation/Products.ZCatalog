@@ -13,7 +13,8 @@
 
 import random
 
-def randid(randint=random.randint, choice=random.choice, signs=(-1,1)):
-    return choice(signs)*randint(1,2000000000)
+
+def randid(randint=random.randint, choice=random.choice, signs=(-1, 1)):
+    return choice(signs) * randint(1, 2000000000)
 
 del random

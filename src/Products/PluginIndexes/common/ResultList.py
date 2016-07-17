@@ -51,7 +51,7 @@ class ResultList:
         return self._dict.keys()
 
     def has_key(self, key):
-        return self._dict.has_key(key)
+        return key in self._dict
 
     def items(self):
         return self._dict.items()
@@ -61,21 +61,21 @@ class ResultList:
             weightedIntersection(self._dict, x._dict),
             union(self._words, x._words),
             self._index,
-            )
+        )
 
     def and_not(self, x):
         return self.__class__(
             difference(self._dict, x._dict),
             self._words,
             self._index,
-            )
+        )
 
     def __or__(self, x):
         return self.__class__(
             weightedUnion(self._dict, x._dict),
             union(self._words, x._words),
             self._index,
-            )
+        )
 
     def near(self, x):
         result = IIBucket()

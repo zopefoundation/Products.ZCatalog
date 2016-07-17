@@ -22,8 +22,8 @@ setup(
     description="Zope 2's indexing and search solution.",
     author='Zope Foundation and Contributors',
     author_email='zope-dev@zope.org',
-    long_description=open('README.rst').read() + '\n' +
-                     open('CHANGES.rst').read(),
+    long_description=(open('README.rst').read() + '\n' +
+                      open('CHANGES.rst').read()),
     packages=find_packages('src'),
     namespace_packages=['Products'],
     package_dir={'': 'src'},

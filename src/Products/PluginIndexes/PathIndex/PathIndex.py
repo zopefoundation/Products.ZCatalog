@@ -302,5 +302,5 @@ manage_addPathIndexForm = DTMLFile('dtml/addPathIndex', globals())
 
 def manage_addPathIndex(self, id, REQUEST=None, RESPONSE=None, URL3=None):
     """Add a path index"""
-    return self.manage_addIndex(id, 'PathIndex', extra=None, \
-                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'PathIndex', extra=None,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)

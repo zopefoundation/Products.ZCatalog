@@ -25,7 +25,7 @@ from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.ZCatalog.ZCatalog import ZCatalog
 
 
-class zdummy(ExtensionClass.Base):
+class ZDummy(ExtensionClass.Base):
     meta_type = 'dummy'
 
     def __init__(self, num):
@@ -58,7 +58,7 @@ class ContentLayer(object):
     @staticmethod
     def _make_dummy():
         num = random.randint(0, sys.maxint)
-        return zdummy(num)
+        return ZDummy(num)
 
     @staticmethod
     def _make_persistent_folder(app, obj_id):
@@ -69,10 +69,10 @@ class ContentLayer(object):
 
     @classmethod
     def _fill_catalog(cls, app, catalog, num_objects, times_more=10):
-        # catalog num_objects of "interesting" documents
-        # and intersperse them with (num_objects * TIMES_MORE) of dummy objects,
+        # Catalog num_objects of "interesting" documents and intersperse
+        # them with (num_objects * times_more) of dummy objects,
         # making sure that "interesting" objects do not share
-        # the same metadata bucket (as it happens in typical use)
+        # the same metadata bucket (as it happens in typical use).
         def catalog_dummies(num_dummies):
             for j in range(num_dummies):
                 obj = cls._make_dummy()

@@ -212,5 +212,3 @@ class UUIDIndexTestsCache(UUIDIndexTests):
         # second call
         checkApply(req, expectedValues)
         self.assertEqual(cache._hits, 1)
-
- 

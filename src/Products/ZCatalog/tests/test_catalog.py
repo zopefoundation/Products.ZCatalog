@@ -26,7 +26,7 @@ from Products.ZCTextIndex.ZCTextIndex import PLexicon
 from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex
 
 
-class zdummy(ExtensionClass.Base):
+class ZDummy(ExtensionClass.Base):
     def __init__(self, num):
         self.num = num
 
@@ -34,7 +34,7 @@ class zdummy(ExtensionClass.Base):
         return '%d' % self.num
 
 
-class dummy(ExtensionClass.Base):
+class Dummy(ExtensionClass.Base):
 
     att1 = 'att1'
     att2 = 'att2'
@@ -62,7 +62,7 @@ class MultiFieldIndex(FieldIndex):
         return [self.id, 'bar']
 
 
-class objRS(ExtensionClass.Base):
+class ObjRS(ExtensionClass.Base):
 
     def __init__(self, num):
         self.number = num
@@ -97,7 +97,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.addColumn('col1')
         catalog.addColumn('col3')
         for i in range(3):
-            catalog.catalogObject(dummy(3), repr(i))
+            catalog.catalogObject(Dummy(3), repr(i))
         self.assertTrue('col2' not in catalog.data.values()[0])
         catalog.addColumn('col2', default_value='new')
         self.assert_('col2' in catalog.schema, 'add column failed')
@@ -107,7 +107,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._make_one()
         catalog.addColumn('col1')
         for i in range(3):
-            catalog.catalogObject(dummy(3), repr(i))
+            catalog.catalogObject(Dummy(3), repr(i))
         catalog.addColumn('col2', threshold=None)
 
     def test_del(self):
@@ -122,7 +122,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.addColumn('col2')
         catalog.addColumn('col3')
         for i in range(3):
-            catalog.catalogObject(dummy(3), repr(i))
+            catalog.catalogObject(Dummy(3), repr(i))
         self.assertTrue('col2' in catalog.data.values()[0])
         catalog.delColumn('col2')
         self.assert_('col2' not in catalog.schema, 'del column failed')
@@ -132,7 +132,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._make_one()
         catalog.addColumn('col1')
         for i in range(3):
-            catalog.catalogObject(dummy(3), repr(i))
+            catalog.catalogObject(Dummy(3), repr(i))
         catalog.delColumn('col1', threshold=None)
 
 
@@ -220,7 +220,7 @@ class TestCatalog(unittest.TestCase):
         catalog.addIndex('att1', att1)
 
         att2 = ZCTextIndex('att2', caller=catalog,
-                          index_factory=OkapiIndex, lexicon_id='lexicon')
+                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('att2', att2)
 
         att3 = KeywordIndex('att3')
@@ -230,8 +230,8 @@ class TestCatalog(unittest.TestCase):
             extra(catalog)
 
         for x in range(0, self.upper):
-            catalog.catalogObject(dummy(self.nums[x]), repr(x))
-        return catalog.__of__(dummy('foo'))
+            catalog.catalogObject(Dummy(self.nums[x]), repr(x))
+        return catalog.__of__(Dummy('foo'))
 
     # clear
     # updateBrains
@@ -248,7 +248,7 @@ class TestCatalog(unittest.TestCase):
             catalog.addIndex('num', num)
 
         catalog = self._make_one(extra=extra)
-        ob = dummy(9999)
+        ob = Dummy(9999)
         catalog.catalogObject(ob, '9999')
         brain = catalog(num=9999)[0]
         self.assertEqual(brain.att1, 'att1')
@@ -361,7 +361,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog.lexicon = PLexicon('lexicon')
         att1 = FieldIndex('att1')
         att2 = ZCTextIndex('att2', caller=catalog,
-                          index_factory=OkapiIndex, lexicon_id='lexicon')
+                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('att2', att2)
         num = FieldIndex('num')
 
@@ -376,8 +376,8 @@ class TestCatalogSortBatch(unittest.TestCase):
             extra(catalog)
 
         for x in range(0, self.upper):
-            catalog.catalogObject(dummy(self.nums[x]), repr(x))
-        return catalog.__of__(dummy('foo'))
+            catalog.catalogObject(Dummy(self.nums[x]), repr(x))
+        return catalog.__of__(Dummy('foo'))
 
     def test_sorted_search_indexes_empty(self):
         catalog = self._make_one()
@@ -467,7 +467,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         self.assertEqual([r.num for r in a], [r.num for r in full[:10]])
         self.assertEqual(a.actual_result_count, self.upper)
         a = catalog(att1='att1', sort_on='num',
-                          sort_limit=10, sort_order='reverse')
+                    sort_limit=10, sort_order='reverse')
         rev = [r.num for r in full[-10:]]
         rev.reverse()
         self.assertEqual([r.num for r in a], rev)
@@ -479,8 +479,8 @@ class TestCatalogSortBatch(unittest.TestCase):
             att1='att1', sort_on='num', sort_limit=self.upper * 3)
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, 0)
-        a = catalog(att1='att1',
-            sort_on='num', sort_limit=self.upper * 3, sort_order='reverse')
+        a = catalog(att1='att1', sort_on='num',
+                    sort_limit=self.upper * 3, sort_order='reverse')
         self.assertEqual(a.actual_result_count, self.upper)
         self.assertEqual(a[0].num, self.upper - 1)
 
@@ -529,7 +529,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def testSortLimitViaBatchingArgsRightMiddleSortOnTwoSecond(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on=('att1', 'num'),
-            sort_order=('', 'reverse'), b_start=48, b_size=8)
+                     sort_order=('', 'reverse'), b_start=48, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(51, 43, -1))
@@ -544,7 +544,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoFirst(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on=('att1', 'num'),
-            sort_order=('reverse', ''), b_start=55, b_size=15)
+                     sort_order=('reverse', ''), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(55, 70))
@@ -552,7 +552,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoSecond(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on=('att1', 'num'),
-            sort_order=('', 'reverse'), b_start=55, b_size=15)
+                     sort_order=('', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(44, 29, -1))
@@ -560,7 +560,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoBoth(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on=('att1', 'num'),
-            sort_order=('reverse', 'reverse'), b_start=55, b_size=15)
+                     sort_order=('reverse', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], range(44, 29, -1))
@@ -689,7 +689,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order='reverse')
+                    sort_order='reverse')
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -698,7 +698,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order=('', ''))
+                    sort_order=('', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -707,7 +707,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order=('reverse', ''))
+                    sort_order=('reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -716,7 +716,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order=('', 'reverse'))
+                    sort_order=('', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -725,7 +725,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order=('reverse', 'reverse'))
+                    sort_order=('reverse', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -734,7 +734,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_order=('', '', 'reverse', ''))
+                    sort_order=('', '', 'reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -749,7 +749,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_small_limit_reverse(self):
         catalog = self._make_one()
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_limit=10, sort_order='reverse')
+                    sort_limit=10, sort_order='reverse')
         self.assertEqual(len(a), 10)
         for x in range(9):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -757,7 +757,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_big_limit(self):
         catalog = self._make_one()
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_limit=self.upper * 3)
+                    sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -765,7 +765,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_big_limit_reverse(self):
         catalog = self._make_one()
         a = catalog(sort_on=('att1', 'num'), att1='att1',
-            sort_limit=self.upper * 3, sort_order='reverse')
+                    sort_limit=self.upper * 3, sort_order='reverse')
         self.assertEqual(len(a), 100)
         for x in range(99):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -786,7 +786,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
         a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-            sort_order='reverse')
+                    sort_order='reverse')
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -797,7 +797,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
         a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-            sort_order=('', '', 'reverse'))
+                    sort_order=('', '', 'reverse'))
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
             self.assertTrue(a[x].num > a[x + 1].num)
@@ -808,7 +808,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
         a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-            sort_limit=10)
+                    sort_limit=10)
         self.assertEqual(len(a), 10)
         for x in range(9):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -819,7 +819,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
         a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-            sort_limit=self.upper * 3)
+                    sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
             self.assertTrue(a[x].num < a[x + 1].num)
@@ -835,15 +835,15 @@ class TestUnCatalog(unittest.TestCase):
         catalog.lexicon = PLexicon('lexicon')
         att1 = FieldIndex('att1')
         att2 = ZCTextIndex('att2', caller=catalog,
-                          index_factory=OkapiIndex, lexicon_id='lexicon')
+                           index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         catalog.addIndex('att1', att1)
         catalog.addIndex('att2', att2)
         catalog.addIndex('att3', att3)
 
         for x in range(0, self.upper):
-            catalog.catalogObject(dummy(x), repr(x))
-        return catalog.__of__(dummy('foo'))
+            catalog.catalogObject(Dummy(x), repr(x))
+        return catalog.__of__(Dummy('foo'))
 
     def _uncatalog(self, catalog):
         for x in range(0, self.upper):
@@ -900,9 +900,9 @@ class TestRangeSearch(unittest.TestCase):
         catalog.addIndex('number', index)
         catalog.addColumn('number')
         for i in range(50):
-            obj = objRS(random.randrange(0, 200))
+            obj = ObjRS(random.randrange(0, 200))
             catalog.catalogObject(obj, i)
-        catalog = catalog.__of__(objRS(20))
+        catalog = catalog.__of__(ObjRS(20))
 
         for i in range(10):
             m = random.randrange(0, 200)
@@ -931,7 +931,7 @@ class TestCatalogReturnAll(unittest.TestCase):
         col1 = FieldIndex('col1')
         catalog.addIndex('col1', col1)
         for x in range(0, 10):
-            catalog.catalogObject(dummy(x), repr(x))
+            catalog.catalogObject(Dummy(x), repr(x))
         self.assertEqual(len(catalog), 10)
         all_data = catalog({})
         self.assertEqual(len(all_data), 10)
@@ -986,9 +986,9 @@ class TestCatalogSearchArgumentsMap(unittest.TestCase):
 
     def test_haskey(self):
         argmap = self._make_one(dict(a='a'), dict(b='b'))
-        self.assert_(argmap.has_key('a'))
-        self.assert_(argmap.has_key('b'))
-        self.assert_(not argmap.has_key('c'))
+        self.assert_(argmap.has_key('a'))  # NOQA
+        self.assert_(argmap.has_key('b'))  # NOQA
+        self.assert_(not argmap.has_key('c'))  # NOQA
 
     def test_contains(self):
         argmap = self._make_one(dict(a='a'), dict(b='b'))
@@ -1015,9 +1015,9 @@ class TestMergeResults(unittest.TestCase):
             i = ZCTextIndex('title', caller=cat, index_factory=OkapiIndex,
                             lexicon_id='lexicon')
             cat.addIndex('title', i)
-            cat = cat.__of__(zdummy(16336))
+            cat = cat.__of__(ZDummy(16336))
             for i in range(10):
-                obj = zdummy(i)
+                obj = ZDummy(i)
                 obj.big = i > 5
                 obj.number = True
                 cat.catalogObject(obj, str(i))
@@ -1067,7 +1067,7 @@ class TestMergeResults(unittest.TestCase):
         catalogs, mergeResults = self._make_many()
         results = [cat.searchResults(
                    dict(att1='att1', number=True, sort_on='num',
-                   sort_limit=2), _merge=0)
+                        sort_limit=2), _merge=0)
                    for cat in catalogs]
         merged_rids = [r.getRID() for r in mergeResults(
             results, has_sort_keys=True, reverse=False)]
@@ -1110,12 +1110,12 @@ class TestScoring(unittest.TestCase):
         catalog.addIndex('true', FieldIndex('true'))
         catalog.addColumn('title')
         for i in (1, 2, 3, 10, 11, 110, 111):
-            obj = zdummy(i)
+            obj = ZDummy(i)
             obj.true = True
             if i == 110:
                 obj.true = False
             catalog.catalogObject(obj, str(i))
-        return catalog.__of__(zdummy(1))
+        return catalog.__of__(ZDummy(1))
 
     def test_simple_search(self):
         cat = self._make_one()

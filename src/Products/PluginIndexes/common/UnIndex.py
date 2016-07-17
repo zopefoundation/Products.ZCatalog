@@ -430,7 +430,7 @@ class UnIndex(SimpleItem):
 
         # experimental code for specifing the operator
         operator = record.get('operator', self.useOperator)
-        if not operator in self.operators:
+        if operator not in self.operators:
             raise RuntimeError("operator not valid: %s" % escape(operator))
 
         cachekey = None

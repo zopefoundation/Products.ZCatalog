@@ -67,7 +67,7 @@ class DateRangeIndex(UnIndex):
 
     manage_options = ({'label': 'Properties',
                        'action': 'manage_indexProperties'},
-                     )
+                      )
 
     since_field = until_field = None
 
@@ -77,7 +77,8 @@ class DateRangeIndex(UnIndex):
     ceiling_value = 278751600
 
     def __init__(self, id, since_field=None, until_field=None,
-            caller=None, extra=None, floor_value=None, ceiling_value=None):
+                 caller=None, extra=None,
+                 floor_value=None, ceiling_value=None):
 
         if extra:
             since_field = extra.since_field
@@ -208,7 +209,7 @@ class DateRangeIndex(UnIndex):
         If 'withLengths' is true, return a sequence of tuples, in
         the form '(value, length)'.
         """
-        if not name in (self._since_field, self._until_field):
+        if name not in (self._since_field, self._until_field):
             raise StopIteration
 
         if name == self._since_field:

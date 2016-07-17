@@ -118,7 +118,7 @@ class PriorityMap(NestedDict):
     @classmethod
     def load_pmap(cls, location, pmap):
         logger.info('loaded priority %d map(s) from %s',
-            len(pmap), location)
+                    len(pmap), location)
         # Convert the simple benchmark tuples to namedtuples
         new_plan = {}
         for cid, plan in pmap.items():
@@ -241,8 +241,9 @@ class CatalogPlan(object):
                     v = list(v)
                     v.sort()
 
-                # We need to make sure the key is immutable, repr() is an easy way
-                # to do this without imposing restrictions on the types of values
+                # We need to make sure the key is immutable,
+                # repr() is an easy way to do this without imposing
+                # restrictions on the types of values.
                 key.append((name, repr(v)))
 
         return tuple(sorted(key))
@@ -338,15 +339,15 @@ class CatalogPlan(object):
                          'details': [dict(id=d.name,
                                           duration=d.duration * 1000)
                                      for d in last.details],
-                        },
-                }
+                         },
+            }
             rval.append(info)
 
         return rval
 
 
 # Make sure we provide test isolation
-from zope.testing.cleanup import addCleanUp
+from zope.testing.cleanup import addCleanUp  # NOQA
 addCleanUp(PriorityMap.clear)
 addCleanUp(Reports.clear)
 del addCleanUp

@@ -156,16 +156,21 @@ class TestLazyMap(TestLazyCat):
         seq1 = range(10)
         seq2 = list(hexdigits)
         seq3 = list(letters)
-        filter = lambda x: str(x).lower()
-        lmap = self._createLMap(filter, seq1, seq2, seq3)
+
+        def to_lower(x):
+            return str(x).lower()
+
+        lmap = self._createLMap(to_lower, seq1, seq2, seq3)
         self._compare(lmap, [str(x).lower() for x in (seq1 + seq2 + seq3)])
 
     def testMapFuncIsOnlyCalledAsNecessary(self):
         seq = range(10)
-        count = [0]     # closure only works with list, and `nonlocal` in py3
+        count = [0]  # closure only works with list, and `nonlocal` in py3
+
         def func(x):
             count[0] += 1
             return x
+
         lmap = self._createLMap(func, seq)
         self.assertEqual(lmap[5], 5)
         self.assertEqual(count[0], 1)
@@ -188,8 +193,11 @@ class TestLazyFilter(TestLazyCat):
         seq1 = range(10)
         seq2 = list(hexdigits)
         seq3 = list(letters)
-        filter = lambda x: str(x).isalpha()
-        lmap = self._createLFilter(filter, seq1, seq2, seq3)
+
+        def is_alpha(x):
+            return str(x).isalpha()
+
+        lmap = self._createLFilter(is_alpha, seq1, seq2, seq3)
         self._compare(lmap, seq2[10:] + seq3)
 
     def test_length_with_filter(self):
@@ -228,18 +236,20 @@ class TestLazyMop(TestLazyCat):
         seq1 = range(10)
         seq2 = list(hexdigits)
         seq3 = list(letters)
+
         def filter(x):
             if isinstance(x, int):
                 raise ValueError
             return x.lower()
+
         lmop = self._createLMop(filter, seq1, seq2, seq3)
         self._compare(lmop, [str(x).lower() for x in (seq2 + seq3)])
 
     def test_length_with_filter(self):
         from string import letters
         letter_length = len(letters)
-
         seq = range(10) + list(letters)
+
         def filter(x):
             if isinstance(x, int):
                 raise ValueError

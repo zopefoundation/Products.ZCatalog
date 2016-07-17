@@ -17,6 +17,7 @@ from DateTime.DateTime import DateTime
 
 _marker = []
 
+
 class IndexRequestParseError(Exception):
     pass
 

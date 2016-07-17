@@ -14,6 +14,7 @@
 import operator
 import unittest
 
+from BTrees.IIBTree import IISet
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
@@ -52,15 +53,13 @@ dummies = [Dummy('a', None, None),
 def matchingDummies(value):
     result = []
     for dummy in dummies:
-        if ((dummy.start() is None
-             or dummy.start() <= value) and
-            (dummy.stop() is None
-             or dummy.stop() >= value)):
+        if ((dummy.start() is None or dummy.start() <= value) and
+                (dummy.stop() is None or dummy.stop() >= value)):
             result.append(dummy)
     return result
 
 
-class DRI_Tests(unittest.TestCase):
+class DateRangeIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
         from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
@@ -157,8 +156,8 @@ class DRI_Tests(unittest.TestCase):
         index.index_object(0, dummy)
 
         self.assertEqual(index.getEntryForObject(0),
-                        (DateTime(start).millis() / 60000,
-                         DateTime(stop).millis() / 60000))
+                         (DateTime(start).millis() / 60000,
+                          DateTime(stop).millis() / 60000))
 
         results, used = index._apply_index({'work': before})
         self.assertEqual(len(results), 0)
@@ -192,8 +191,8 @@ class DRI_Tests(unittest.TestCase):
         index.index_object(0, dummy)
 
         self.assertEqual(index.getEntryForObject(0),
-                        (DateTime(start_local).millis() / 60000,
-                         DateTime(stop_local).millis() / 60000))
+                         (DateTime(start_local).millis() / 60000,
+                          DateTime(stop_local).millis() / 60000))
 
         results, used = index._apply_index({'work': before})
         self.assertEqual(len(results), 0)
@@ -211,8 +210,6 @@ class DRI_Tests(unittest.TestCase):
         self.assertEqual(len(results), 0)
 
     def test_resultset(self):
-        from BTrees.IIBTree import IISet
-
         index = self._makeOne('work', 'start', 'stop')
         for i in range(len(dummies)):
             index.index_object(i, dummies[i])
@@ -259,7 +256,6 @@ class DRI_Tests(unittest.TestCase):
         self.assertEqual(set(results), set([0, 5]))
 
     def test_getCounter(self):
-
         index = self._makeOne('work', 'start', 'stop')
         self.assertEqual(index.getCounter(), 0)
 
@@ -278,13 +274,12 @@ class DRI_Tests(unittest.TestCase):
         self.assertEqual(index.getCounter(), 0)
 
 
-class DRI_Cache_Tests(DRI_Tests):
+class DateRangeIndexCacheTests(DateRangeIndexTests):
 
     def _makeOne(self, id, since_field=None, until_field=None,
                  caller=None, extra=None):
-
-        index = super(DRI_Cache_Tests, self).\
-            _makeOne(id, since_field, until_field, caller, extra)
+        index = super(DateRangeIndexCacheTests, self)._makeOne(
+            id, since_field, until_field, caller, extra)
 
         class DummyZCatalog(SimpleItem):
             id = 'DummyZCatalog'
@@ -299,8 +294,6 @@ class DRI_Cache_Tests(DRI_Tests):
         return index
 
     def test_cache(self):
-        from BTrees.IIBTree import IISet
-
         index = self._makeOne('work', 'start', 'stop')
         for i in range(len(dummies)):
             index.index_object(i, dummies[i])
