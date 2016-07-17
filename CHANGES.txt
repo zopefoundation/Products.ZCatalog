@@ -4,6 +4,8 @@ Changelog
 3.1.1 (unreleased)
 ------------------
 
+- Make index-listing compatible with Zope 4.
+
 - #5: Ignore None values in UnIndex instead of raising a TypeError.
 
 - Add a new getCounter methods to indices.
