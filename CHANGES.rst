@@ -19,7 +19,6 @@ Changelog
 
 - Update to ZODB 4.0 as direct dependency.
 
-
 3.1 (2014-11-02)
 ----------------
 
