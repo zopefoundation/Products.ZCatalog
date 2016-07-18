@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.2 (unreleased)
+3.2 (2016-07-18)
 ----------------
 
 - #12: Add request cache for index results to all UnIndex subclasses.
