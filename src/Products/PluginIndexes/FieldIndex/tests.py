@@ -43,7 +43,19 @@ class FieldIndexTests(unittest.TestCase):
 
     def _makeOne(self, id, extra=None):
         klass = self._getTargetClass()
-        return klass(id, extra=extra)
+        index = klass(id, extra=extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
 
     def setUp(self):
         self._index = self._makeOne('foo')
@@ -95,14 +107,31 @@ class FieldIndexTests(unittest.TestCase):
             self._index.index_object(k, v)
 
     def _checkApply(self, req, expectedValues):
-        result, used = self._index._apply_index(req)
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        assert used == ('foo', )
-        assert len(result) == len(expectedValues), \
-            '%s | %s' % (map(None, result), expectedValues)
-        for k, v in expectedValues:
-            assert k in result
+
+        def checkApply():
+            result, used = self._index._apply_index(req)
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            assert used == ('foo', )
+            assert len(result) == len(expectedValues), \
+                '%s | %s' % (map(None, result), expectedValues)
+            for k, v in expectedValues:
+                assert k in result
+
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular check
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching check
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IPluggableIndex
@@ -237,49 +266,3 @@ class FieldIndexTests(unittest.TestCase):
         # don't return empty sets.
         record['foo']['operator'] = 'and'
         self._checkApply(record, expect)
-
-
-class FieldIndexCacheTests(FieldIndexTests):
-
-    def _dummy_test(self):
-        # dummy function
-        pass
-
-    # following methods do not require a cache test
-    test_interfaces = _dummy_test
-    test_getCounter = _dummy_test
-
-    def _makeOne(self, id, extra=None):
-
-        index = super(FieldIndexCacheTests, self).\
-            _makeOne(id, extra=extra)
-
-        class DummyZCatalog(SimpleItem):
-            id = 'DummyZCatalog'
-
-        # Build pseudo catalog and REQUEST environment
-        catalog = makerequest(DummyZCatalog())
-        indexes = SimpleItem()
-
-        indexes = indexes.__of__(catalog)
-        index = index.__of__(indexes)
-
-        return index
-
-    def _checkApply(self, req, expectedValues):
-
-        checkApply = super(FieldIndexCacheTests, self)._checkApply
-        index = self._index
-
-        cache = index.getRequestCache()
-        cache.clear()
-
-        # first call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 0)
-        self.assertEqual(cache._sets, 1)
-        self.assertEqual(cache._misses, 1)
-
-        # second call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 1)

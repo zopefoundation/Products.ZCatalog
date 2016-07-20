@@ -109,7 +109,18 @@ class DateIndexTests(unittest.TestCase):
         return DateIndex
 
     def _makeOne(self, id='date'):
-        return self._getTargetClass()(id)
+        index = self._getTargetClass()(id)
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
 
     def _getValues(self):
         from DateTime import DateTime
@@ -135,14 +146,30 @@ class DateIndexTests(unittest.TestCase):
             index.index_object(k, v)
 
     def _checkApply(self, index, req, expectedValues):
-        result, used = index._apply_index(req)
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        self.assertEqual(used, ('date',))
-        self.assertEqual(len(result), len(expectedValues),
-                         '%s | %s' % (result, expectedValues))
-        for k, v in expectedValues:
-            self.assertTrue(k in result)
+
+        # single check apply
+        def checkApply():
+            result, used = index._apply_index(req)
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            self.assertEqual(used, ('date',))
+            self.assertEqual(len(result), len(expectedValues),
+                             '%s | %s' % (result, expectedValues))
+            for k, v in expectedValues:
+                self.assertTrue(k in result)
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular test
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching test
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def _convert(self, dt):
         from time import gmtime
@@ -316,46 +343,3 @@ class DateIndexTests(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
-
-
-class DateIndexCacheTests(DateIndexTests):
-
-    def _dummy_test(self):
-        # dummy function
-        pass
-
-    # following methods do not require a cache test
-    test_interfaces = _dummy_test
-    test_naive_convert_to_utc = _dummy_test
-    test_getCounter = _dummy_test
-
-    def _makeOne(self, id='date'):
-        index = super(DateIndexCacheTests, self)._makeOne(id)
-
-        class DummyZCatalog(SimpleItem):
-            id = 'DummyZCatalog'
-
-        # Build pseudo catalog and REQUEST environment
-        catalog = makerequest(DummyZCatalog())
-        indexes = SimpleItem()
-
-        indexes = indexes.__of__(catalog)
-        index = index.__of__(indexes)
-
-        return index
-
-    def _checkApply(self, index, req, expectedValues):
-        checkApply = super(DateIndexCacheTests, self)._checkApply
-
-        cache = index.getRequestCache()
-        cache.clear()
-
-        # first call
-        checkApply(index, req, expectedValues)
-        self.assertEqual(cache._hits, 0)
-        self.assertEqual(cache._sets, 1)
-        self.assertEqual(cache._misses, 1)
-
-        # second call
-        checkApply(index, req, expectedValues)
-        self.assertEqual(cache._hits, 1)
