@@ -40,7 +40,19 @@ class UUIDIndexTests(unittest.TestCase):
 
     def _makeOne(self, id):
         klass = self._getTargetClass()
-        return klass(id)
+        index = klass(id)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
 
     def setUp(self):
         self._index = self._makeOne('foo')
@@ -66,13 +78,30 @@ class UUIDIndexTests(unittest.TestCase):
             self._index.index_object(k, v)
 
     def _checkApply(self, req, expectedValues):
-        result, used = self._index._apply_index(req)
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        self.assertEqual(used, ('foo', ))
-        self.assertEqual(len(result), len(expectedValues))
-        for k, v in expectedValues:
-            self.assertTrue(k in result)
+
+        def checkApply():
+            result, used = self._index._apply_index(req)
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            self.assertEqual(used, ('foo', ))
+            self.assertEqual(len(result), len(expectedValues))
+            for k, v in expectedValues:
+                self.assertTrue(k in result)
+
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular test
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching test
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IPluggableIndex
@@ -166,49 +195,3 @@ class UUIDIndexTests(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
-
-
-class UUIDIndexTestsCache(UUIDIndexTests):
-
-    def _dummy_test(self):
-        # dummy function
-        pass
-
-    # not required for cache test
-    test_interfaces = _dummy_test
-    test_getCounter = _dummy_test
-
-    def _makeOne(self, id, extra=None):
-
-        index = super(UUIDIndexTestsCache, self).\
-            _makeOne(id)
-
-        class DummyZCatalog(SimpleItem):
-            id = 'DummyZCatalog'
-
-        # Build pseudo catalog and REQUEST environment
-        catalog = makerequest(DummyZCatalog())
-        indexes = SimpleItem()
-
-        indexes = indexes.__of__(catalog)
-        index = index.__of__(indexes)
-
-        return index
-
-    def _checkApply(self, req, expectedValues):
-
-        checkApply = super(UUIDIndexTestsCache, self)._checkApply
-        index = self._index
-
-        cache = index.getRequestCache()
-        cache.clear()
-
-        # first call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 0)
-        self.assertEqual(cache._sets, 1)
-        self.assertEqual(cache._misses, 1)
-
-        # second call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 1)

@@ -51,7 +51,19 @@ class TestKeywordIndex(unittest.TestCase):
 
     def _makeOne(self, id, extra=None):
         klass = self._getTargetClass()
-        return klass(id, extra=extra)
+        index = klass(id, extra=extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
 
     def setUp(self):
         self._index = self._makeOne('foo')
@@ -84,16 +96,33 @@ class TestKeywordIndex(unittest.TestCase):
             self._index.index_object(k, v)
 
     def _checkApply(self, req, expectedValues):
-        result, used = self._index._apply_index(req)
-        assert used == ('foo', )
-        assert len(result) == len(expectedValues), \
-            '%s | %s' % (map(None, result),
-                         map(lambda x: x[0], expectedValues))
 
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        for k, v in expectedValues:
-            assert k in result
+        def checkApply():
+            result, used = self._index._apply_index(req)
+            assert used == ('foo', )
+            assert len(result) == len(expectedValues), \
+                '%s | %s' % (map(None, result),
+                             map(lambda x: x[0], expectedValues))
+
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            for k, v in expectedValues:
+                assert k in result
+
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular check
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching check
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IPluggableIndex
@@ -277,55 +306,3 @@ class TestKeywordIndex(unittest.TestCase):
 
         index.clear()
         self.assertEqual(index.getCounter(), 0)
-
-
-class TestKeywordIndexCache(TestKeywordIndex):
-
-    def _dummy_test(self):
-        # dummy function
-        pass
-
-    # following methods do not require a cache test
-    test_interfaces = _dummy_test
-    testAddObjectWOKeywords = _dummy_test
-    testDuplicateKeywords = _dummy_test
-    test_noindexing_when_noattribute = _dummy_test
-    test_noindexing_when_raising_attribute = _dummy_test
-    test_noindexing_when_raising_typeeror = _dummy_test
-    test_value_removes = _dummy_test
-    test_getCounter = _dummy_test
-
-    def _makeOne(self, id, extra=None):
-
-        index = super(TestKeywordIndexCache, self).\
-            _makeOne(id, extra=extra)
-
-        class DummyZCatalog(SimpleItem):
-            id = 'DummyZCatalog'
-
-        # Build pseudo catalog and REQUEST environment
-        catalog = makerequest(DummyZCatalog())
-        indexes = SimpleItem()
-
-        indexes = indexes.__of__(catalog)
-        index = index.__of__(indexes)
-
-        return index
-
-    def _checkApply(self, req, expectedValues):
-
-        checkApply = super(TestKeywordIndexCache, self)._checkApply
-        index = self._index
-
-        cache = index.getRequestCache()
-        cache.clear()
-
-        # first call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 0)
-        self.assertEqual(cache._sets, 1)
-        self.assertEqual(cache._misses, 1)
-
-        # second call
-        checkApply(req, expectedValues)
-        self.assertEqual(cache._hits, 1)
