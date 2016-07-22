@@ -1,8 +1,8 @@
 Changelog
 =========
 
-4.0 (unreleased)
-----------------
+4.0a1 (2016-07-22)
+------------------
 
 - Moved `Products.ZCatalog.Lazy` module to `ZTUtils.Lazy`.
 
