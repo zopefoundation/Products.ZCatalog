@@ -1,9 +1,12 @@
 Changelog
 =========
 
-3.2.1 (unreleased)
-------------------
+4.0 (unreleased)
+----------------
 
+- Moved `Products.ZCatalog.Lazy` module to `ZTUtils.Lazy`.
+
+- Add configure.zcml with deprecatedManageAddDelete directives.
 
 3.2 (2016-07-18)
 ----------------
