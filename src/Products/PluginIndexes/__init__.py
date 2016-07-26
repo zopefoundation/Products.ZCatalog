@@ -11,6 +11,7 @@
 #
 ##############################################################################
 
+
 def initialize(context):
 
     from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
@@ -24,7 +25,7 @@ def initialize(context):
                                         manage_addFieldIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
     from Products.PluginIndexes.KeywordIndex.KeywordIndex \
@@ -37,7 +38,7 @@ def initialize(context):
                                         manage_addKeywordIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.TopicIndex.TopicIndex import TopicIndex
     from Products.PluginIndexes.TopicIndex.TopicIndex \
@@ -50,7 +51,7 @@ def initialize(context):
                                         manage_addTopicIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.DateIndex.DateIndex import DateIndex
     from Products.PluginIndexes.DateIndex.DateIndex \
@@ -63,7 +64,7 @@ def initialize(context):
                                         manage_addDateIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
         import DateRangeIndex
@@ -77,7 +78,7 @@ def initialize(context):
                                         manage_addDateRangeIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
     from Products.PluginIndexes.PathIndex.PathIndex \
@@ -90,7 +91,7 @@ def initialize(context):
                                         manage_addPathIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
     from Products.PluginIndexes.BooleanIndex.BooleanIndex import \
@@ -104,7 +105,7 @@ def initialize(context):
                                         manage_addBooleanIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )
 
     from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
     from Products.PluginIndexes.UUIDIndex.UUIDIndex import \
@@ -118,4 +119,4 @@ def initialize(context):
                                         manage_addUUIDIndex),
                           icon='www/index.gif',
                           visibility=None,
-                         )
+                          )

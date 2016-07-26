@@ -44,7 +44,7 @@ class StdoutHandler(object):
         self.output(text)
 
     def finish(self):
-        self.output('Process terminated. Duration: %0.2f seconds' % \
+        self.output('Process terminated. Duration: %0.2f seconds' %
                     (time.time() - self._start))
 
     def report(self, current, *args, **kw):
@@ -56,9 +56,9 @@ class StdoutHandler(object):
                 seconds_to_go = (seconds_so_far / current *
                                  (self._max - current))
                 end = DateTime(time.time() + seconds_to_go)
-                self.output('%d/%d (%.2f%%) Estimated termination: %s' % \
+                self.output('%d/%d (%.2f%%) Estimated termination: %s' %
                             (current, self._max, (100.0 * current / self._max),
-                            end.strftime('%Y/%m/%d %H:%M:%Sh')))
+                             end.strftime('%Y/%m/%d %H:%M:%Sh')))
 
     def output(self, text):
         print >> self.fp, '%s: %s' % (self._ident, text)

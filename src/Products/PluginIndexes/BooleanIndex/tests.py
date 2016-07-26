@@ -131,9 +131,11 @@ class TestBooleanIndex(unittest.TestCase):
 
     def test_index_many_change(self):
         index = self._makeOne()
+
         def add(i, value):
             obj = Dummy(i, value)
             index._index_object(obj.id, obj, attr='truth')
+
         # First lets index only True values
         for i in range(0, 4):
             add(i, True)
@@ -235,3 +237,22 @@ class TestBooleanIndex(unittest.TestCase):
         res = index._apply_index({'truth': True})[0]
         self.assertEqual(list(index._index), [2])
         self.assertEqual(list(res), [1, 3, 4])
+
+    def test_getCounter(self):
+        index = self._makeOne()
+
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = Dummy(1, True)
+        index.index_object(obj.id, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(obj.id)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

@@ -28,10 +28,10 @@ class CatalogAware:
     object, you are responsible for calling your object's index_object
     method. """
 
-    meta_type='CatalogAware'
-    default_catalog='Catalog'
+    meta_type = 'CatalogAware'
+    default_catalog = 'Catalog'
 
-    manage_editCatalogerForm=DTMLFile('dtml/editCatalogerForm', globals())
+    manage_editCatalogerForm = DTMLFile('dtml/editCatalogerForm', globals())
 
     def _warn_deprecated(self):
         warnings.warn('The Products.ZCatalog.CatalogPathAwareness module is '
@@ -42,7 +42,7 @@ class CatalogAware:
 
     def manage_editCataloger(self, default, REQUEST=None):
         """ """
-        self.default_catalog=default
+        self.default_catalog = default
         message = "Your changes have been saved"
         if REQUEST is not None:
             return self.manage_main(self, REQUEST, manage_tabs_message=message)
@@ -84,7 +84,7 @@ class CatalogAware:
         """Return a sequence of user names who have the local
             Owner role on an object. The name creator is used
             for this method to conform to Dublin Core."""
-        users=[]
+        users = []
         for user, roles in self.get_local_roles():
             if 'Owner' in roles:
                 users.append(user)
@@ -103,11 +103,11 @@ class CatalogAware:
         """Return a summary of the text content of the object."""
         if not hasattr(self, 'text_content'):
             return ''
-        attr=getattr(self, 'text_content')
+        attr = getattr(self, 'text_content')
         if callable(attr):
-            text=attr()
+            text = attr()
         else:
-            text=attr
+            text = attr
         n = min(num, len(text))
         return text[:n]
 

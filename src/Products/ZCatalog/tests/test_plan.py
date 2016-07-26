@@ -13,15 +13,26 @@
 
 import os
 import os.path
+from thread import LockType
 import time
 import unittest
 
 from zope.testing import cleanup
 
+from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
+from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import DateRangeIndex
+from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
+from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
+from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
+from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
+from Products.ZCatalog.Catalog import Catalog
+from Products.ZCatalog.ZCatalog import ZCatalog
+
+
 HERE = __file__
 
 
-class dummy(object):
+class Dummy(object):
 
     def __init__(self, num):
         self.num = num
@@ -133,7 +144,7 @@ class TestPriorityMapDefault(unittest.TestCase):
                 'index1 index2': {
                     'index1': Benchmark(duration=2.0, hits=3, limit=True),
                     'index2': Benchmark(duration=1.5, hits=2, limit=False),
-            }}}
+                }}}
             self.assertEquals(self.pmap.get_value(), expected)
         finally:
             del os.environ['ZCATALOGQUERYPLAN']
@@ -147,7 +158,7 @@ class TestPriorityMapDefault(unittest.TestCase):
             'index1 index2': {
                 'index1': Benchmark(duration=2.0, hits=3, limit=True),
                 'index2': Benchmark(duration=1.5, hits=2, limit=False),
-        }}}
+            }}}
         self.assertEquals(self.pmap.get_value(), expected)
 
 
@@ -167,7 +178,6 @@ class TestReports(unittest.TestCase):
         self.assertEquals(self.reports.value, {})
 
     def test_lock(self):
-        from thread import LockType
         self.assertEquals(type(self.reports.lock), LockType)
 
 
@@ -175,7 +185,6 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
     def setUp(self):
         cleanup.CleanUp.setUp(self)
-        from Products.ZCatalog.Catalog import Catalog
         self.cat = Catalog('catalog')
 
     def _makeOne(self, catalog=None, query=None):
@@ -189,20 +198,17 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         self.assertEquals(plan.get_id(), ('', 'NonPersistentCatalog'))
 
     def test_get_id_persistent(self):
-        from Products.ZCatalog.ZCatalog import ZCatalog
         zcat = ZCatalog('catalog')
         plan = self._makeOne(zcat._catalog)
         self.assertEquals(plan.get_id(), ('catalog', ))
 
     def test_getCatalogPlan_empty(self):
-        from Products.ZCatalog.ZCatalog import ZCatalog
         zcat = ZCatalog('catalog')
         self._makeOne(zcat._catalog)
         plan_str = zcat.getCatalogPlan()
         self.assertTrue('queryplan = {' in plan_str)
 
     def test_getCatalogPlan_full(self):
-        from Products.ZCatalog.ZCatalog import ZCatalog
         zcat = ZCatalog('catalog')
         plan = self._makeOne(zcat._catalog, query={'index1': 1, 'index2': 2})
         plan.start()
@@ -258,7 +264,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop_split('index1')
         plan.start_split('sort_on')
         plan.stop_split('sort_on')
-        time.sleep(0.02) # wait at least one Windows clock tick
+        time.sleep(0.02)  # wait at least one Windows clock tick
         plan.stop()
 
         self.assert_(plan.duration > 0)
@@ -301,16 +307,6 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
 
     def _make_catalog(self):
-        from Products.PluginIndexes.BooleanIndex.BooleanIndex import \
-            BooleanIndex
-        from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
-            DateRangeIndex
-        from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-        from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
-            KeywordIndex
-        from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
-        from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
-        from Products.ZCatalog.ZCatalog import ZCatalog
         zcat = ZCatalog('catalog')
         zcat._catalog.addIndex('big', BooleanIndex('big'))
         zcat._catalog.addIndex('date', DateRangeIndex('date', 'start', 'end'))
@@ -319,7 +315,7 @@ class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
         zcat._catalog.addIndex('path', PathIndex('getPhysicalPath'))
         zcat._catalog.addIndex('uuid', UUIDIndex('num'))
         for i in range(9):
-            obj = dummy(i)
+            obj = Dummy(i)
             zcat.catalog_object(obj, str(i))
         return zcat
 
@@ -350,18 +346,14 @@ class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
 
     def setUp(self):
         cleanup.CleanUp.setUp(self)
-        from Products.ZCatalog.ZCatalog import ZCatalog
         self.zcat = ZCatalog('catalog')
         self.zcat.long_query_time = 0.0
         self._add_indexes()
         for i in range(9):
-            obj = dummy(i)
+            obj = Dummy(i)
             self.zcat.catalog_object(obj, str(i))
 
     def _add_indexes(self):
-        from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-        from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
-            KeywordIndex
         num = FieldIndex('num')
         self.zcat._catalog.addIndex('num', num)
         big = FieldIndex('big')

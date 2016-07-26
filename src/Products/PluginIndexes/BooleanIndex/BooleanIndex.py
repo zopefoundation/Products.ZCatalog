@@ -62,6 +62,7 @@ class BooleanIndex(UnIndex):
         self._index_value = 1
         self._unindex = IIBTree()
         self._length = BTrees.Length.Length()
+        self._counter = BTrees.Length.Length()
 
     def histogram(self):
         """Return a mapping which provides a histogram of the number of
@@ -144,10 +145,12 @@ class BooleanIndex(UnIndex):
             except ConflictError:
                 raise
             except Exception:
-                LOG.exception('%s: unindex_object could not remove '
-                              'documentId %s from index %s. This '
-                              'should not happen.' % (self.__class__.__name__,
-                              str(documentId), str(self.id)))
+                LOG.exception(
+                    '%s: unindex_object could not remove documentId %s '
+                    'from index %s. This should not happen.' % (
+                        self.__class__.__name__,
+                        str(documentId),
+                        str(self.id)))
         elif check:
             length = self._length.value
             index_length = self._index_length.value
@@ -200,6 +203,8 @@ class BooleanIndex(UnIndex):
         if unindexRecord is _marker:
             return None
 
+        self._increment_counter()
+
         self.removeForwardIndexEntry(unindexRecord, documentId)
 
         try:
@@ -251,7 +256,8 @@ manage_addBooleanIndexForm = DTMLFile('dtml/addBooleanIndex', globals())
 
 
 def manage_addBooleanIndex(self, id, extra=None,
-                REQUEST=None, RESPONSE=None, URL3=None):
+                           REQUEST=None, RESPONSE=None, URL3=None):
     """Add a boolean index"""
-    return self.manage_addIndex(id, 'BooleanIndex', extra=extra, \
-             REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(
+        id, 'BooleanIndex', extra=extra,
+        REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)

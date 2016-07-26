@@ -11,8 +11,11 @@
 #
 ##############################################################################
 
-import operator
 import unittest
+
+from BTrees.IIBTree import IISet
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 
 class Dummy(object):
@@ -35,27 +38,31 @@ class Dummy(object):
         return (self._start, self._stop)
 
 
-dummies = [ Dummy( 'a', None,   None )
-          , Dummy( 'b', None,   None )
-          , Dummy( 'c', 0,      None )
-          , Dummy( 'd', 10,     None )
-          , Dummy( 'e', None,   4    )
-          , Dummy( 'f', None,   11   )
-          , Dummy( 'g', 0,      11   )
-          , Dummy( 'h', 2,      9    )
-          ]
+dummies = [(0, Dummy('a', None, None)),
+           (1, Dummy('b', None, None)),
+           (2, Dummy('c', 0, None)),
+           (3, Dummy('d', 10, None)),
+           (4, Dummy('e', None, 4)),
+           (5, Dummy('f', None, 11)),
+           (6, Dummy('g', 0, 11)),
+           (7, Dummy('h', 2, 9)),
+           ]
 
 
-def matchingDummies(value):
+def matchingDummiesByTimeValue(value):
     result = []
-    for dummy in dummies:
-        if ((dummy.start() is None or dummy.start() <= value)
-            and (dummy.stop() is None or dummy.stop() >= value)):
-            result.append(dummy)
+    for i, dummy in dummies:
+        if ((dummy.start() is None or dummy.start() <= value) and
+                (dummy.stop() is None or dummy.stop() >= value)):
+            result.append((i, dummy))
     return result
 
 
-class DRI_Tests(unittest.TestCase):
+def matchingDummiesByUIDs(uids):
+    return [(i, dummies[i]) for i in uids]
+
+
+class DateRangeIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
         from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
@@ -65,7 +72,46 @@ class DRI_Tests(unittest.TestCase):
     def _makeOne(self, id, since_field=None, until_field=None, caller=None,
                  extra=None):
         klass = self._getTargetClass()
-        return klass(id, since_field, until_field, caller, extra)
+        index = klass(id, since_field, until_field, caller, extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
+    def _checkApply(self, index, req, expectedValues, resultset=None):
+
+        def checkApply():
+            result, used = index._apply_index(req, resultset=resultset)
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            assert used == (index._since_field, index._until_field)
+            assert len(result) == len(expectedValues), \
+                '%s | %s' % (map(None, result), expectedValues)
+            for k, v in expectedValues:
+                assert k in result
+            return result, used
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular check
+        result, used = checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching check
+        result, used = checkApply()
+        self.assertEqual(cache._hits, 1)
+        return result, used
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IDateRangeIndex
@@ -83,35 +129,31 @@ class DRI_Tests(unittest.TestCase):
         empty = self._makeOne('empty')
 
         self.assertTrue(empty.getEntryForObject(1234) is None)
-        empty.unindex_object(1234) # shouldn't throw
+        empty.unindex_object(1234)  # shouldn't throw
 
         self.assertFalse(list(empty.uniqueValues('foo')))
         self.assertFalse(list(empty.uniqueValues('foo', withLengths=True)))
         self.assertTrue(empty._apply_index({'zed': 12345}) is None)
 
-        result, used = empty._apply_index({'empty': 12345})
-        self.assertFalse(result)
-        self.assertEqual(used, (None, None))
+        self._checkApply(empty, {'empty': 12345}, [])
 
     def test_retrieval(self):
         index = self._makeOne('work', 'start', 'stop')
 
-        for i in range(len(dummies)):
-            index.index_object(i, dummies[i])
+        for i, dummy in dummies:
+            index.index_object(i, dummy)
 
-        for i in range(len(dummies)):
-            self.assertEqual(index.getEntryForObject(i), dummies[i].datum())
+        for i, dummy in dummies:
+            self.assertEqual(index.getEntryForObject(i), dummy.datum())
 
         for value in range(-1, 15):
-            matches = matchingDummies(value)
-            results, used = index._apply_index({'work': value})
-            self.assertEqual(used, ('start', 'stop'))
-            self.assertEqual(len(matches), len(results))
-
-            matches = sorted(matches, key=operator.methodcaller('name'))
+            matches = matchingDummiesByTimeValue(value)
+            results, used = self._checkApply(index, {'work': value}, matches)
+            matches = sorted(matches, key=lambda d: d[1].name)
 
             for result, match in map(None, results, matches):
-                self.assertEqual(index.getEntryForObject(result), match.datum())
+                self.assertEqual(index.getEntryForObject(result),
+                                 match[1].datum())
 
     def test_longdates(self):
         too_large = 2 ** 31
@@ -149,25 +191,21 @@ class DRI_Tests(unittest.TestCase):
         dummy = Dummy('test', start, stop)
         index = self._makeOne('work', 'start', 'stop')
         index.index_object(0, dummy)
+        matches = matchingDummiesByUIDs([0])
 
         self.assertEqual(index.getEntryForObject(0),
-                        (DateTime(start).millis() / 60000,
-                         DateTime(stop).millis() / 60000))
+                         (DateTime(start).millis() / 60000,
+                          DateTime(stop).millis() / 60000))
 
-        results, used = index._apply_index({'work': before})
-        self.assertEqual(len(results), 0)
+        self._checkApply(index, {'work': before}, [])
 
-        results, used = index._apply_index({'work': start})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': start}, matches)
 
-        results, used = index._apply_index({'work': between})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': between}, matches)
 
-        results, used = index._apply_index({'work': stop})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': stop}, matches)
 
-        results, used = index._apply_index({'work': after})
-        self.assertEqual(len(results), 0)
+        self._checkApply(index, {'work': after}, [])
 
     def test_datetime_naive_timezone(self):
         from datetime import datetime
@@ -184,65 +222,77 @@ class DRI_Tests(unittest.TestCase):
         dummy = Dummy('test', start, stop)
         index = self._makeOne('work', 'start', 'stop')
         index.index_object(0, dummy)
+        matches = matchingDummiesByUIDs([0])
 
         self.assertEqual(index.getEntryForObject(0),
-                        (DateTime(start_local).millis() / 60000,
-                         DateTime(stop_local).millis() / 60000))
+                         (DateTime(start_local).millis() / 60000,
+                          DateTime(stop_local).millis() / 60000))
 
-        results, used = index._apply_index({'work': before})
-        self.assertEqual(len(results), 0)
+        self._checkApply(index, {'work': before}, [])
 
-        results, used = index._apply_index({'work': start})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': start}, matches)
 
-        results, used = index._apply_index({'work': between})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': between}, matches)
 
-        results, used = index._apply_index({'work': stop})
-        self.assertEqual(len(results), 1)
+        self._checkApply(index, {'work': stop}, matches)
 
-        results, used = index._apply_index({'work': after})
-        self.assertEqual(len(results), 0)
+        self._checkApply(index, {'work': after}, [])
 
     def test_resultset(self):
-        from BTrees.IIBTree import IISet
-
         index = self._makeOne('work', 'start', 'stop')
-        for i in range(len(dummies)):
-            index.index_object(i, dummies[i])
+        for i, dummy in dummies:
+            index.index_object(i, dummy)
 
-        results, used = index._apply_index({'work': 20})
-        self.assertEqual(set(results), set([0, 1, 2, 3]))
+        self._checkApply(index, {'work': 20},
+                         matchingDummiesByUIDs([0, 1, 2, 3]))
 
         # a resultset with everything doesn't actually limit
-        results, used = index._apply_index({'work': 20},
-            resultset=IISet(range(len(dummies))))
-        self.assertEqual(set(results), set([0, 1, 2, 3]))
+        self._checkApply(index, {'work': 20},
+                         matchingDummiesByUIDs([0, 1, 2, 3]),
+                         resultset=IISet(range(len(dummies))))
 
         # a small resultset limits
-        results, used = index._apply_index({'work': 20},
-            resultset=IISet([1, 2]))
-        self.assertEqual(set(results), set([1, 2]))
+        self._checkApply(index, {'work': 20},
+                         matchingDummiesByUIDs([1, 2]),
+                         resultset=IISet([1, 2]))
 
         # the specified value is included
-        results, used = index._apply_index({'work': 11})
-        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+        self._checkApply(index, {'work': 11},
+                         matchingDummiesByUIDs([0, 1, 2, 3, 5, 6]))
 
         # also for _since_only
-        results, used = index._apply_index({'work': 10})
-        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+        self._checkApply(index, {'work': 10},
+                         matchingDummiesByUIDs([0, 1, 2, 3, 5, 6]))
 
         # the specified value is included with a large resultset
-        results, used = index._apply_index({'work': 11},
-            resultset=IISet(range(len(dummies))))
-        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+        self._checkApply(index, {'work': 11},
+                         matchingDummiesByUIDs([0, 1, 2, 3, 5, 6]),
+                         resultset=IISet(range(len(dummies))))
 
         # this also works for _since_only
-        results, used = index._apply_index({'work': 10},
-            resultset=IISet(range(len(dummies))))
-        self.assertEqual(set(results), set([0, 1, 2, 3, 5, 6]))
+        self._checkApply(index, {'work': 10},
+                         matchingDummiesByUIDs([0, 1, 2, 3, 5, 6]),
+                         resultset=IISet(range(len(dummies))))
 
         # the specified value is included with a small resultset
-        results, used = index._apply_index({'work': 11},
-            resultset=IISet([0, 5, 7]))
-        self.assertEqual(set(results), set([0, 5]))
+        self._checkApply(index, {'work': 11},
+                         matchingDummiesByUIDs([0, 5]),
+                         resultset=IISet([0, 5, 7]))
+
+    def test_getCounter(self):
+        index = self._makeOne('work', 'start', 'stop')
+        self.assertEqual(index.getCounter(), 0)
+
+        k, obj = dummies[0]
+        index.index_object(k, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(k)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

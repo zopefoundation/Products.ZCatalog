@@ -87,7 +87,7 @@ class PythonFilteredSet(FilteredSetBase):
         except ConflictError:
             raise
         except Exception:
-            LOG.warn('eval() failed Object: %s, expr: %s' %\
+            LOG.warn('eval() failed Object: %s, expr: %s' %
                      (o.getId(), self.expr), exc_info=sys.exc_info())
 
 

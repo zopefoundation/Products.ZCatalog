@@ -243,10 +243,22 @@ class IIndexConfiguration(Interface):
             The interface does not define any specifc mapping keys.
         """
 
+
+class IRequestCacheIndex(Interface):
+    """ Request cache API for pluggable indexes """
+
+    def getRequestCache():
+        """ Returns dict for caching per request for interim results
+            of an index search. Returns 'None' if no REQUEST attribute
+            is available
+        """
+
+    def getRequestCacheKey(record, resultset=None):
+        """ Returns an unique key of a search record """
+
+
 # ITransposeQuery was added to support multicolumn indexes for field and
 # keyword indexes, eg. CompositeIndex. (andbag)
-
-
 class ITransposeQuery(Interface):
     """ Optimization API for queries and indexing """
 

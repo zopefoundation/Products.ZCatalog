@@ -18,11 +18,8 @@ from Acquisition import aq_parent
 from Acquisition import Implicit
 from zExceptions import Unauthorized
 from ZODB.POSException import ConflictError
-
-from ..CatalogBrains import _GLOBALREQUEST_INSTALLED
-if _GLOBALREQUEST_INSTALLED:
-    from zope.globalrequest import clearRequest
-    from zope.globalrequest import setRequest
+from zope.globalrequest import clearRequest
+from zope.globalrequest import setRequest
 
 _marker = object()
 
@@ -145,14 +142,13 @@ class TestBrains(unittest.TestCase):
         self.root.REQUEST = request
         self.assertEqual(b.getURL(), 'http://superbad.com/conflicter')
 
-    if _GLOBALREQUEST_INSTALLED:
-        def testGetURL_catalog_as_utility(self):
-            request = DummyRequest()
-            b = self._makeBrain(0)
+    def testGetURL_catalog_as_utility(self):
+        request = DummyRequest()
+        b = self._makeBrain(0)
 
-            setRequest(request)
-            self.assertEqual(b.getURL(), 'http://superbad.com/conflicter')
-            clearRequest()
+        setRequest(request)
+        self.assertEqual(b.getURL(), 'http://superbad.com/conflicter')
+        clearRequest()
 
     def testGetRID(self):
         b = self._makeBrain(42)
@@ -168,17 +164,16 @@ class TestBrains(unittest.TestCase):
         self.assertTrue(aq_base(b.getObject()) is
                         aq_base(self.cat.getobject(1)))
 
-    if _GLOBALREQUEST_INSTALLED:
-        def testGetObjectHappy_catalog_as_utility(self):
-            request = DummyRequest()
-            b = self._makeBrain(1)
+    def testGetObjectHappy_catalog_as_utility(self):
+        request = DummyRequest()
+        b = self._makeBrain(1)
 
-            setRequest(request)
-            self.assertEqual(b.getPath(), '/happy')
-            self.assertEqual(b.getObject().REQUEST, request)
-            self.assertTrue(aq_base(b.getObject()) is
-                            aq_base(self.cat.getobject(1)))
-            clearRequest()
+        setRequest(request)
+        self.assertEqual(b.getPath(), '/happy')
+        self.assertEqual(b.getObject().REQUEST, request)
+        self.assertTrue(aq_base(b.getObject()) is
+                        aq_base(self.cat.getobject(1)))
+        clearRequest()
 
     def testGetObjectPropagatesConflictErrors(self):
         b = self._makeBrain(0)

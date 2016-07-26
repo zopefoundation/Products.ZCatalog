@@ -124,6 +124,13 @@ class KeywordIndex(UnIndex):
         """ carefully unindex the object with integer id 'documentId'"""
 
         keywords = self._unindex.get(documentId, None)
+
+        # Couldn't we return 'None' immediately
+        # if keywords is 'None' (or _marker)???
+
+        if keywords is not None:
+            self._increment_counter()
+
         self.unindex_objectKeywords(documentId, keywords)
         try:
             del self._unindex[documentId]
@@ -140,7 +147,7 @@ manage_addKeywordIndexForm = DTMLFile('dtml/addKeywordIndex', globals())
 
 
 def manage_addKeywordIndex(self, id, extra=None,
-        REQUEST=None, RESPONSE=None, URL3=None):
+                           REQUEST=None, RESPONSE=None, URL3=None):
     """Add a keyword index"""
-    return self.manage_addIndex(id, 'KeywordIndex', extra=extra, \
-              REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'KeywordIndex', extra=extra,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)

@@ -13,7 +13,8 @@
 
 import unittest
 
-from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 
 class Dummy:
@@ -32,8 +33,29 @@ class Dummy:
 
 class UUIDIndexTests(unittest.TestCase):
 
+    def _getTargetClass(self):
+        from Products.PluginIndexes.UUIDIndex.UUIDIndex \
+            import UUIDIndex
+        return UUIDIndex
+
+    def _makeOne(self, id):
+        klass = self._getTargetClass()
+        index = klass(id)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
     def setUp(self):
-        self._index = UUIDIndex('foo')
+        self._index = self._makeOne('foo')
         self._marker = []
         self._values = [
             (0, Dummy('a')),
@@ -56,23 +78,44 @@ class UUIDIndexTests(unittest.TestCase):
             self._index.index_object(k, v)
 
     def _checkApply(self, req, expectedValues):
-        result, used = self._index._apply_index(req)
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        self.assertEqual(used, ('foo', ))
-        self.assertEqual(len(result), len(expectedValues))
-        for k, v in expectedValues:
-            self.assertTrue(k in result)
+
+        def checkApply():
+            result, used = self._index._apply_index(req)
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            self.assertEqual(used, ('foo', ))
+            self.assertEqual(len(result), len(expectedValues))
+            for k, v in expectedValues:
+                self.assertTrue(k in result)
+
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular test
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching test
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, UUIDIndex)
-        verifyClass(ISortIndex, UUIDIndex)
-        verifyClass(IUniqueValueIndex, UUIDIndex)
+        klass = self._getTargetClass()
+
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def test_empty(self):
         self.assertEqual(len(self._index), 0)
@@ -88,7 +131,7 @@ class UUIDIndexTests(unittest.TestCase):
         self.assertTrue(self._index.getEntryForObject(10) is None)
         self._checkApply({'foo': 'not'}, [])
 
-        self._index.unindex_object(10) # nothrow
+        self._index.unindex_object(10)  # nothrow
 
         for k, v in values:
             self.assertEqual(self._index.getEntryForObject(k), v.foo())
@@ -98,21 +141,10 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply({'foo': ['a', 'ab']}, values[:2])
 
     def test_none(self):
-        try:
-            self._index.index_object(10, Dummy(None))
-        except TypeError as exc:
-            self.assertEqual(exc.message, 'None cannot be indexed.')
-        else:
-            self.assertTrue(False, 'TypeError not raised')
-
-        try:
-            self._checkApply({'foo': None}, [])
-        except TypeError as exc:
-            self.assertEqual(exc.message, 'None cannot be in an index.')
-        else:
-            self.assertTrue(False, 'TypeError not raised')
-
+        # Make sure None is ignored.
+        self._index.index_object(10, Dummy(None))
         self.assertFalse(None in self._index.uniqueValues('foo'))
+        self._checkApply({'foo': None}, [])
 
     def test_reindex(self):
         self._populateIndex()
@@ -143,3 +175,23 @@ class UUIDIndexTests(unittest.TestCase):
         # second index call fails and logs
         self._index.index_object(1, obj)
         self._checkApply({'foo': 'a'}, [(0, obj)])
+
+    def test_getCounter(self):
+        index = self._index
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = Dummy('a')
+        index.index_object(10, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(10)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

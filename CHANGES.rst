@@ -1,11 +1,41 @@
 Changelog
 =========
 
-3.1.1 (unreleased)
+4.0 (unreleased)
+----------------
+
+
+4.0a1 (2016-07-22)
 ------------------
 
-- Update to ZODB 4.0 as direct dependency.
+- Moved `Products.ZCatalog.Lazy` module to `ZTUtils.Lazy`.
 
+- Add configure.zcml with deprecatedManageAddDelete directives.
+
+3.2 (2016-07-18)
+----------------
+
+- #12: Add request cache for index results to all UnIndex subclasses.
+
+- Add dependency on `five.globalrequest`.
+
+3.1.2 (2016-07-17)
+------------------
+
+- #6, #7, #11: Run ZODB cache garbage collection during queries.
+
+- #13: Deal with threshold value of None in add/delColum.
+
+3.1.1 (2016-07-17)
+------------------
+
+- Make index-listing compatible with Zope 4.
+
+- #5: Ignore None values in UnIndex instead of raising a TypeError.
+
+- Add a new getCounter method to indices.
+
+- Update to ZODB 4.0 as direct dependency.
 
 3.1 (2014-11-02)
 ----------------

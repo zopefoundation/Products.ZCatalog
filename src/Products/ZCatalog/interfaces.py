@@ -245,13 +245,14 @@ class IZCatalog(Interface):
         (see also README.txt)
         """
 
-# This should inherit from an IRecord interface, if there ever is one.
 
 class ICatalogBrain(Interface):
     """Catalog brain that handles looking up attributes as
     required, and provides just enough smarts to let us get the URL, path,
     and cataloged object without having to ask the catalog directly.
     """
+
+    # This should inherit from an IRecord interface, if there ever is one.
 
     def has_key(key):
         """Record has this field"""

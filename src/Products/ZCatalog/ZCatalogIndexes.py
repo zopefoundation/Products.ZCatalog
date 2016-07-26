@@ -45,7 +45,7 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
     security.declareObjectProtected(manage_zcatalog_indexes)
     security.setPermissionDefault(manage_zcatalog_indexes, ('Manager', ))
     security.declareProtected(manage_zcatalog_indexes, 'addIndexForm')
-    addIndexForm= DTMLFile('dtml/addIndexForm', globals())
+    addIndexForm = DTMLFile('dtml/addIndexForm', globals())
 
     # You no longer manage the Indexes here, they are managed from ZCatalog
     def manage_main(self, REQUEST, RESPONSE):
@@ -116,7 +116,7 @@ InitializeClass(ZCatalogIndexes)
 
 class OldCatalogWrapperObject(SimpleItem, Implicit):
 
-    manage_options= (
+    manage_options = (
         {'label': 'Settings',
          'action': 'manage_main'},
     )

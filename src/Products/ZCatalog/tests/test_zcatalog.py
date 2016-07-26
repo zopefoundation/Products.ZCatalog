@@ -22,12 +22,14 @@ from OFS.Folder import Folder as OFS_Folder
 
 
 class Folder(OFS_Folder):
+
     def __init__(self, id):
         self._setId(id)
-        OFS_Folder.__init__(self)
+        super(OFS_Folder, self).__init__()
 
 
-class zdummy(ExtensionClass.Base):
+class ZDummy(ExtensionClass.Base):
+
     def __init__(self, num):
         self.num = num
 
@@ -35,25 +37,26 @@ class zdummy(ExtensionClass.Base):
         return '%d' % self.num
 
 
-class zdummyFalse(zdummy):
+class ZDummyFalse(ZDummy):
 
     def __nonzero__(self):
         return False
 
 
-class dummyLenFail(zdummy):
+class DummyLenFail(ZDummy):
 
     def __init__(self, num, fail):
-        zdummy.__init__(self, num)
+        super(DummyLenFail, self).__init__(num)
         self.fail = fail
 
     def __len__(self):
         self.fail("__len__() was called")
 
 
-class dummyNonzeroFail(zdummy):
+class DummyNonzeroFail(ZDummy):
+
     def __init__(self, num, fail):
-        zdummy.__init__(self, num)
+        super(DummyNonzeroFail, self).__init__(num)
         self.fail = fail
 
     def __nonzero__(self):
@@ -64,14 +67,14 @@ class FakeTraversalError(KeyError):
     """fake traversal exception for testing"""
 
 
-class fakeparent(Implicit):
-
+class FakeParent(Implicit):
     # fake parent mapping unrestrictedTraverse to
     # catalog.resolve_path as simulated by TestZCatalog
 
     marker = object()
 
     def __init__(self, d):
+        super(FakeParent, self).__init__()
         self.d = d
 
     def unrestrictedTraverse(self, path, default=marker):
@@ -128,7 +131,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         self.d = {}
         for x in range(0, self.upper):
             # make uid a string of the number
-            ob = zdummy(x)
+            ob = ZDummy(x)
             self.d[str(x)] = ob
             self._catalog.catalog_object(ob, str(x))
 
@@ -149,14 +152,16 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
     # manage_subbingToggle
 
     def testBooleanEvalOn_manage_catalogObject(self):
-        self.d['11'] = dummyLenFail(11, self.fail)
-        self.d['12'] = dummyNonzeroFail(12, self.fail)
-        # create a fake response that doesn't bomb on manage_catalogObject()
-        class myresponse:
+        self.d['11'] = DummyLenFail(11, self.fail)
+        self.d['12'] = DummyNonzeroFail(12, self.fail)
+
+        class MyResponse(object):
+            # A fake response that doesn't bomb on manage_catalogObject().
             def redirect(self, url):
                 pass
+
         # this next call should not fail
-        self._catalog.manage_catalogObject(None, myresponse(),
+        self._catalog.manage_catalogObject(None, MyResponse(),
                                            'URL1', urls=('11', '12'))
 
     # manage_uncatalogObject
@@ -164,10 +169,10 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
     def testBooleanEvalOn_refreshCatalog_getobject(self):
         # wrap catalog under the fake parent providing unrestrictedTraverse()
-        catalog = self._catalog.__of__(fakeparent(self.d))
+        catalog = self._catalog.__of__(FakeParent(self.d))
         # replace entries to test refreshCatalog
-        self.d['0'] = dummyLenFail(0, self.fail)
-        self.d['1'] = dummyNonzeroFail(1, self.fail)
+        self.d['0'] = DummyLenFail(0, self.fail)
+        self.d['1'] = DummyNonzeroFail(1, self.fail)
         # this next call should not fail
         catalog.refreshCatalog()
 
@@ -193,7 +198,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
     def testReindexIndexesFalse(self):
         # setup
         false_id = self.upper + 1
-        ob = zdummyFalse(false_id)
+        ob = ZDummyFalse(false_id)
         self.d[str(false_id)] = ob
         self._catalog.catalog_object(ob, str(false_id))
         # test, object evaluates to false; there was bug which caused the
@@ -214,10 +219,12 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         # getobject doesn't mask TraversalErrors and doesn't delegate to
         # resolve_url
         # wrap catalog under the fake parent providing unrestrictedTraverse()
-        catalog = self._catalog.__of__(fakeparent(self.d))
-        # make resolve_url fail if ZCatalog falls back on it
+        catalog = self._catalog.__of__(FakeParent(self.d))
+
         def resolve_url(path, REQUEST):
+            # make resolve_url fail if ZCatalog falls back on it
             self.fail(".resolve_url() should not be called by .getobject()")
+
         catalog.resolve_url = resolve_url
 
         # traversal should work at first
@@ -232,7 +239,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         self.assertEquals(catalog.getobject(rid0), None)
 
     def testGetMetadataForUID(self):
-        testNum = str(self.upper - 3) # as good as any..
+        testNum = str(self.upper - 3)  # as good as any..
         data = self._catalog.getMetadataForUID(testNum)
         self.assertEqual(data['title'], testNum)
 
@@ -242,17 +249,17 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         self.assertEqual(data['title'][0], testNum)
 
     def testUpdateMetadata(self):
-        self._catalog.catalog_object(zdummy(1), '1')
+        self._catalog.catalog_object(ZDummy(1), '1')
         data = self._catalog.getMetadataForUID('1')
         self.assertEqual(data['title'], '1')
-        self._catalog.catalog_object(zdummy(2), '1', update_metadata=0)
+        self._catalog.catalog_object(ZDummy(2), '1', update_metadata=0)
         data = self._catalog.getMetadataForUID('1')
         self.assertEqual(data['title'], '1')
-        self._catalog.catalog_object(zdummy(2), '1', update_metadata=1)
+        self._catalog.catalog_object(ZDummy(2), '1', update_metadata=1)
         data = self._catalog.getMetadataForUID('1')
         self.assertEqual(data['title'], '2')
         # update_metadata defaults to true, test that here
-        self._catalog.catalog_object(zdummy(1), '1')
+        self._catalog.catalog_object(ZDummy(1), '1')
         data = self._catalog.getMetadataForUID('1')
         self.assertEqual(data['title'], '1')
 
@@ -308,7 +315,7 @@ class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
         self._catalog.addIndex('title', self._makeOneIndex('title'))
         idx = self._catalog._catalog.getIndex('title')
         for x in range(10):
-            ob = zdummy(x)
+            ob = ZDummy(x)
             self._catalog.catalog_object(ob, str(x))
         self.assertEquals(len(idx), 10)
         self._catalog.clearIndex('title')

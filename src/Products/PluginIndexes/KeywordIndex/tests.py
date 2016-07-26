@@ -13,7 +13,8 @@
 
 import unittest
 
-from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
+from OFS.SimpleItem import SimpleItem
+from Testing.makerequest import makerequest
 
 
 class Dummy(object):
@@ -43,8 +44,29 @@ class TestKeywordIndex(unittest.TestCase):
 
     _old_log_write = None
 
+    def _getTargetClass(self):
+        from Products.PluginIndexes.KeywordIndex.KeywordIndex \
+            import KeywordIndex
+        return KeywordIndex
+
+    def _makeOne(self, id, extra=None):
+        klass = self._getTargetClass()
+        index = klass(id, extra=extra)
+
+        class DummyZCatalog(SimpleItem):
+            id = 'DummyZCatalog'
+
+        # Build pseudo catalog and REQUEST environment
+        catalog = makerequest(DummyZCatalog())
+        indexes = SimpleItem()
+
+        indexes = indexes.__of__(catalog)
+        index = index.__of__(indexes)
+
+        return index
+
     def setUp(self):
-        self._index = KeywordIndex('foo')
+        self._index = self._makeOne('foo')
         self._marker = []
         self._values = [(0, Dummy(['a'])),
                         (1, Dummy(['a', 'b'])),
@@ -54,7 +76,7 @@ class TestKeywordIndex(unittest.TestCase):
                         (5, Dummy(['a', 'b', 'c', 'e'])),
                         (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
                         (7, Dummy([0])),
-                       ]
+                        ]
         self._noop_req = {'bar': 123}
         self._all_req = {'foo': ['a']}
         self._some_req = {'foo': ['e']}
@@ -74,26 +96,47 @@ class TestKeywordIndex(unittest.TestCase):
             self._index.index_object(k, v)
 
     def _checkApply(self, req, expectedValues):
-        result, used = self._index._apply_index(req)
-        assert used == ('foo', )
-        assert len(result) == len(expectedValues), \
-          '%s | %s' % (map(None, result),
-                       map(lambda x: x[0], expectedValues))
 
-        if hasattr(result, 'keys'):
-            result = result.keys()
-        for k, v in expectedValues:
-            assert k in result
+        def checkApply():
+            result, used = self._index._apply_index(req)
+            assert used == ('foo', )
+            assert len(result) == len(expectedValues), \
+                '%s | %s' % (map(None, result),
+                             map(lambda x: x[0], expectedValues))
+
+            if hasattr(result, 'keys'):
+                result = result.keys()
+            for k, v in expectedValues:
+                assert k in result
+
+        index = self._index
+
+        cache = index.getRequestCache()
+        cache.clear()
+
+        # first call; regular check
+        checkApply()
+        self.assertEqual(cache._hits, 0)
+        self.assertEqual(cache._sets, 1)
+        self.assertEqual(cache._misses, 1)
+
+        # second call; caching check
+        checkApply()
+        self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from zope.interface.verify import verifyClass
 
-        verifyClass(IPluggableIndex, KeywordIndex)
-        verifyClass(ISortIndex, KeywordIndex)
-        verifyClass(IUniqueValueIndex, KeywordIndex)
+        klass = self._getTargetClass()
+
+        verifyClass(IPluggableIndex, klass)
+        verifyClass(ISortIndex, klass)
+        verifyClass(IUniqueValueIndex, klass)
+        verifyClass(IRequestCacheIndex, klass)
 
     def testAddObjectWOKeywords(self):
         self._populateIndex()
@@ -106,7 +149,7 @@ class TestKeywordIndex(unittest.TestCase):
 
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-                  is self._marker), self._index.getEntryForObject(1234)
+                is self._marker), self._index.getEntryForObject(1234)
         self._index.unindex_object(1234)  # nothrow
 
         assert self._index.hasUniqueValuesFor('foo')
@@ -126,7 +169,7 @@ class TestKeywordIndex(unittest.TestCase):
         assert len(self._index.referencedObjects()) == len(values)
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
-            is self._marker)
+                is self._marker)
         self._index.unindex_object(1234)  # nothrow
         self.assertEqual(self._index.indexSize(), len(values) - 1)
 
@@ -159,32 +202,22 @@ class TestKeywordIndex(unittest.TestCase):
 
     def testReindexChange(self):
         self._populateIndex()
+        values = self._values
+
         expected = Dummy(['x', 'y'])
         self._index.index_object(6, expected)
-        result, used = self._index._apply_index({'foo': ['x', 'y']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 6
-        result, used = self._index._apply_index(
-            {'foo': ['a', 'b', 'c', 'e', 'f']})
-        result = result.keys()
-        assert 6 not in result
+        self._checkApply({'foo': ['x', 'y']}, [(6, expected), ])
+        self._checkApply({'foo': ['a', 'b', 'c', 'e', 'f']}, values[:6])
 
     def testReindexNoChange(self):
         self._populateIndex()
         expected = Dummy(['foo', 'bar'])
+
         self._index.index_object(8, expected)
-        result, used = self._index._apply_index(
-            {'foo': ['foo', 'bar']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 8
+        self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
+
         self._index.index_object(8, expected)
-        result, used = self._index._apply_index(
-            {'foo': ['foo', 'bar']})
-        result = result.keys()
-        assert len(result) == 1
-        assert result[0] == 8
+        self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
 
     def testIntersectionWithRange(self):
         # Test an 'and' search, ensuring that 'range' doesn't mess it up.
@@ -253,3 +286,23 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
         self.assertFalse(self._index._unindex.get(10))
+
+    def test_getCounter(self):
+        index = self._index
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)
+
+        obj = Dummy(['hello'])
+        index.index_object(10, obj)
+        self.assertEqual(index.getCounter(), 1)
+
+        index.unindex_object(10)
+        self.assertEqual(index.getCounter(), 2)
+
+        # unknown id
+        index.unindex_object(1234)
+        self.assertEqual(index.getCounter(), 2)
+
+        index.clear()
+        self.assertEqual(index.getCounter(), 0)

@@ -16,7 +16,7 @@ import unittest
 from ZPublisher.HTTPRequest import record as Record
 
 
-class parseIndexRequestTests(unittest.TestCase):
+class ParseIndexRequestTests(unittest.TestCase):
 
     def _getTargetClass(self):
         from Products.PluginIndexes.common.util import parseIndexRequest
@@ -32,21 +32,21 @@ class parseIndexRequestTests(unittest.TestCase):
         record.level = 0
         record.operator = 'and'
         request = {'path': record}
-        parser = self._makeOne(request, 'path', ('query','level','operator'))
+        parser = self._makeOne(request, 'path', ('query', 'level', 'operator'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('level'), 0)
         self.assertEqual(parser.get('operator'), 'and')
 
     def test_get_dict(self):
         request = {'path': {'query': 'foo', 'level': 0, 'operator': 'and'}}
-        parser = self._makeOne(request, 'path', ('query','level','operator'))
+        parser = self._makeOne(request, 'path', ('query', 'level', 'operator'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('level'), 0)
         self.assertEqual(parser.get('operator'), 'and')
 
     def test_get_string(self):
         request = {'path': 'foo', 'path_level': 0, 'path_operator': 'and'}
-        parser = self._makeOne(request, 'path', ('query','level','operator'))
+        parser = self._makeOne(request, 'path', ('query', 'level', 'operator'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('level'), 0)
         self.assertEqual(parser.get('operator'), 'and')

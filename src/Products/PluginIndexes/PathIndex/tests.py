@@ -16,7 +16,7 @@
 import unittest
 
 
-class Dummy:
+class Dummy(object):
 
     def __init__(self, path):
         self.path = path
@@ -25,31 +25,33 @@ class Dummy:
         return self.path.split('/')
 
 DUMMIES = {
-    1 : Dummy("/aa/aa/aa/1.html"),
-    2 : Dummy("/aa/aa/bb/2.html"),
-    3 : Dummy("/aa/aa/cc/3.html"),
-    4 : Dummy("/aa/bb/aa/4.html"),
-    5 : Dummy("/aa/bb/bb/5.html"),
-    6 : Dummy("/aa/bb/cc/6.html"),
-    7 : Dummy("/aa/cc/aa/7.html"),
-    8 : Dummy("/aa/cc/bb/8.html"),
-    9 : Dummy("/aa/cc/cc/9.html"),
-    10 : Dummy("/bb/aa/aa/10.html"),
-    11 : Dummy("/bb/aa/bb/11.html"),
-    12 : Dummy("/bb/aa/cc/12.html"),
-    13 : Dummy("/bb/bb/aa/13.html"),
-    14 : Dummy("/bb/bb/bb/14.html"),
-    15 : Dummy("/bb/bb/cc/15.html"),
-    16 : Dummy("/bb/cc/aa/16.html"),
-    17 : Dummy("/bb/cc/bb/17.html"),
-    18 : Dummy("/bb/cc/cc/18.html")
+    1: Dummy("/aa/aa/aa/1.html"),
+    2: Dummy("/aa/aa/bb/2.html"),
+    3: Dummy("/aa/aa/cc/3.html"),
+    4: Dummy("/aa/bb/aa/4.html"),
+    5: Dummy("/aa/bb/bb/5.html"),
+    6: Dummy("/aa/bb/cc/6.html"),
+    7: Dummy("/aa/cc/aa/7.html"),
+    8: Dummy("/aa/cc/bb/8.html"),
+    9: Dummy("/aa/cc/cc/9.html"),
+    10: Dummy("/bb/aa/aa/10.html"),
+    11: Dummy("/bb/aa/bb/11.html"),
+    12: Dummy("/bb/aa/cc/12.html"),
+    13: Dummy("/bb/bb/aa/13.html"),
+    14: Dummy("/bb/bb/bb/14.html"),
+    15: Dummy("/bb/bb/cc/15.html"),
+    16: Dummy("/bb/cc/aa/16.html"),
+    17: Dummy("/bb/cc/bb/17.html"),
+    18: Dummy("/bb/cc/cc/18.html")
 }
+
+_marker = object()
+
 
 def _populateIndex(index):
     for k, v in DUMMIES.items():
         index.index_object(k, v)
 
-_marker = object()
 
 class PathIndexTests(unittest.TestCase):
     """ Test PathIndex objects """
@@ -244,13 +246,13 @@ class PathIndexTests(unittest.TestCase):
 
     def test_unindex_object_nonesuch(self):
         index = self._makeOne()
-        index.unindex_object( 1234 ) # nothrow
+        index.unindex_object(1234)  # nothrow
 
     def test_unindex_object_broken_path(self):
         index = self._makeOne()
         _populateIndex(index)
         index._unindex[1] = "/broken/thing"
-        index.unindex_object(1) # nothrow
+        index.unindex_object(1)  # nothrow
 
     def test_unindex_object_found(self):
         index = self._makeOne()
@@ -278,30 +280,30 @@ class PathIndexTests(unittest.TestCase):
         _populateIndex(index)
         query = {'path': {'query': '/', 'level': 0}}
         res = index._apply_index(query)
-        self.assertEqual(list(res[0].keys()), range(1,19))
+        self.assertEqual(list(res[0].keys()), range(1, 19))
 
     def test___apply_index_root_levelO_tuple(self):
         index = self._makeOne()
         _populateIndex(index)
         query = {'path': (('/', 0),)}
         res = index._apply_index(query)
-        self.assertEqual(list(res[0].keys()), range(1,19))
+        self.assertEqual(list(res[0].keys()), range(1, 19))
 
     def test__apply_index_simple(self):
         index = self._makeOne()
         _populateIndex(index)
         tests = [
             # component, level, expected results
-            ("aa", 0, [1,2,3,4,5,6,7,8,9]),
-            ("aa", 1, [1,2,3,10,11,12] ),
-            ("bb", 0, [10,11,12,13,14,15,16,17,18]),
-            ("bb", 1, [4,5,6,13,14,15]),
-            ("bb/cc", 0, [16,17,18]),
-            ("bb/cc", 1, [6,15]),
-            ("bb/aa", 0, [10,11,12]),
-            ("bb/aa", 1, [4,13]),
-            ("aa/cc", -1, [3,7,8,9,12]),
-            ("bb/bb", -1, [5,13,14,15]),
+            ("aa", 0, [1, 2, 3, 4, 5, 6, 7, 8, 9]),
+            ("aa", 1, [1, 2, 3, 10, 11, 12]),
+            ("bb", 0, [10, 11, 12, 13, 14, 15, 16, 17, 18]),
+            ("bb", 1, [4, 5, 6, 13, 14, 15]),
+            ("bb/cc", 0, [16, 17, 18]),
+            ("bb/cc", 1, [6, 15]),
+            ("bb/aa", 0, [10, 11, 12]),
+            ("bb/aa", 1, [4, 13]),
+            ("aa/cc", -1, [3, 7, 8, 9, 12]),
+            ("bb/bb", -1, [5, 13, 14, 15]),
             ("18.html", 3, [18]),
             ("18.html", -1, [18]),
             ("cc/18.html", -1, [18]),
@@ -309,9 +311,9 @@ class PathIndexTests(unittest.TestCase):
         ]
 
         for comp, level, expected in tests:
-            for path in [comp, "/"+comp, "/"+comp+"/"]:
+            for path in [comp, "/" + comp, "/" + comp + "/"]:
                 # Test with the level passed in as separate parameter
-                query = {'path': {'query':path, 'level': level}}
+                query = {'path': {'query': path, 'level': level}}
                 res = index._apply_index(query)
                 self.assertEqual(list(res[0].keys()), expected)
 
@@ -324,9 +326,12 @@ class PathIndexTests(unittest.TestCase):
         index = self._makeOne()
         _populateIndex(index)
         tests = [
-            (['aa','bb'],1,[1,2,3,4,5,6,10,11,12,13,14,15]),
-            (['aa','bb','xx'],1,[1,2,3,4,5,6,10,11,12,13,14,15]),
-            ([('cc',1),('cc',2)],0,[3,6,7,8,9,12,15,16,17,18]),
+            (['aa', 'bb'], 1,
+                [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15]),
+            (['aa', 'bb', 'xx'], 1,
+                [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15]),
+            ([('cc', 1), ('cc', 2)], 0,
+                [3, 6, 7, 8, 9, 12, 15, 16, 17, 18]),
         ]
 
         for lst, level, expected in tests:
@@ -340,9 +345,9 @@ class PathIndexTests(unittest.TestCase):
         _populateIndex(index)
         tests = [
             # Path query (as list or (path, level) tuple), level, expected
-            (['aa','bb'], 1, []),
-            ([('aa',0), ('bb',1)], 0, [4,5,6]),
-            ([('aa',0), ('cc',2)], 0, [3,6,9]),
+            (['aa', 'bb'], 1, []),
+            ([('aa', 0), ('bb', 1)], 0, [4, 5, 6]),
+            ([('aa', 0), ('cc', 2)], 0, [3, 6, 9]),
         ]
 
         for lst, level, expected in tests:

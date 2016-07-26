@@ -1,0 +1,9 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:five="http://namespaces.zope.org/five">
+
+  <five:deprecatedManageAddDelete
+      class="Products.ZCatalog.CatalogAwareness.CatalogAware"/>
+  <five:deprecatedManageAddDelete
+      class="Products.ZCatalog.CatalogPathAwareness.CatalogAware"/>
+
+</configure>

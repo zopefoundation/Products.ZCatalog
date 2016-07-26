@@ -115,7 +115,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         {'label': 'Undo', 'action': 'manage_UndoForm'},
         {'label': 'Security', 'action': 'manage_access'},
         {'label': 'Ownership', 'action': 'manage_owner'},
-        )
+    )
 
     security.declareProtected(manage_zcatalog_entries, 'manage_main')
 
@@ -146,6 +146,9 @@ class ZCatalog(Folder, Persistent, Implicit):
     manage_objectInformation = DTMLFile('dtml/catalogObjectInformation',
                                         globals())
 
+    # this stuff is so the find machinery works
+    meta_types = ()  # Sub-object types that are specific to this object
+
     Indexes = ZCatalogIndexes()
 
     threshold = 10000
@@ -165,10 +168,10 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if container is not None:
             self = self.__of__(container)
-        self.id=id
-        self.title=title
+        self.id = id
+        self.title = title
         self.threshold = 10000
-        self.long_query_time = 0.1 # in seconds
+        self.long_query_time = 0.1  # in seconds
         self._v_total = 0
         self._catalog = Catalog()
 
@@ -293,9 +296,9 @@ class ZCatalog(Folder, Persistent, Implicit):
         self._catalog.clear()
 
         if REQUEST and RESPONSE:
-            RESPONSE.redirect(
-              URL1 +
-              '/manage_catalogAdvanced?manage_tabs_message=Catalog%20Cleared')
+            RESPONSE.redirect(URL1 + (
+                '/manage_catalogAdvanced?'
+                'manage_tabs_message=Catalog%20Cleared'))
 
     security.declareProtected(manage_zcatalog_entries,
                               'manage_catalogFoundItems')
@@ -374,11 +377,12 @@ class ZCatalog(Folder, Persistent, Implicit):
                 '/manage_catalogIndexes?manage_tabs_message=Index%20Added')
 
     security.declareProtected(manage_zcatalog_entries, 'manage_delIndex')
-    def manage_delIndex(self, ids=None, REQUEST=None, RESPONSE=None,
-        URL1=None):
+    def manage_delIndex(self, ids=None,
+                        REQUEST=None, RESPONSE=None, URL1=None):
         """ delete an index or some indexes """
         if not ids:
-            return MessageDialog(title='No items specified',
+            return MessageDialog(
+                title='No items specified',
                 message='No items were specified!',
                 action="./manage_catalogIndexes")
 
@@ -394,11 +398,12 @@ class ZCatalog(Folder, Persistent, Implicit):
                 '/manage_catalogIndexes?manage_tabs_message=Index%20Deleted')
 
     security.declareProtected(manage_zcatalog_entries, 'manage_clearIndex')
-    def manage_clearIndex(self, ids=None, REQUEST=None, RESPONSE=None,
-        URL1=None):
+    def manage_clearIndex(self, ids=None,
+                          REQUEST=None, RESPONSE=None, URL1=None):
         """ clear an index or some indexes """
         if not ids:
-            return MessageDialog(title='No items specified',
+            return MessageDialog(
+                title='No items specified',
                 message='No items were specified!',
                 action="./manage_catalogIndexes")
 
@@ -449,7 +454,8 @@ class ZCatalog(Folder, Persistent, Implicit):
                             URL1=None):
         """Reindex indexe(s) from a ZCatalog"""
         if not ids:
-            return MessageDialog(title='No items specified',
+            return MessageDialog(
+                title='No items specified',
                 message='No items were specified!',
                 action="./manage_catalogIndexes")
 
@@ -462,6 +468,30 @@ class ZCatalog(Folder, Persistent, Implicit):
                 URL1 +
                 '/manage_catalogIndexes'
                 '?manage_tabs_message=Reindexing%20Performed')
+
+    security.declarePrivate('maintain_zodb_cache')
+    def maintain_zodb_cache(self):
+        # self.threshold represents the number of times that catalog_object
+        # needs to be called in order for the catalog to commit
+        # a subtransaction.
+        if self.threshold is not None:
+            # figure out whether or not to commit a subtransaction.
+            t = id(transaction.get())
+            if t != self._v_transaction:
+                self._v_total = 0
+            self._v_transaction = t
+            self._v_total = self._v_total + 1
+            # increment the _v_total counter for this thread only and get a
+            # reference to the current transaction.  the _v_total counter is
+            # zeroed if we notice that we're in a different transaction than
+            # the last one that came by. The semantics here mean that we
+            # should GC the cache if our threshhold is exceeded within the
+            # boundaries of the current transaction.
+            if self._v_total > self.threshold:
+                self._p_jar.cacheGC()
+                self._v_total = 0
+                return True
+        return False
 
     security.declareProtected(manage_zcatalog_entries, 'catalog_object')
     def catalog_object(self, obj, uid=None, idxs=None, update_metadata=1,
@@ -486,28 +516,10 @@ class ZCatalog(Folder, Persistent, Implicit):
         # catalogObject (which is a word count), because it's
         # worthless to us here.
 
-        if self.threshold is not None:
-            # figure out whether or not to commit a subtransaction.
-            t = id(transaction.get())
-            if t != self._v_transaction:
-                self._v_total = 0
-            self._v_transaction = t
-            self._v_total = self._v_total + 1
-            # increment the _v_total counter for this thread only and get
-            # a reference to the current transaction.
-            # the _v_total counter is zeroed if we notice that we're in
-            # a different transaction than the last one that came by.
-            # self.threshold represents the number of times that
-            # catalog_object needs to be called in order for the catalog
-            # to commit a subtransaction.  The semantics here mean that
-            # we should commit a subtransaction if our threshhold is
-            # exceeded within the boundaries of the current transaction.
-            if self._v_total > self.threshold:
-                transaction.savepoint(optimistic=True)
-                self._p_jar.cacheGC()
-                self._v_total = 0
-                if pghandler:
-                    pghandler.info('committing subtransaction')
+        if self.maintain_zodb_cache():
+            transaction.savepoint(optimistic=True)
+            if pghandler:
+                pghandler.info('committing subtransaction')
 
     security.declareProtected(manage_zcatalog_entries, 'uncatalog_object')
     def uncatalog_object(self, uid):
@@ -613,8 +625,8 @@ class ZCatalog(Folder, Persistent, Implicit):
     __call__ = searchResults
 
     security.declareProtected(search_zcatalog, 'search')
-    def search(
-        self, query_request, sort_index=None, reverse=0, limit=None, merge=1):
+    def search(self, query_request,
+               sort_index=None, reverse=0, limit=None, merge=1):
         """Programmatic search interface, use for searching the catalog from
         scripts.
 
@@ -630,28 +642,21 @@ class ZCatalog(Folder, Persistent, Implicit):
         return self._catalog.search(
             query_request, sort_index, reverse, limit, merge)
 
-    ## this stuff is so the find machinery works
-
-    meta_types=() # Sub-object types that are specific to this object
-
     security.declareProtected(search_zcatalog, 'valid_roles')
     def valid_roles(self):
         # Return list of valid roles
-        obj=self
-        dict={}
-        dup =dict.has_key
-        x=0
+        obj = self
+        roles = set()
+        x = 0
         while x < 100:
             if hasattr(obj, '__ac_roles__'):
-                roles=obj.__ac_roles__
-                for role in roles:
-                    if not dup(role):
-                        dict[role]=1
+                for role in obj.__ac_roles__:
+                    roles.add(role)
             obj = aq_parent(obj)
             if obj is None:
                 break
             x = x + 1
-        roles=dict.keys()
+        roles = list(roles)
         roles.sort()
         return roles
 
@@ -717,23 +722,17 @@ class ZCatalog(Folder, Persistent, Implicit):
 
             bs = aq_base(ob)
 
-            if (
-                (not obj_ids or absattr(bs.id) in obj_ids)
-                and
+            if ((not obj_ids or absattr(bs.id) in obj_ids) and
                 (not obj_metatypes or (hasattr(bs, 'meta_type') and
-                 bs.meta_type in obj_metatypes))
-                and
+                 bs.meta_type in obj_metatypes)) and
                 (not obj_searchterm or
                  (hasattr(ob, 'PrincipiaSearchSource') and
-                  ob.PrincipiaSearchSource().find(obj_searchterm) >= 0))
-                and
-                (not obj_expr or expr_match(ob, obj_expr))
-                and
-                (not obj_mtime or mtime_match(ob, obj_mtime, obj_mspec))
-                and
+                  ob.PrincipiaSearchSource().find(obj_searchterm) >= 0)) and
+                (not obj_expr or expr_match(ob, obj_expr)) and
+                (not obj_mtime or mtime_match(ob, obj_mtime, obj_mspec)) and
                 ((not obj_permission or not obj_roles) or
-                  role_match(ob, obj_permission, obj_roles))
-                ):
+                 role_match(ob, obj_permission, obj_roles))):
+
                 if apply_func:
                     apply_func(ob, (apply_path + '/' + p))
                 else:
@@ -760,9 +759,9 @@ class ZCatalog(Folder, Persistent, Implicit):
         # style url. If no object is found, None is returned.
         # No exceptions are raised.
         if REQUEST:
-            script=REQUEST.script
+            script = REQUEST.script
             if path.find(script) != 0:
-                path='%s/%s' % (script, path)
+                path = '%s/%s' % (script, path)
             try:
                 return REQUEST.resolve_url(path)
             except Exception:
@@ -779,7 +778,8 @@ class ZCatalog(Folder, Persistent, Implicit):
         except Exception:
             pass
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_normalize_paths')
+    security.declareProtected(manage_zcatalog_entries,
+                              'manage_normalize_paths')
     def manage_normalize_paths(self, REQUEST):
         """Ensure that all catalog paths are full physical paths
 
@@ -815,10 +815,11 @@ class ZCatalog(Folder, Persistent, Implicit):
         for path in removed:
             self.uncatalog_object(path)
 
-        return MessageDialog(title='Done Normalizing Paths',
-          message='%s paths normalized, %s paths removed, and '
-                  '%s unchanged.' % (len(fixed), len(removed), unchanged),
-          action='./manage_main')
+        return MessageDialog(
+            title='Done Normalizing Paths',
+            message='%s paths normalized, %s paths removed, and '
+                    '%s unchanged.' % (len(fixed), len(removed), unchanged),
+            action='./manage_main')
 
     security.declareProtected(manage_zcatalog_entries, 'manage_setProgress')
     def manage_setProgress(self, pgthreshold=0, RESPONSE=None, URL1=None):
@@ -888,7 +889,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(manage_zcatalog_indexes, 'addColumn')
     def addColumn(self, name, default_value=None):
         return self._catalog.addColumn(name, default_value,
-            threshold=self.threshold)
+                                       threshold=self.threshold)
 
     security.declareProtected(manage_zcatalog_indexes, 'delColumn')
     def delColumn(self, name):
@@ -933,8 +934,8 @@ class ZCatalog(Folder, Persistent, Implicit):
         self._catalog.getCatalogPlan().reset()
 
         if REQUEST is not None:
-            REQUEST.response.redirect(REQUEST.URL1 +
-                '/manage_catalogReport?manage_tabs_message=Report%20cleared')
+            REQUEST.response.redirect(REQUEST.URL1 + (
+                '/manage_catalogReport?manage_tabs_message=Report%20cleared'))
 
     security.declareProtected(manage_zcatalog_entries,
                               'manage_editCatalogReport')
@@ -945,9 +946,9 @@ class ZCatalog(Folder, Persistent, Implicit):
         self.long_query_time = long_query_time
 
         if REQUEST is not None:
-            REQUEST.response.redirect(REQUEST.URL1 +
-                '/manage_catalogReport?manage_tabs_message=' +
-                'Long%20query%20time%20changed')
+            REQUEST.response.redirect(REQUEST.URL1 + (
+                '/manage_catalogReport?manage_tabs_message='
+                'Long%20query%20time%20changed'))
 
 InitializeClass(ZCatalog)
 
@@ -962,7 +963,7 @@ def absattr(attr):
     return attr
 
 
-class td(RestrictedDTML, TemplateDict):
+class td(RestrictedDTML, TemplateDict):  # NOQA
     pass
 
 
@@ -983,7 +984,7 @@ def mtime_match(ob, t, q):
     mtime = getattr(ob, '_p_mtime', _marker)
     if mtime is _marker():
         return False
-    return q=='<' and (mtime < t) or (mtime > t)
+    return q == '<' and (mtime < t) or (mtime > t)
 
 
 def role_match(ob, permission, roles):

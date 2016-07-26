@@ -128,10 +128,8 @@ class TopicIndex(Persistent, SimpleItem):
         if filter_id in self.filteredSets:
             raise KeyError(
                 'A FilteredSet with this name already exists: %s' % filter_id)
-        self.filteredSets[filter_id] = factory(filter_id,
-                                               typeFilteredSet,
-                                               expr,
-                                              )
+        self.filteredSets[filter_id] = factory(
+            filter_id, typeFilteredSet, expr)
 
     def delFilteredSet(self, filter_id):
         # Delete the FilteredSet object specified by 'filter_id'.
@@ -147,8 +145,8 @@ class TopicIndex(Persistent, SimpleItem):
             raise KeyError('no such FilteredSet: %s' % filter_id)
         f.clear()
 
-    def manage_addFilteredSet(self, filter_id, typeFilteredSet, expr, URL1, \
-            REQUEST=None, RESPONSE=None):
+    def manage_addFilteredSet(self, filter_id, typeFilteredSet, expr, URL1,
+                              REQUEST=None, RESPONSE=None):
         """ add a new filtered set """
 
         if len(filter_id) == 0:
@@ -159,29 +157,32 @@ class TopicIndex(Persistent, SimpleItem):
         self.addFilteredSet(filter_id, typeFilteredSet, expr)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_workspace?'
-            'manage_tabs_message=FilteredSet%20added')
+            RESPONSE.redirect(URL1 + (
+                '/manage_workspace?'
+                'manage_tabs_message=FilteredSet%20added'))
 
     def manage_delFilteredSet(self, filter_ids=[], URL1=None,
-            REQUEST=None, RESPONSE=None):
+                              REQUEST=None, RESPONSE=None):
         """ delete a list of FilteredSets"""
 
         for filter_id in filter_ids:
             self.delFilteredSet(filter_id)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_workspace?'
-            'manage_tabs_message=FilteredSet(s)%20deleted')
+            RESPONSE.redirect(URL1 + (
+                '/manage_workspace?'
+                'manage_tabs_message=FilteredSet(s)%20deleted'))
 
     def manage_saveFilteredSet(self, filter_id, expr, URL1=None,
-            REQUEST=None, RESPONSE=None):
+                               REQUEST=None, RESPONSE=None):
         """ save expression for a FilteredSet """
 
         self.filteredSets[filter_id].setExpression(expr)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_workspace?'
-            'manage_tabs_message=FilteredSet(s)%20updated')
+            RESPONSE.redirect(URL1 + (
+                '/manage_workspace?'
+                'manage_tabs_message=FilteredSet(s)%20updated'))
 
     def getIndexSourceNames(self):
         """ return names of indexed attributes """
@@ -191,15 +192,16 @@ class TopicIndex(Persistent, SimpleItem):
         return (self.id,)
 
     def manage_clearFilteredSet(self, filter_ids=[], URL1=None,
-            REQUEST=None, RESPONSE=None):
+                                REQUEST=None, RESPONSE=None):
         """  clear a list of FilteredSets"""
 
         for filter_id in filter_ids:
             self.clearFilteredSet(filter_id)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_workspace?'
-             'manage_tabs_message=FilteredSet(s)%20cleared')
+            RESPONSE.redirect(URL1 + (
+                '/manage_workspace?'
+                'manage_tabs_message=FilteredSet(s)%20cleared'))
 
     manage = manage_main = DTMLFile('dtml/manageTopicIndex', globals())
     manage_main._setName('manage_main')
@@ -210,5 +212,5 @@ manage_addTopicIndexForm = DTMLFile('dtml/addTopicIndex', globals())
 
 def manage_addTopicIndex(self, id, REQUEST=None, RESPONSE=None, URL3=None):
     """Add a TopicIndex"""
-    return self.manage_addIndex(id, 'TopicIndex', extra=None, \
-                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
+    return self.manage_addIndex(id, 'TopicIndex', extra=None,
+                                REQUEST=REQUEST, RESPONSE=RESPONSE, URL1=URL3)
