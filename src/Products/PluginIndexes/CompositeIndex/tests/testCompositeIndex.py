@@ -45,13 +45,13 @@ class RandomTestObject(TestObject):
 
     def __init__(self, id):
 
-        i = random.randint(0, len(types)-1)
+        i = random.randint(0, len(types) - 1)
         portal_type = types[i]
 
-        i = random.randint(0, len(states)-1)
+        i = random.randint(0, len(states) - 1)
         review_state = states[i]
 
-        i = random.randint(0, len(default_pages)-1)
+        i = random.randint(0, len(default_pages) - 1)
         is_default_page = default_pages[i]
 
         subject = random.sample(keywords, random.randint(1, len(keywords)))
@@ -137,9 +137,9 @@ class CompositeIndexTests(unittest.TestCase):
         def info(index):
             size = index.indexSize()
             n_obj = index.numObjects()
-            ratio = float(size)/float(n_obj)
+            ratio = float(size) / float(n_obj)
             logger.info('<id: %s S: %s N: %s R: %.3f pm>' %
-                   (index.id, size, n_obj, ratio*1000))
+                        (index.id, size, n_obj, ratio * 1000))
 
         info(self._index)
         for index in self._field_indexes:
@@ -155,54 +155,53 @@ class CompositeIndexTests(unittest.TestCase):
 
         lengths = [10000, ]
 
-        queries = [
-            {'portal_type': {'query': 'Document'},
-             'review_state': {'query': 'pending'}},
-            {'portal_type': {'query': 'Document'},
-             'subject': {'query': ['subject_1', 'subject_3']}},
-            {'portal_type': {'query': 'Document'},
-             'subject': {'query': 'subject_2'}},
-            {'portal_type': {'query': 'Document'},
-             'is_default_page': {'query': False}},
-            {'review_state': {'query': 'pending'},
-             'is_default_page': {'query': False}},
-            {'portal_type': {'query': 'Document'},
-             'review_state': {'query': 'pending'},
-             'is_default_page': {'query': False}},
-            {'portal_type': {'query': 'Document'},
-             'review_state': {'query': 'pending'},
-             'is_default_page': {'query': True}},
-            {'portal_type': {'query': 'Document'},
-             'review_state': {'query': 'pending'},
-             'is_default_page': {'query': False},
-             'subject': {'query': ['subject_2', 'subject_3'],
-                         'operator': 'or'}},
-            {'portal_type': {'query': 'Document'},
-             'review_state': {'query': 'pending'},
-             'is_default_page': {'query': True},
-             'subject': {'query': ['subject_2', 'subject_3'],
-                         'operator': 'or'}},
-            ]
+        queries = [{'portal_type': {'query': 'Document'},
+                    'review_state': {'query': 'pending'}},
+                   {'portal_type': {'query': 'Document'},
+                    'subject': {'query': ['subject_1', 'subject_3']}},
+                   {'portal_type': {'query': 'Document'},
+                    'subject': {'query': 'subject_2'}},
+                   {'portal_type': {'query': 'Document'},
+                    'is_default_page': {'query': False}},
+                   {'review_state': {'query': 'pending'},
+                    'is_default_page': {'query': False}},
+                   {'portal_type': {'query': 'Document'},
+                    'review_state': {'query': 'pending'},
+                    'is_default_page': {'query': False}},
+                   {'portal_type': {'query': 'Document'},
+                    'review_state': {'query': 'pending'},
+                    'is_default_page': {'query': True}},
+                   {'portal_type': {'query': 'Document'},
+                    'review_state': {'query': 'pending'},
+                    'is_default_page': {'query': False},
+                    'subject': {'query': ['subject_2', 'subject_3'],
+                                'operator': 'or'}},
+                   {'portal_type': {'query': 'Document'},
+                    'review_state': {'query': 'pending'},
+                    'is_default_page': {'query': True},
+                    'subject': {'query': ['subject_2', 'subject_3'],
+                                'operator': 'or'}},
+                   ]
 
         def profileSearch(query, verbose=False):
 
             st = time()
             res1 = self._defaultSearch(query)
-            duration1 = (time()-st)*1000
+            duration1 = (time() - st) * 1000
             if verbose:
                 logger.info("atomic:    %s hits in %3.2fms" %
                             (len(res1), duration1))
 
             st = time()
             res2 = self._compositeSearch(query)
-            duration2 = (time()-st)*1000
+            duration2 = (time() - st) * 1000
             if verbose:
                 logger.info("composite: %s hits in %3.2fms" %
                             (len(res2), duration2))
 
             if verbose:
                 logger.info('[composite/atomic] factor %3.2f\n' %
-                            (duration1/duration2,))
+                            (duration1 / duration2,))
 
             # composite search must be faster than default search
             assert duration2 < duration1
@@ -244,22 +243,21 @@ class CompositeIndexTests(unittest.TestCase):
                          subject=('subject_1', 'subject_2'))
         self._populateIndexes(3, obj)
 
-        queries = [
-            {'review_state': {'query': 'pending'},
-             'portal_type': {'query': 'Document'}},
-            {'review_state': {'query': ('pending', 'visible')},
-             'portal_type': {'query': 'News'}},
-            {'review_state': {'query': 'pending'},
-             'portal_type': {'query': ('News', 'Document')}},
-            {'review_state': {'query': ('pending', 'visible')},
-             'portal_type': {'query': ('News', 'Document')},
-             'is_default_page': {'query': False}},
-            {'review_state': {'query': ('pending', 'visible')},
-             'portal_type': {'query': ('News', 'Document')},
-             'is_default_page': {'query': False},
-             'subject': {'query': ('subject_1', 'subject_2'),
-                         'operator': 'or'}}
-            ]
+        queries = [{'review_state': {'query': 'pending'},
+                    'portal_type': {'query': 'Document'}},
+                   {'review_state': {'query': ('pending', 'visible')},
+                    'portal_type': {'query': 'News'}},
+                   {'review_state': {'query': 'pending'},
+                    'portal_type': {'query': ('News', 'Document')}},
+                   {'review_state': {'query': ('pending', 'visible')},
+                    'portal_type': {'query': ('News', 'Document')},
+                    'is_default_page': {'query': False}},
+                   {'review_state': {'query': ('pending', 'visible')},
+                    'portal_type': {'query': ('News', 'Document')},
+                    'is_default_page': {'query': False},
+                    'subject': {'query': ('subject_1', 'subject_2'),
+                                'operator': 'or'}}
+                   ]
 
         for query in queries:
 
@@ -269,6 +267,4 @@ class CompositeIndexTests(unittest.TestCase):
 
 
 def test_suite():
-    return unittest.TestSuite((
-        unittest.makeSuite(CompositeIndexTests),
-        ))
+    return unittest.TestSuite((unittest.makeSuite(CompositeIndexTests),))

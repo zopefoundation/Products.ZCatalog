@@ -325,7 +325,7 @@ class CompositeIndex(UnIndex):
         c_list = product(*kw_list)
 
         for c in c_list:
-            for r in range(MIN_COMPONENTS, len(c)+1):
+            for r in range(MIN_COMPONENTS, len(c) + 1):
                 p = combinations(c, r)
                 pkl.extend(p)
 
@@ -502,7 +502,7 @@ class CompositeIndex(UnIndex):
         self.addComponent(c_id, c_meta_type, c_attributes)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1+'/manage_main?'
+            RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=Component%20added')
 
     def manage_delComponents(self, del_ids=[], URL1=None,
@@ -515,7 +515,7 @@ class CompositeIndex(UnIndex):
             self.delComponent(c_id)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1+'/manage_main?'
+            RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=Component(s)%20deleted')
 
     def manage_saveComponents(self, components, URL1=None,
@@ -525,7 +525,7 @@ class CompositeIndex(UnIndex):
         self.saveComponents(components)
 
         if RESPONSE:
-            RESPONSE.redirect(URL1+'/manage_main?'
+            RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=Component(s)%20updated')
 
     def fastBuild(self, threshold=None):
@@ -571,11 +571,11 @@ class CompositeIndex(UnIndex):
 
         self.fastBuild(threshold)
 
-        tt = time.time()-tt
-        ct = time.clock()-ct
+        tt = time.time() - tt
+        ct = time.clock() - ct
 
         if RESPONSE:
-            RESPONSE.redirect(URL1+'/manage_main?'
+            RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=ComponentIndex%%20fast%%20'
                               'reindexed%%20in%%20%.3f%%20'
                               'seconds%%20(%.3f%%20cpu)' % (tt, ct))
