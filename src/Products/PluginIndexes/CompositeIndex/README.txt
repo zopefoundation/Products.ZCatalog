@@ -16,7 +16,7 @@ CompositeIndex README
      CompositeIndex query. In particular, large sites with a
      combination of additional indexes (FieldIndex, KeywordIndex) and
      lots of content (>100k) will profit. The expected performance
-     enhancement for catalog queries is about a factor of >2-3.
+     enhancement for combined index queries is about a factor of >2-3.
 
      For example many catalog queries in plone are based on the combination of
      indexed attributes as follows: 'Language', 'review_state',
@@ -34,3 +34,5 @@ CompositeIndex README
      composite keys. The loading of large sets and the following
      expensive computation of the intersection is therefore obsolete.
 
+     IMPORTANT: CompositeIndex can only be used as an add-on not as 
+     a replacement for field- and  keyword indexes.
