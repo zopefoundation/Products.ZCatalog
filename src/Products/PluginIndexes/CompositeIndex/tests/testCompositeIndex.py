@@ -64,42 +64,55 @@ class RandomTestObject(TestObject):
 class CompositeIndexTests(unittest.TestCase):
 
     def setUp(self):
+        self._indexes = [FieldIndex('review_state'),
+                         FieldIndex('portal_type'),
+                         FieldIndex('is_default_page'),
+                         KeywordIndex('subject'),
+                         CompositeIndex('comp01',
+                                        extra=[{'id': 'portal_type',
+                                                'meta_type': 'FieldIndex',
+                                                'attributes': ''},
+                                               {'id': 'review_state',
+                                                'meta_type': 'FieldIndex',
+                                                'attributes': ''},
+                                               {'id': 'is_default_page',
+                                                'meta_type': 'FieldIndex',
+                                                'attributes': ''},
+                                               {'id': 'subject',
+                                                'meta_type': 'KeywordIndex',
+                                                'attributes': ''}
+                                               ])
+                         ]
 
-        self._index = CompositeIndex('comp01',
-                                     extra=[{'id': 'portal_type',
-                                             'meta_type': 'FieldIndex',
-                                             'attributes': ''},
-                                            {'id': 'review_state',
-                                             'meta_type': 'FieldIndex',
-                                             'attributes': ''},
-                                            {'id': 'is_default_page',
-                                             'meta_type': 'FieldIndex',
-                                             'attributes': ''},
-                                            {'id': 'subject',
-                                             'meta_type': 'KeywordIndex',
-                                             'attributes': ''}
-                                            ])
+    def _getIndex(self, name):
+        for idx in self._indexes:
+            if idx.id == name:
+                return idx
 
-        self._field_indexes = (FieldIndex('review_state'),
-                               FieldIndex('portal_type'),
-                               FieldIndex('is_default_page'),
-                               KeywordIndex('subject'))
-
-    def _defaultSearch(self, req, expectedValues=None):
+    def _defaultSearch(self, req, expectedValues=None, verbose=False):
 
         rs = None
-        for index in self._field_indexes:
+        for index in self._indexes:
+            st = time()
+            duration = (time() - st) * 1000
+
             limit_result = ILimitedResultIndex.providedBy(index)
             if limit_result:
                 r = index._apply_index(req, rs)
             else:
                 r = index._apply_index(req)
+            duration = (time() - st) * 1000
 
             if r is not None:
                 r, u = r
                 w, rs = weightedIntersection(rs, r)
                 if not rs:
                     break
+
+            if verbose and (index.id in req):
+                logger.info("index %s: %s hits in %3.2fms" %
+                            (index.id, r and len(r) or 0, duration))
+
         if not rs:
             return set()
 
@@ -108,29 +121,23 @@ class CompositeIndexTests(unittest.TestCase):
 
         return set(rs)
 
-    def _compositeSearch(self, req, expectedValues=None):
-        query = self._index.make_query(req)
-        rs = None
-        r = self._index._apply_index(query)
+    def _compositeSearch(self, req, expectedValues=None, verbose=False):
+        comp_index = self._getIndex('comp01')
+        query = comp_index.make_query(req)
 
-        if r is not None:
-            r, u = r
-            w, rs = weightedIntersection(rs, r)
-        if not rs:
-            return set()
+        # catch successful?
+        self.assertTrue('comp01' in query)
 
-        if hasattr(rs, 'keys'):
-            rs = rs.keys()
-
-        return set(rs)
+        return self._defaultSearch(query,
+                                   expectedValues=expectedValues,
+                                   verbose=verbose)
 
     def enableLog(self):
         logger.root.setLevel(logging.INFO)
         logger.root.addHandler(logging.StreamHandler(sys.stdout))
 
     def _populateIndexes(self, k, v):
-        self._index.index_object(k, v)
-        for index in self._field_indexes:
+        for index in self._indexes:
             index.index_object(k, v)
 
     def printIndexInfo(self):
@@ -138,16 +145,18 @@ class CompositeIndexTests(unittest.TestCase):
             size = index.indexSize()
             n_obj = index.numObjects()
             ratio = float(size) / float(n_obj)
-            logger.info('<id: %s S: %s N: %s R: %.3f pm>' %
+            logger.info('<id: %15s unique keys: '
+                        '%3s  length: %5s  ratio: %6.3f pm>' %
                         (index.id, size, n_obj, ratio * 1000))
+            return ratio
 
-        info(self._index)
-        for index in self._field_indexes:
+        #indexes = sorted(self._indexes, key=info, reverse=True)
+        #self._indexes = indexes
+        for index in self._indexes:
             info(index)
 
     def _clearIndexes(self):
-        self._index.clear()
-        for index in self._field_indexes:
+        for index in self._indexes:
             index.clear()
 
     def testPerformance(self):
@@ -155,56 +164,88 @@ class CompositeIndexTests(unittest.TestCase):
 
         lengths = [10000, ]
 
-        queries = [{'portal_type': {'query': 'Document'},
-                    'review_state': {'query': 'pending'}},
-                   {'portal_type': {'query': 'Document'},
-                    'subject': {'query': ['subject_1', 'subject_3']}},
-                   {'portal_type': {'query': 'Document'},
-                    'subject': {'query': 'subject_2'}},
-                   {'portal_type': {'query': 'Document'},
-                    'is_default_page': {'query': False}},
-                   {'review_state': {'query': 'pending'},
-                    'is_default_page': {'query': False}},
-                   {'portal_type': {'query': 'Document'},
-                    'review_state': {'query': 'pending'},
-                    'is_default_page': {'query': False}},
-                   {'portal_type': {'query': 'Document'},
-                    'review_state': {'query': 'pending'},
-                    'is_default_page': {'query': True}},
-                   {'portal_type': {'query': 'Document'},
-                    'review_state': {'query': 'pending'},
-                    'is_default_page': {'query': False},
-                    'subject': {'query': ['subject_2', 'subject_3'],
-                                'operator': 'or'}},
-                   {'portal_type': {'query': 'Document'},
-                    'review_state': {'query': 'pending'},
-                    'is_default_page': {'query': True},
-                    'subject': {'query': ['subject_2', 'subject_3'],
-                                'operator': 'or'}},
+        queries = [('query01_default_two_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'query': 'pending'}}),
+                   ('query02_default_two_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'subject': {'query': 'subject_2'}}),
+                   ('query03_default_two_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'subject': {'query': ['subject_1', 'subject_3']}}),
+                   ('query04_default_two_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'is_default_page': {'query': False}}),
+                   ('query05_default_two_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'is_default_page': {'query': True}}),
+                   ('query06_default_two_indexes',
+                    {'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': False}}),
+                   ('query07_default_three_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': False}}),
+                   ('query08_default_three_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': True}}),
+                   ('query09_default_four_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': True},
+                     'subject': {'query': ['subject_2', 'subject_3'],
+                                 'operator': 'or'}}),
+                   ('query10_and_operator_four_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': True},
+                     'subject': {'query': ['subject_1', 'subject_3'],
+                                 'operator': 'and'}}),
+                   ('query11_and_operator_four_indexes',
+                    {'portal_type': {'query': ('Document', 'News')},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': True},
+                     'subject': {'query': ['subject_1', 'subject_3'],
+                                 'operator': 'and'}}),
+                   ('query12_not_operator_four_indexes',
+                    {'portal_type': {'not': 'Document'},
+                     'review_state': {'query': 'pending'},
+                     'is_default_page': {'query': True},
+                     'subject': {'query': ['subject_2', 'subject_3'],
+                                 'operator': 'or'}}),
+                   ('query13_not_operator_four_indexes',
+                    {'portal_type': {'query': 'Document'},
+                     'review_state': {'not': ('pending', 'visible')},
+                     'is_default_page': {'query': True},
+                     'subject': {'query': ['subject_2', 'subject_3']}}),
                    ]
 
-        def profileSearch(query, verbose=False):
+        def profileSearch(query, warmup=False, verbose=False):
 
             st = time()
-            res1 = self._defaultSearch(query)
+            res1 = self._defaultSearch(query, verbose=False)
             duration1 = (time() - st) * 1000
+
             if verbose:
                 logger.info("atomic:    %s hits in %3.2fms" %
                             (len(res1), duration1))
 
             st = time()
-            res2 = self._compositeSearch(query)
+            res2 = self._compositeSearch(query, verbose=False)
             duration2 = (time() - st) * 1000
+
             if verbose:
                 logger.info("composite: %s hits in %3.2fms" %
                             (len(res2), duration2))
 
             if verbose:
-                logger.info('[composite/atomic] factor %3.2f\n' %
+                logger.info('[composite/atomic] factor %3.2f' %
                             (duration1 / duration2,))
 
-            # composite search must be faster than default search
-            assert duration2 < duration1
+            if not warmup:
+                # composite search must be roughly faster than default search
+                assert 0.95 * duration2 < duration1, (duration2, duration1)
 
             # is result identical
             self.assertEqual(len(res1), len(res2))
@@ -214,20 +255,30 @@ class CompositeIndexTests(unittest.TestCase):
             self._clearIndexes()
             logger.info('************************************\n'
                         'indexing %s objects' % l)
+
             for i in range(l):
                 name = '%s' % i
                 obj = RandomTestObject(name)
                 self._populateIndexes(i, obj)
+
             logger.info('indexing finished\n')
+
             self.printIndexInfo()
+
             logger.info('\nstart queries')
-            for query in queries:
-                logger.info("query %s" % query.keys())
-                # warming up indexes
-                profileSearch(query)
-                # in memory measure
+
+            # warming up indexes
+            logger.info("warming up indexes")
+            for name, query in queries:
+                profileSearch(query, warmup=True)
+
+            # in memory measure
+            logger.info("in memory measure")
+            for name, query in queries:
+                logger.info("\nquery: %s" % name)
                 profileSearch(query, verbose=True)
-            logger.info('queries finished')
+
+            logger.info('\nqueries finished')
 
         logger.info('************************************')
 
@@ -256,13 +307,28 @@ class CompositeIndexTests(unittest.TestCase):
                     'portal_type': {'query': ('News', 'Document')},
                     'is_default_page': {'query': False},
                     'subject': {'query': ('subject_1', 'subject_2'),
-                                'operator': 'or'}}
+                                'operator': 'or'}},
+                   {'review_state': {'query': ('pending', 'visible')},
+                    'portal_type': {'query': ('News', 'Document')},
+                    'is_default_page': {'query': False},
+                    'subject': {'query': ('subject_1', 'subject_2'),
+                                'operator': 'or'}},
+                   {'review_state': {'query': ('pending', 'visible')},
+                    'portal_type': {'query': ('News', 'Document')},
+                    'is_default_page': {'query': False},
+                    'subject': {'query': ('subject_1', 'subject_2'),
+                                'operator': 'and'}},
+                   {'review_state': {'not': ('pending', 'visible')},
+                    'portal_type': {'query': ('News', 'Document')},
+                    'is_default_page': {'query': False},
+                    'subject': {'query': ('subject_2',)}},
                    ]
 
         for query in queries:
 
             res1 = self._defaultSearch(query)
             res2 = self._compositeSearch(query)
+
             self.assertEqual(res1, res2)
 
 

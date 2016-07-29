@@ -39,8 +39,8 @@ _marker = []
 
 LOG = logging.getLogger('CompositeIndex')
 
-QUERY_OPTIONS = {'FieldIndex': ["query", "range"],
-                 'KeywordIndex': ["query", "operator", "range"]
+QUERY_OPTIONS = {'FieldIndex': ('query', 'range', 'not'),
+                 'KeywordIndex': ('query', 'range', 'not', 'operator'),
                  }
 
 MIN_COMPONENTS = 2
@@ -420,15 +420,19 @@ class CompositeIndex(UnIndex):
             query_options = QUERY_OPTIONS[c.meta_type]
             rec = parseIndexRequest(query, c.id, query_options)
 
+            # not supported: 'not' parameter
+            not_parm = rec.get('not', None)
+            if not rec.keys and not_parm:
+                continue
+
+            # not supported: 'and' operator
+            operator = rec.get('operator', self.useOperator)
+            if rec.keys and operator == 'and':
+                continue
+
             # continue if no keys in query were set
             if rec.keys is None:
                 continue
-
-            # sot supported: not / exclude parameter
-            not_parm = rec.get('not', None)
-            if not rec.keys and not_parm:
-                return query
-                #raise NotImplementedError
 
             c_records.append((c.id, rec))
 
@@ -459,8 +463,8 @@ class CompositeIndex(UnIndex):
             if c_id in cquery:
                 del cquery[c_id]
 
-        # LOG.debug('%s: query build %r' % (self.__class__.__name__,
-        #                                  [(c_id, rec.keys)
+        #LOG.debug('%s: query build from %r' % (self.__class__.__name__,
+        #                              [(c_id, rec.keys, rec.get('operator'))
         #                                   for c_id, rec in c_records]))
 
         return cquery
