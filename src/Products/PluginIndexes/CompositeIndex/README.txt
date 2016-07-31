@@ -35,4 +35,4 @@ CompositeIndex README
      expensive computation of the intersection is therefore obsolete.
 
      IMPORTANT: CompositeIndex can only be used as an add-on not as 
-     a replacement for field- and  keyword indexes.
+     a replacement for field- and keyword indexes.
