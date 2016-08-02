@@ -61,7 +61,20 @@ class RandomTestObject(TestObject):
                                                subject)
 
 
-class CompositeIndexTests(unittest.TestCase):
+# Pseudo ContentLayer class to support quick
+# unit tests (skip performance tests)
+class PseudoLayer(object):
+
+    @classmethod
+    def setUp(cls):
+        pass
+
+    @classmethod
+    def tearDown(cls):
+        pass
+
+
+class CompositeIndexTestMixin(object):
 
     def setUp(self):
         self._indexes = [FieldIndex('review_state'),
@@ -84,12 +97,12 @@ class CompositeIndexTests(unittest.TestCase):
                                                ])
                          ]
 
-    def _getIndex(self, name):
+    def getIndex(self, name):
         for idx in self._indexes:
             if idx.id == name:
                 return idx
 
-    def _defaultSearch(self, req, expectedValues=None, verbose=False):
+    def defaultSearch(self, req, expectedValues=None, verbose=False):
 
         rs = None
         for index in self._indexes:
@@ -121,22 +134,22 @@ class CompositeIndexTests(unittest.TestCase):
 
         return set(rs)
 
-    def _compositeSearch(self, req, expectedValues=None, verbose=False):
-        comp_index = self._getIndex('comp01')
+    def compositeSearch(self, req, expectedValues=None, verbose=False):
+        comp_index = self.getIndex('comp01')
         query = comp_index.make_query(req)
 
         # catch successful?
         self.assertTrue('comp01' in query)
 
-        return self._defaultSearch(query,
-                                   expectedValues=expectedValues,
-                                   verbose=verbose)
+        return self.defaultSearch(query,
+                                  expectedValues=expectedValues,
+                                  verbose=verbose)
 
     def enableLog(self):
         logger.root.setLevel(logging.INFO)
         logger.root.addHandler(logging.StreamHandler(sys.stdout))
 
-    def _populateIndexes(self, k, v):
+    def populateIndexes(self, k, v):
         for index in self._indexes:
             index.index_object(k, v)
 
@@ -150,14 +163,17 @@ class CompositeIndexTests(unittest.TestCase):
                         (index.id, size, n_obj, ratio * 1000))
             return ratio
 
-        #indexes = sorted(self._indexes, key=info, reverse=True)
-        #self._indexes = indexes
         for index in self._indexes:
             info(index)
 
-    def _clearIndexes(self):
+    def clearIndexes(self):
         for index in self._indexes:
             index.clear()
+
+
+class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
+                                    unittest.TestCase):
+    layer = PseudoLayer
 
     def testPerformance(self):
         self.enableLog()
@@ -224,7 +240,7 @@ class CompositeIndexTests(unittest.TestCase):
         def profileSearch(query, warmup=False, verbose=False):
 
             st = time()
-            res1 = self._defaultSearch(query, verbose=False)
+            res1 = self.defaultSearch(query, verbose=False)
             duration1 = (time() - st) * 1000
 
             if verbose:
@@ -232,7 +248,7 @@ class CompositeIndexTests(unittest.TestCase):
                             (len(res1), duration1))
 
             st = time()
-            res2 = self._compositeSearch(query, verbose=False)
+            res2 = self.compositeSearch(query, verbose=False)
             duration2 = (time() - st) * 1000
 
             if verbose:
@@ -247,19 +263,19 @@ class CompositeIndexTests(unittest.TestCase):
                 # composite search must be roughly faster than default search
                 assert 0.95 * duration2 < duration1, (duration2, duration1)
 
-            # is result identical
+            # is result identical?
             self.assertEqual(len(res1), len(res2))
             self.assertEqual(res1, res2)
 
         for l in lengths:
-            self._clearIndexes()
+            self.clearIndexes()
             logger.info('************************************\n'
                         'indexing %s objects' % l)
 
             for i in range(l):
                 name = '%s' % i
                 obj = RandomTestObject(name)
-                self._populateIndexes(i, obj)
+                self.populateIndexes(i, obj)
 
             logger.info('indexing finished\n')
 
@@ -282,17 +298,20 @@ class CompositeIndexTests(unittest.TestCase):
 
         logger.info('************************************')
 
+
+class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
+
     def testSearch(self):
 
         obj = TestObject('obj1', 'Document', 'pending', subject=('subject_1'))
-        self._populateIndexes(1, obj)
+        self.populateIndexes(1, obj)
 
         obj = TestObject('obj2', 'News', 'pending', subject=('subject_2'))
-        self._populateIndexes(2, obj)
+        self.populateIndexes(2, obj)
 
         obj = TestObject('obj3', 'News', 'visible',
                          subject=('subject_1', 'subject_2'))
-        self._populateIndexes(3, obj)
+        self.populateIndexes(3, obj)
 
         queries = [{'review_state': {'query': 'pending'},
                     'portal_type': {'query': 'Document'}},
@@ -326,11 +345,14 @@ class CompositeIndexTests(unittest.TestCase):
 
         for query in queries:
 
-            res1 = self._defaultSearch(query)
-            res2 = self._compositeSearch(query)
-
+            res1 = self.defaultSearch(query)
+            res2 = self.compositeSearch(query)
+            # is result identical?
+            self.assertEqual(len(res1), len(res2))
             self.assertEqual(res1, res2)
 
 
 def test_suite():
-    return unittest.TestSuite((unittest.makeSuite(CompositeIndexTests),))
+    test_suites = (unittest.makeSuite(CompositeIndexPerformanceTest),
+                   unittest.makeSuite(CompositeIndexTest))
+    return unittest.TestSuite(test_suites)
