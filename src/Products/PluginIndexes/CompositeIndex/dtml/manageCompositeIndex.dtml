@@ -26,6 +26,7 @@ Distinct values: <dtml-var indexSize>
     <select name="components.meta_type:records:string">
        <option <dtml-if "_['sequence-item'].meta_type=='FieldIndex'">SELECTED</dtml-if> value="FieldIndex">FieldIndex</option>
        <option <dtml-if "_['sequence-item'].meta_type=='KeywordIndex'">SELECTED</dtml-if> value="KeywordIndex">KeywordIndex</option>
+       <option <dtml-if "_['sequence-item'].meta_type=='BooleanIndex'">SELECTED</dtml-if> value="BooleanIndex">BooleanIndex</option>
     </select>
     </td>
     <td align="left" valign="top">
@@ -54,6 +55,7 @@ Distinct values: <dtml-var indexSize>
       <select name="c_meta_type:string">
 	<option>FieldIndex</option>
 	<option>KeywordIndex</option>
+	<option>BooleanIndex</option>
       </select>
     </td>
     <td align="left" valign="top">

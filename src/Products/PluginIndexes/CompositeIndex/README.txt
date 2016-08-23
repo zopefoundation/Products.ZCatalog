@@ -14,8 +14,8 @@ CompositeIndex README
      Catalog queries containing attributes managed by CompositeIndex
      are transparently catched and transformed seamlessly into a
      CompositeIndex query. In particular, large sites with a
-     combination of additional indexes (FieldIndex, KeywordIndex) and
-     lots of content (>100k) will profit. The expected performance
+     combination of additional indexes (FieldIndex, KeywordIndex, BooleanIndex) 
+     and lots of content (>100k) will profit. The expected performance
      enhancement for combined index queries is about a factor of >2-3.
 
      For example many catalog queries in plone are based on the combination of
@@ -35,4 +35,4 @@ CompositeIndex README
      expensive computation of the intersection is therefore obsolete.
 
      IMPORTANT: CompositeIndex can only be used as an add-on not as 
-     a replacement for field- and keyword indexes.
+     a replacement for field, keyword and boolean indexes.

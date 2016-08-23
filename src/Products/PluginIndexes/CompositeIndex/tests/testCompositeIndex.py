@@ -8,6 +8,7 @@ from BTrees.IIBTree import weightedIntersection
 
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
+from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
 from Products.PluginIndexes.CompositeIndex.CompositeIndex import CompositeIndex
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 
@@ -82,7 +83,7 @@ class CompositeIndexTestMixin(object):
     def setUp(self):
         self._indexes = [FieldIndex('review_state'),
                          FieldIndex('portal_type'),
-                         FieldIndex('is_default_page'),
+                         BooleanIndex('is_default_page'),
                          KeywordIndex('subject',
                                       extra=
                                       {'indexed_attrs':
@@ -96,7 +97,7 @@ class CompositeIndexTestMixin(object):
                                                 'meta_type': 'FieldIndex',
                                                 'attributes': ''},
                                                {'id': 'is_default_page',
-                                                'meta_type': 'FieldIndex',
+                                                'meta_type': 'BooleanIndex',
                                                 'attributes': ''},
                                                {'id': 'subject',
                                                 'meta_type': 'KeywordIndex',

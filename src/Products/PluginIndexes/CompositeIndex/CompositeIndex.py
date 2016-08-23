@@ -28,10 +28,9 @@ from BTrees.OOBTree import OOSet
 from zope.interface import implements
 
 from Products.PluginIndexes.interfaces import ITransposeQuery
-from Products.PluginIndexes.common.UnIndex import UnIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.common.util import parseIndexRequest
-from Products.PluginIndexes.common import safe_callable
+from Products.PluginIndexes.common.UnIndex import _marker
 
 from itertools import product
 from itertools import combinations
@@ -42,6 +41,7 @@ LOG = logging.getLogger('CompositeIndex')
 
 QUERY_OPTIONS = {'FieldIndex': ('query', 'range', 'not'),
                  'KeywordIndex': ('query', 'range', 'not', 'operator'),
+                 'BooleanIndex': ('query', 'range', 'not'),
                  }
 
 MIN_COMPONENTS = 2
@@ -278,6 +278,15 @@ class CompositeIndex(KeywordIndex):
             if isinstance(datum, list):
                 datum = tuple(datum)
             return datum
+
+        elif component.meta_type == 'BooleanIndex':
+            # last attribute is the winner
+            attr = component.attributes[-1]
+            datum = self._get_object_datum(obj, attr)
+            if datum is not _marker:
+                datum = int(bool(datum))
+            return (datum,)
+
         else:
             raise KeyError
 
