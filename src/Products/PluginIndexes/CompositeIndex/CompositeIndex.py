@@ -201,7 +201,7 @@ class CompositeIndex(KeywordIndex):
         # we'll do so.
 
         # get permuted keywords
-        newKeywords = self._get_object_keywords(obj)
+        newKeywords = self._get_permuted_keywords(obj)
 
         oldKeywords = self._unindex.get(documentId, None)
 
@@ -235,8 +235,8 @@ class CompositeIndex(KeywordIndex):
                         self.insertForwardIndexEntry(kw, documentId)
         return 1
 
-    def _get_object_keywords(self, obj):
-        """ returns permutation list of object keywords """
+    def _get_permuted_keywords(self, obj):
+        """ returns permutation tuple of object keywords """
 
         components = self.getIndexComponents()
         kw_list = []
@@ -274,7 +274,7 @@ class CompositeIndex(KeywordIndex):
         elif component.meta_type == 'KeywordIndex':
             # last attribute is the winner
             attr = component.attributes[-1]
-            datum = KeywordIndex._get_object_keywords(self, obj, attr)
+            datum = self._get_object_keywords(obj, attr)
             if isinstance(datum, list):
                 datum = tuple(datum)
             return datum
