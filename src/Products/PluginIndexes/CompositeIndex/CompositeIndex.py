@@ -157,11 +157,9 @@ class CompositeIndex(UnIndex):
 
     manage_options = (
         {'label': 'Settings',
-         'action': 'manage_main',
-         'help': ('CompositeIndex', 'CompositeIndex_Settings.stx')},
+         'action': 'manage_main'},
         {'label': 'Browse',
-         'action': 'manage_browse',
-         'help': ('CompositeIndex', 'CompositeIndex_Settings.stx')},
+         'action': 'manage_browse'},
     )
 
     query_options = ("query", "operator")
