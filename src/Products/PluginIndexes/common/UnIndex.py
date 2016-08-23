@@ -569,7 +569,7 @@ class UnIndex(SimpleItem):
                 # If None, try to bail early
                 if s is None:
                     if operator == 'or':
-                        # If union, we can't possibly get a bigger result
+                        # If union, we can possibly get a bigger result
                         continue
                     # If intersection, we can't possibly get a smaller result
                     if cachekey is not None:
