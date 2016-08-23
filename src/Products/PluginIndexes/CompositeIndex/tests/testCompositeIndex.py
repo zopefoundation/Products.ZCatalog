@@ -19,26 +19,28 @@ logger = logging.getLogger('zope.testCompositeIndex')
 states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
 default_pages = [True, False, False, False, False, False]
-keywords = map(lambda x: 'subject_%s' % x, range(6))
+subjects = map(lambda x: 'subject_%s' % x, range(6))
+keywords = map(lambda x: 'keyword_%s' % x, range(6))
 
 
 class TestObject(object):
 
     def __init__(self, id, portal_type, review_state,
-                 is_default_page=False, subject=[]):
+                 is_default_page=False, subject=(), keyword=()):
         self.id = id
         self.portal_type = portal_type
         self.review_state = review_state
         self.is_default_page = is_default_page
         self.subject = subject
+        self.keyword = keyword
 
     def getPhysicalPath(self):
         return ['', self.id, ]
 
     def __repr__(self):
-        return ('< %s, %s, %s, %s, %s >' %
+        return ('< %s, %s, %s, %s, %s , %s>' %
                 (self.id, self.portal_type, self.review_state,
-                 self.is_default_page, self.subject))
+                 self.is_default_page, self.subject, self.keyword))
 
 
 class RandomTestObject(TestObject):
@@ -54,11 +56,12 @@ class RandomTestObject(TestObject):
         i = random.randint(0, len(default_pages) - 1)
         is_default_page = default_pages[i]
 
-        subject = random.sample(keywords, random.randint(1, len(keywords)))
+        subject = random.sample(subjects, random.randint(1, len(subjects)))
+        keyword = random.sample(keywords, random.randint(1, len(keywords)))
 
         super(RandomTestObject, self).__init__(id, portal_type,
                                                review_state, is_default_page,
-                                               subject)
+                                               subject, keyword)
 
 
 # Pseudo ContentLayer class to support quick
@@ -80,7 +83,11 @@ class CompositeIndexTestMixin(object):
         self._indexes = [FieldIndex('review_state'),
                          FieldIndex('portal_type'),
                          FieldIndex('is_default_page'),
-                         KeywordIndex('subject'),
+                         KeywordIndex('subject',
+                                      extra=
+                                      {'indexed_attrs':
+                                          'keyword,subject'}
+                                      ),
                          CompositeIndex('comp01',
                                         extra=[{'id': 'portal_type',
                                                 'meta_type': 'FieldIndex',
@@ -93,7 +100,8 @@ class CompositeIndexTestMixin(object):
                                                 'attributes': ''},
                                                {'id': 'subject',
                                                 'meta_type': 'KeywordIndex',
-                                                'attributes': ''}
+                                                'attributes':
+                                                'keyword,subject'}
                                                ])
                          ]
 
@@ -186,6 +194,9 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                    ('query02_default_two_indexes',
                     {'portal_type': {'query': 'Document'},
                      'subject': {'query': 'subject_2'}}),
+                   ('query02_default_two_indexes_zero_hits',
+                    {'portal_type': {'query': 'Document'},
+                     'subject': {'query': ['keyword_1', 'keyword_2']}}),
                    ('query03_default_two_indexes',
                     {'portal_type': {'query': 'Document'},
                      'subject': {'query': ['subject_1', 'subject_3']}}),
@@ -260,11 +271,14 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                             (duration1 / duration2,))
 
             if not warmup:
-                # composite search must be roughly faster than default search
-                assert 0.95 * duration2 < duration1, (duration2, duration1)
+                # if lenghth of result is greater than zero composite
+                # search must be roughly faster than default search
+                if res1 and res2:
+                    assert 0.95 * duration2 < duration1, (duration2, duration1)
 
             # is result identical?
-            self.assertEqual(len(res1), len(res2))
+            self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
+                             (len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
         for l in lengths:
@@ -303,15 +317,20 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
 
     def testSearch(self):
 
-        obj = TestObject('obj1', 'Document', 'pending', subject=('subject_1'))
-        self.populateIndexes(1, obj)
+        obj = TestObject('obj_1', 'Document', 'pending', subject=('subject_1'))
+        #self.populateIndexes(1, obj)
 
-        obj = TestObject('obj2', 'News', 'pending', subject=('subject_2'))
-        self.populateIndexes(2, obj)
+        obj = TestObject('obj_2', 'News', 'pending', subject=('subject_2'))
+        #self.populateIndexes(2, obj)
 
-        obj = TestObject('obj3', 'News', 'visible',
+        obj = TestObject('obj_3', 'News', 'visible',
                          subject=('subject_1', 'subject_2'))
-        self.populateIndexes(3, obj)
+        #self.populateIndexes(3, obj)
+
+        obj = TestObject('obj_4', 'News', 'visible',
+                         subject=('subject_1', 'subject_2'),
+                         keyword=('keyword_1', ))
+        self.populateIndexes(4, obj)
 
         queries = [{'review_state': {'query': 'pending'},
                     'portal_type': {'query': 'Document'}},
@@ -340,7 +359,7 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
                    {'review_state': {'not': ('pending', 'visible')},
                     'portal_type': {'query': ('News', 'Document')},
                     'is_default_page': {'query': False},
-                    'subject': {'query': ('subject_2',)}},
+                    'subject': {'query': ('keyword_1',)}},
                    ]
 
         for query in queries:
@@ -348,7 +367,8 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             res1 = self.defaultSearch(query)
             res2 = self.compositeSearch(query)
             # is result identical?
-            self.assertEqual(len(res1), len(res2))
+            self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
+                             (len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
 
