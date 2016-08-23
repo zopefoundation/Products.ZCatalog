@@ -11,6 +11,7 @@
 #
 ##############################################################################
 
+import sys
 from logging import getLogger
 
 from BTrees.OOBTree import difference
@@ -103,15 +104,14 @@ class KeywordIndex(UnIndex):
         elif isinstance(newKeywords, basestring):
             return (newKeywords,)
         else:
-            unique = {}
             try:
-                for k in newKeywords:
-                    unique[k] = None
+                # unique
+                newKeywords = set(newKeywords)
             except TypeError:
                 # Not a sequence
                 return (newKeywords,)
             else:
-                return unique.keys()
+                return tuple(newKeywords)
 
     def unindex_objectKeywords(self, documentId, keywords):
         """ carefully unindex the object with integer id 'documentId'"""
@@ -135,8 +135,10 @@ class KeywordIndex(UnIndex):
         try:
             del self._unindex[documentId]
         except KeyError:
-            LOG.debug('Attempt to unindex nonexistent'
-                      ' document id %s' % documentId)
+            LOG.debug('%s: Attempt to unindex nonexistent '
+                      'document with id %s' %
+                      (self.__class__.__name__, documentId),
+                      error=sys.exc_info())
 
     manage = manage_main = DTMLFile('dtml/manageKeywordIndex', globals())
     manage_main._setName('manage_main')
