@@ -29,6 +29,7 @@ from zope.interface import implements
 
 from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.common import safe_callable
 
@@ -146,7 +147,7 @@ class Component(object):
             (self.id, self.meta_type, self.attributes)
 
 
-class CompositeIndex(UnIndex):
+class CompositeIndex(KeywordIndex):
 
     """Index for composition of simple fields.
        or sequences of items
@@ -186,13 +187,7 @@ class CompositeIndex(UnIndex):
                                                    c_attributes)
         self.clear()
 
-    def index_object(self, documentId, obj, threshold=None):
-        """ wrapper to handle indexing of multiple attributes """
-
-        res = self._index_object(documentId, obj, threshold)
-        return res
-
-    def _index_object(self, documentId, obj, threshold=None):
+    def _index_object(self, documentId, obj, threshold=None, attr=''):
         """ index an object 'obj' with integer id 'i'
 
         Ideally, we've been passed a sequence of some sort that we
@@ -229,34 +224,16 @@ class CompositeIndex(UnIndex):
             rdiff = difference(newKeywords, oldKeywords)
             if fdiff or rdiff:
                 # if we've got forward or reverse changes
-                self._unindex[documentId] = list(newKeywords)
+                if newKeywords:
+                    self._unindex[documentId] = list(newKeywords)
+                else:
+                    del self._unindex[documentId]
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
                 if rdiff:
                     for kw in rdiff:
                         self.insertForwardIndexEntry(kw, documentId)
-
         return 1
-
-    def unindex_objectKeywords(self, documentId, keywords):
-        """ carefully unindex the object with integer id 'documentId'"""
-
-        if keywords is not None:
-            for kw in keywords:
-                self.removeForwardIndexEntry(kw, documentId)
-
-    def unindex_object(self, documentId):
-        """ carefully unindex the object with integer id 'documentId'"""
-
-        keywords = self._unindex.get(documentId, None)
-        self.unindex_objectKeywords(documentId, keywords)
-        try:
-            del self._unindex[documentId]
-        except KeyError:
-            LOG.debug('%s: Attempt to unindex nonexistent '
-                      'document with id %s' %
-                      (self.__class__.__name__, documentId),
-                      error=sys.exc_info())
 
     def _get_object_keywords(self, obj):
         """ returns permutation list of object keywords """
@@ -287,43 +264,20 @@ class CompositeIndex(UnIndex):
     def _get_component_keywords(self, obj, component):
 
         if component.meta_type == 'FieldIndex':
+            # last attribute is the winner
             attr = component.attributes[-1]
-            try:
-                datum = getattr(obj, attr)
-                if safe_callable(datum):
-                    datum = datum()
-            except (AttributeError, TypeError):
-                datum = _marker
+            datum = self._get_object_datum(obj, attr)
             if isinstance(datum, list):
                 datum = tuple(datum)
             return (datum,)
 
         elif component.meta_type == 'KeywordIndex':
-            for attr in component.attributes:
-                datum = []
-                newKeywords = getattr(obj, attr, ())
-                if safe_callable(newKeywords):
-                    try:
-                        newKeywords = newKeywords()
-                    except AttributeError:
-                        continue
-                if not newKeywords and newKeywords is not False:
-                    continue
-                # Python 2.1 compat isinstance
-                elif isinstance(newKeywords, basestring):
-                    datum.append(newKeywords)
-                else:
-                    try:
-                        # unique
-                        newKeywords = set(newKeywords)
-                    except TypeError:
-                        # Not a sequence
-                        datum.append(newKeywords)
-                    else:
-                        datum.extend(newKeywords)
-
-            datum.sort()
-            return tuple(datum)
+            # last attribute is the winner
+            attr = component.attributes[-1]
+            datum = KeywordIndex._get_object_keywords(self, obj, attr)
+            if isinstance(datum, list):
+                datum = tuple(datum)
+            return datum
         else:
             raise KeyError
 
