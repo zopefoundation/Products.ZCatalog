@@ -168,43 +168,7 @@ class CompositeIndex(UnIndex):
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
-        """Create an composite index
-
-        UnIndexes are indexes that contain two index components, the
-        forward index (like plain index objects) and an inverted
-        index.  The inverted index is so that objects can be unindexed
-        even when the old value of the object is not known.
-
-        e.g.
-
-        self._index = {datum:[documentId1, documentId2]}
-        self._unindex = {documentId:datum}
-
-        If any item in self._index has a length-one value, the value is an
-        integer, and not a set.  There are special cases in the code to deal
-        with this.
-
-        The arguments are:
-
-          'id' -- the name of the item attribute to index.  This is
-          either an attribute name or a record key.
-
-          'ignore_ex' -- should be set to true if you want the index
-          to ignore exceptions raised while indexing instead of
-          propagating them.
-
-          'call_methods' -- should be set to true if you want the index
-          to call the attribute 'id' (note: 'id' should be callable!)
-          You will also need to pass in an object in the index and
-          uninded methods for this to work.
-
-          'extra' -- a mapping object that keeps additional
-          index-related parameters - subitem 'indexed_attrs'
-          can be list of dicts with following keys { id, type, attributes }
-
-          'caller' -- reference to the calling object (usually
-          a (Z)Catalog instance
-        """
+        """Create an composite index"""
 
         self.id = id
         self.ignore_ex = ignore_ex        # currently unimplimented
@@ -223,15 +187,6 @@ class CompositeIndex(UnIndex):
                 self._components[c_id] = Component(c_id, c_meta_type,
                                                    c_attributes)
         self.clear()
-
-    def _apply_index(self, request, resultset=None):
-        """ Apply the index to query parameters given in the request arg. """
-        record = parseIndexRequest(request, self.id, self.query_options)
-
-        if record.keys is None:
-            return None
-
-        return UnIndex._apply_index(self, request, resultset=resultset)
 
     def index_object(self, documentId, obj, threshold=None):
         """ wrapper to handle indexing of multiple attributes """
