@@ -402,6 +402,9 @@ class CompositeIndex(KeywordIndex):
             self.delComponent(c.old_id)
             self.addComponent(c.id, c.meta_type, c.attributes)
 
+        # better safe than sorry
+        self.clear()
+
     def manage_addComponent(self, c_id, c_meta_type, c_attributes, URL1,
                             REQUEST=None, RESPONSE=None):
         """ add a new component """
