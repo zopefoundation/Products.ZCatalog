@@ -462,7 +462,7 @@ class CompositeIndex(UnIndex):
             RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=Component%20added')
 
-    def manage_delComponents(self, del_ids=[], URL1=None,
+    def manage_delComponents(self, del_ids=(), URL1=None,
                              REQUEST=None, RESPONSE=None):
         """ delete one or more components """
         if not del_ids:
