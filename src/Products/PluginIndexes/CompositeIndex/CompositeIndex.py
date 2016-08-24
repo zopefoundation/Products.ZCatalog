@@ -11,7 +11,6 @@
 #
 ##############################################################################
 
-import sys
 import logging
 import time
 import transaction
@@ -34,8 +33,6 @@ from Products.PluginIndexes.common.UnIndex import _marker
 
 from itertools import product
 from itertools import combinations
-
-_marker = []
 
 LOG = logging.getLogger('CompositeIndex')
 
@@ -188,17 +185,6 @@ class CompositeIndex(KeywordIndex):
         self.clear()
 
     def _index_object(self, documentId, obj, threshold=None, attr=''):
-        """ index an object 'obj' with integer id 'i'
-
-        Ideally, we've been passed a sequence of some sort that we
-        can iterate over. If however, we haven't, we should do something
-        useful with the results. In the case of a string, this means
-        indexing the entire string as a keyword."""
-
-        # First we need to see if there's anything interesting to look at
-        # self.id is the name of the index, which is also the name of the
-        # attribute we're interested in.  If the attribute is callable,
-        # we'll do so.
 
         # get permuted keywords
         newKeywords = self._get_permuted_keywords(obj)
@@ -264,9 +250,13 @@ class CompositeIndex(KeywordIndex):
     def _get_component_keywords(self, obj, component):
 
         if component.meta_type == 'FieldIndex':
-            # last attribute is the winner
-            attr = component.attributes[-1]
-            datum = self._get_object_datum(obj, attr)
+            # last attribute is the winner if value is not None
+            for attr in component.attributes:
+                datum = self._get_object_datum(obj, attr)
+                if datum is None:
+                    continue
+            if datum is None:
+                return ()
             if isinstance(datum, list):
                 datum = tuple(datum)
             return (datum,)
@@ -349,6 +339,10 @@ class CompositeIndex(KeywordIndex):
             # continue if no keys in query were set
             if rec.keys is None:
                 continue
+
+            # convert rec keys to int for BooleanIndex
+            if c.meta_type == 'BooleanIndex':
+                rec.keys = [int(bool(v)) for v in rec.keys[:]]
 
             c_records.append((c.id, rec))
 
