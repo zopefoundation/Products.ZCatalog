@@ -4,6 +4,7 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Add new CompositeIndex index type.
 
 4.0a1 (2016-07-22)
 ------------------
