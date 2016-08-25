@@ -255,3 +255,15 @@ class IRequestCacheIndex(Interface):
 
     def getRequestCacheKey(record, resultset=None):
         """ Returns an unique key of a search record """
+
+
+# ITransposeQuery was added to support multicolumn indexes for field and
+# keyword indexes, eg. CompositeIndex. (andbag)
+class ITransposeQuery(Interface):
+    """ Optimization API for queries and indexing """
+
+    def make_query(query):
+        """ returns an optimized query for given index """
+
+    def getIndexNames():
+        """ returns index names that are optimized by index """

@@ -32,6 +32,7 @@ from Missing import MV
 from Persistence import Persistent
 
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.interfaces import ITransposeQuery
 from .Lazy import LazyMap, LazyCat, LazyValues
 from .CatalogBrains import AbstractCatalogBrain, NoBrainer
 from .plan import CatalogPlan
@@ -353,7 +354,19 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if idxs == []:
             use_indexes = self.indexes.keys()
         else:
-            use_indexes = idxs
+            use_indexes = set(idxs)
+            for iid in self.indexes.keys():
+                x = self.getIndex(iid)
+                if ITransposeQuery.providedBy(x):
+                    # supported index names for query optimization
+                    names = x.getIndexNames()
+                    intersec = use_indexes.intersection(names)
+                    # add current index for indexing if supported index
+                    # names are member of idxs
+                    if intersec:
+                        use_indexes.update([iid])
+
+            use_indexes = list(use_indexes)
 
         for name in use_indexes:
             x = self.getIndex(name)
@@ -500,6 +513,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 value = real_req.get(iid)
                 if value:
                     query[iid] = value
+
+        for iid in self.indexes.keys():
+            index = self.getIndex(iid)
+            if ITransposeQuery.providedBy(index):
+                query = index.make_query(query)
         return query
 
     def _get_index_query_names(self, index):

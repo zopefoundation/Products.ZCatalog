@@ -1,0 +1,105 @@
+<dtml-var manage_page_header>
+<dtml-var manage_tabs>
+
+<p class="form-help">
+Objects indexed: <dtml-var numObjects>
+<br>
+Distinct values: <dtml-var indexSize>
+</p>
+
+<!-- form action="manage_addComponent" method="post" enctype="multipart/form-data" -->
+<form action="&dtml-URL1;/" name="adminComponents" method="post">
+
+<table cellspacing="0" cellpadding="2" border="1">
+  <tr><td>&nbsp;</td><td>Component id</td><td>Type</td><td>Indexed attributes (attribute1,attribute2,... or leave empty)</td>
+  <dtml-if expr="indexSize() == 0">
+  <dtml-in expr="getIndexComponents()">
+  <tr>
+    <td align="left" valign="top">
+       <input name="del_ids:list" value="<dtml-var "_['sequence-item'].id" >" type="checkbox">
+    </td>
+    <td align="left" valign="top">
+    <input type="hidden" name="components.old_id:records:string"  value="<dtml-var "_['sequence-item'].id" >" />
+    <input type="text" name="components.id:records:string" size="20" value="<dtml-var "_['sequence-item'].id" >" />
+    </td>
+    <td align="left" valign="top">
+    <select name="components.meta_type:records:string">
+       <option <dtml-if "_['sequence-item'].meta_type=='FieldIndex'">SELECTED</dtml-if> value="FieldIndex">FieldIndex</option>
+       <option <dtml-if "_['sequence-item'].meta_type=='KeywordIndex'">SELECTED</dtml-if> value="KeywordIndex">KeywordIndex</option>
+       <option <dtml-if "_['sequence-item'].meta_type=='BooleanIndex'">SELECTED</dtml-if> value="BooleanIndex">BooleanIndex</option>
+    </select>
+    </td>
+    <td align="left" valign="top">
+    <input type="text" name="components.attributes:records:string" size="60"  value="&dtml-rawAttributes;"/><br/>
+    </td>
+  </tr>
+  </dtml-in>
+  <tr>
+    <td>&nbsp;</td>
+    <td colspan="4">
+      <div class="form-element">
+	<input class="form-element" type="submit" name="manage_saveComponents:method" value=" Save " />
+	<input class="form-element" type="submit" name="manage_delComponents:method" value=" Delete " />
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="5">&nbsp;</td> 
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td align="left" valign="top">
+      <input type="text" name="c_id:string" size="20" value="" />
+    </td>
+    <td align="left" valign="top">
+      <select name="c_meta_type:string">
+	<option>FieldIndex</option>
+	<option>KeywordIndex</option>
+	<option>BooleanIndex</option>
+      </select>
+    </td>
+    <td align="left" valign="top">
+      <input type="text" name="c_attributes:string" size="60"  value=""/><br/>
+    </td>  
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td colspan="4">
+      <div class="form-element">
+	<input class="form-element" type="submit" name="manage_addComponent:method" value=" Add " /> 
+      </div>
+    </td>  
+  </tr>
+  <dtml-else>
+
+  <dtml-in expr="getIndexComponents()">
+  <tr>
+    <td align="left" valign="top">
+      &nbsp;
+    </td>
+    <td align="left" valign="top">
+      &dtml-id;
+    </td>
+    <td align="left" valign="top">
+      &dtml-meta_type;
+    </td>
+    <td align="left" valign="top">
+      &dtml-rawAttributes; &nbsp;
+    </td>
+  </tr>
+  </dtml-in>
+  </dtml-if>
+
+
+</table>
+</form>
+<form action="&dtml-URL1;/" name="fastBuild" method="post">
+<p class="form-help">
+Build composite index directly based on catalog brains and corresponding attribute values from matching field and keyword indexes.   
+</p>
+ <input class="form-element" type="submit" name="manage_fastBuild:method" value=" fast build " />
+
+</form>
+
+
+<dtml-var manage_page_footer>
