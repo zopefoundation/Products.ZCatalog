@@ -120,3 +120,17 @@ def initialize(context):
                           icon='www/index.gif',
                           visibility=None,
                           )
+
+    from Products.PluginIndexes.CompositeIndex.CompositeIndex import (
+        CompositeIndex,
+        manage_addCompositeIndex,
+        manage_addCompositeIndexForm,
+    )
+
+    context.registerClass(CompositeIndex,
+                          permission='Add Pluggable Index',
+                          constructors=(manage_addCompositeIndexForm,
+                                        manage_addCompositeIndex),
+                          icon='www/index.gif',
+                          visibility=None,
+                          )
