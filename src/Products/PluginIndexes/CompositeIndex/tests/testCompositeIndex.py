@@ -85,8 +85,8 @@ class CompositeIndexTestMixin(object):
                          FieldIndex('portal_type'),
                          BooleanIndex('is_default_page'),
                          KeywordIndex('subject',
-                                      extra=
-                                      {'indexed_attrs':
+                                      extra={
+                                          'indexed_attrs':
                                           'keyword,subject'}
                                       ),
                          CompositeIndex('comp01',
@@ -319,15 +319,9 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
     def testSearch(self):
 
         obj = TestObject('obj_1', 'Document', 'pending', subject=('subject_1'))
-        #self.populateIndexes(1, obj)
-
         obj = TestObject('obj_2', 'News', 'pending', subject=('subject_2'))
-        #self.populateIndexes(2, obj)
-
         obj = TestObject('obj_3', 'News', 'visible',
                          subject=('subject_1', 'subject_2'))
-        #self.populateIndexes(3, obj)
-
         obj = TestObject('obj_4', 'News', 'visible',
                          subject=('subject_1', 'subject_2'),
                          keyword=('keyword_1', ))
@@ -371,9 +365,3 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
                              (len(res1), len(res2), query))
             self.assertEqual(res1, res2)
-
-
-def test_suite():
-    test_suites = (unittest.makeSuite(CompositeIndexPerformanceTest),
-                   unittest.makeSuite(CompositeIndexTest))
-    return unittest.TestSuite(test_suites)

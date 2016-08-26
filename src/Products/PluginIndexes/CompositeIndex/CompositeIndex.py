@@ -295,7 +295,7 @@ class CompositeIndex(KeywordIndex):
         return tuple([c.attributes for c in self.getIndexComponents()])
 
     def getIndexNames(self):
-        """ returns index names that are catched by query substitution """
+        """ returns index names that are caught by query substitution """
         return self.getComponentIndexNames()
 
     def make_query(self, query):
@@ -346,7 +346,7 @@ class CompositeIndex(KeywordIndex):
 
             c_records.append((c.id, rec))
 
-        # return if less than MIN_COMPONENTS query attributes were catched
+        # return if less than MIN_COMPONENTS query attributes were caught
         if len(c_records) < MIN_COMPONENTS:
             return query
 
@@ -365,17 +365,13 @@ class CompositeIndex(KeywordIndex):
         # permute keyword list
         records = tuple(product(*kw_list))
 
-        # substitude matching query attributes as composite index
+        # substitute matching query attributes as composite index
         cquery.update({self.id: {'query': records}})
 
         # delete original matching query attributes from query
         for c_id, rec in c_records:
             if c_id in cquery:
                 del cquery[c_id]
-
-        #LOG.debug('%s: query build from %r' % (self.__class__.__name__,
-        #                              [(c_id, rec.keys, rec.get('operator'))
-        #                                   for c_id, rec in c_records]))
 
         return cquery
 
