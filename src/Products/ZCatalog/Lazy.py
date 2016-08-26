@@ -11,11 +11,15 @@
 #
 ##############################################################################
 
-from ZTUtils.Lazy import (  # NOQA
-    Lazy,
-    LazyCat,
-    LazyFilter,
-    LazyMap,
-    LazyMop,
-    LazyValues,
+from zope.deferredimport import deprecated
+
+# BBB ZCatalog 5.0
+deprecated(
+    'Please import from ZTUtils.Lazy.',
+    Lazy='ZTUtils.Lazy:Lazy',
+    LazyCat='ZTUtils.Lazy:LazyCat',
+    LazyFilter='ZTUtils.Lazy:LazyFilter',
+    LazyMap='ZTUtils.Lazy:LazyMap',
+    LazyMop='ZTUtils.Lazy:LazyMop',
+    LazyValues='ZTUtils.Lazy:LazyValues',
 )

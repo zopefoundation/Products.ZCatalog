@@ -91,25 +91,11 @@ class BooleanIndex(UnIndex):
             length -= 1
         self._index_length = BTrees.Length.Length(length)
 
-    def _inline_migration(self):
-        self._length = BTrees.Length.Length(len(self._unindex.keys()))
-        self._index_length = BTrees.Length.Length(len(self._index))
-        if self._index_length.value > (self._length.value / 2):
-            self._index_value = 1
-            self._invert_index()
-        else:
-            # set an instance variable
-            self._index_value = 1
-
     def insertForwardIndexEntry(self, entry, documentId):
         """If the value matches the indexed one, insert into treeset
         """
-        # when we get the first entry, decide to index the opposite of what
-        # we got, as indexing zero items is fewer than one
-        # BBB inline migration
-        if self._index_length is None:
-            self._inline_migration()
-
+        # When we get the first entry, decide to index the opposite of what
+        # we got, as indexing zero items is fewer than one.
         if self._length.value == 0:
             self._index_value = int(not bool(entry))
 
@@ -132,16 +118,10 @@ class BooleanIndex(UnIndex):
         """Take the entry provided and remove any reference to documentId
         in its entry in the index.
         """
-        index_length = self._index_length
-        if index_length is None:
-            self._inline_migration()
-
         if bool(entry) is bool(self._index_value):
             try:
                 self._index.remove(documentId)
-                # BBB inline migration
-                length = self._index_length
-                length.change(-1)
+                self._index_length.change(-1)
             except ConflictError:
                 raise
             except Exception:
@@ -152,11 +132,9 @@ class BooleanIndex(UnIndex):
                         str(documentId),
                         str(self.id)))
         elif check:
-            length = self._length.value
-            index_length = self._index_length.value
             # is the index (after removing the current entry) larger than
             # 60% of the total length? than switch the indexed value
-            if (index_length) <= ((length - 1) * 0.6):
+            if (self._index_length.value) <= ((self._length.value - 1) * 0.6):
                 self._invert_index(documentId)
                 return
 

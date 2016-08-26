@@ -29,10 +29,10 @@ from BTrees.IOBTree import IOBTree
 import ExtensionClass
 from Missing import MV
 from Persistence import Persistent
+from ZTUtils.Lazy import LazyMap, LazyCat, LazyValues
 
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 from Products.PluginIndexes.interfaces import ITransposeQuery
-from .Lazy import LazyMap, LazyCat, LazyValues
 from .CatalogBrains import AbstractCatalogBrain, NoBrainer
 from .plan import CatalogPlan
 from .ProgressHandler import ZLogHandler

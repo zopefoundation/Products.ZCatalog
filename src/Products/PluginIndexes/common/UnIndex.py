@@ -652,8 +652,7 @@ class UnIndex(SimpleItem):
         return 0
 
     def getIndexSourceNames(self):
-        """ return sequence of indexed attributes """
-        # BBB:  older indexes didn't have 'indexed_attrs'
+        """Return sequence of indexed attributes."""
         return getattr(self, 'indexed_attrs', [self.id])
 
     def getIndexQueryNames(self):

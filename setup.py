@@ -55,6 +55,7 @@ setup(
         'zExceptions',
         'ZODB',
         'Zope2 >= 4.0.dev0',
+        'zope.deferredimport',
         'zope.dottedname',
         'zope.globalrequest',
         'zope.interface',
