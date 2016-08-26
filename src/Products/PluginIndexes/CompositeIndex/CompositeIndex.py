@@ -312,8 +312,6 @@ class CompositeIndex(KeywordIndex):
             pass
 
         if len(self) == 0:
-            LOG.warn('%s is empty, skip composite query build %r' %
-                     (self.__class__.__name__, self.id, zc))
             return query
 
         cquery = query.copy()
