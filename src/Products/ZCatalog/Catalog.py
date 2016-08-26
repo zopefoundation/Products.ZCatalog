@@ -1121,11 +1121,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 class CatalogSearchArgumentsMap(object):
     """Multimap catalog arguments coming simultaneously from keywords
     and request.
-
-    BBB: Values that are empty strings are treated as non-existent. This is
-    to ignore empty values, thereby ignoring empty form fields to be
-    consistent with hysterical behavior. This is deprecated and can be changed
-    in Zope 4.
     """
 
     def __init__(self, request, keywords):
@@ -1135,10 +1130,8 @@ class CatalogSearchArgumentsMap(object):
     def __getitem__(self, key):
         marker = []
         v = self.keywords.get(key, marker)
-        if v is marker or v == '':
+        if v is marker:
             v = self.request[key]
-        if v == '':
-            raise KeyError(key)
         return v
 
     def get(self, key, default=None):

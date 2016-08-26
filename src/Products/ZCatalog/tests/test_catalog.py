@@ -968,9 +968,9 @@ class TestCatalogSearchArgumentsMap(unittest.TestCase):
 
     def test_getitem_emptystring(self):
         argmap = self._make_one(dict(a='', c='c'), dict(b='', c=''))
-        self.assertRaises(KeyError, argmap.__getitem__, 'a')
-        self.assertRaises(KeyError, argmap.__getitem__, 'b')
-        self.assertEquals(argmap['c'], 'c')
+        self.assertEqual(argmap['a'], '')
+        self.assertEqual(argmap['b'], '')
+        self.assertEquals(argmap['c'], '')
 
     def test_get(self):
         argmap = self._make_one(dict(a='a'), dict(b='b'))
