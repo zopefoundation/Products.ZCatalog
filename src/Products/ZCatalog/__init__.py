@@ -26,5 +26,4 @@ def initialize(context):
         permission='Add ZCatalogs',
         constructors=(ZCatalog.manage_addZCatalogForm,
                       ZCatalog.manage_addZCatalog),
-        icon='www/ZCatalog.gif',
     )

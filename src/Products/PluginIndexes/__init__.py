@@ -23,7 +23,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addFieldIndexForm,
                                         manage_addFieldIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -36,7 +35,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addKeywordIndexForm,
                                         manage_addKeywordIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -49,7 +47,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addTopicIndexForm,
                                         manage_addTopicIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -62,7 +59,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addDateIndexForm,
                                         manage_addDateIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -76,7 +72,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addDateRangeIndexForm,
                                         manage_addDateRangeIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -89,7 +84,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addPathIndexForm,
                                         manage_addPathIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -103,7 +97,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addBooleanIndexForm,
                                         manage_addBooleanIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -117,7 +110,6 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addUUIDIndexForm,
                                         manage_addUUIDIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )
 
@@ -131,6 +123,5 @@ def initialize(context):
                           permission='Add Pluggable Index',
                           constructors=(manage_addCompositeIndexForm,
                                         manage_addCompositeIndex),
-                          icon='www/index.gif',
                           visibility=None,
                           )

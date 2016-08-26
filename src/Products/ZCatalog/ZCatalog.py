@@ -99,20 +99,17 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.setPermissionDefault(search_zcatalog, ('Anonymous', 'Manager'))
     security.declareProtected(search_zcatalog, 'all_meta_types')
 
-    meta_type = "ZCatalog"
-    icon = 'misc_/ZCatalog/ZCatalog.gif'
+    meta_type = 'ZCatalog'
 
     manage_options = (
         {'label': 'Contents', 'action': 'manage_main'},
         {'label': 'Catalog', 'action': 'manage_catalogView'},
-        {'label': 'Properties', 'action': 'manage_propertiesForm'},
         {'label': 'Indexes', 'action': 'manage_catalogIndexes'},
         {'label': 'Metadata', 'action': 'manage_catalogSchema'},
         {'label': 'Find Objects', 'action': 'manage_catalogFind'},
         {'label': 'Advanced', 'action': 'manage_catalogAdvanced'},
         {'label': 'Query Report', 'action': 'manage_catalogReport'},
         {'label': 'Query Plan', 'action': 'manage_catalogPlan'},
-        {'label': 'Undo', 'action': 'manage_UndoForm'},
         {'label': 'Security', 'action': 'manage_access'},
         {'label': 'Ownership', 'action': 'manage_owner'},
     )

@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Remove unused ZMI icons.
+
 - Remove deprecated Catalog(Path)Awareness modules.
 
 - Remove CatalogSearchArgumentsMap and support for using requests
