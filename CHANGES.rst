@@ -4,6 +4,9 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Remove CatalogSearchArgumentsMap and support for using requests
+  objects as queries.
+
 - Empty catalog queries now return no results.
 
 - No longer special-case empty strings in catalog queries.

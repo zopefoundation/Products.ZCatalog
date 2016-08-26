@@ -13,7 +13,6 @@
 
 import types
 import logging
-import warnings
 from bisect import bisect
 from collections import defaultdict
 from operator import itemgetter
@@ -474,46 +473,18 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result[name] = self.getIndex(name).getEntryForObject(rid, "")
         return result
 
-    # This is the Catalog search engine. Most of the heavy lifting happens
-    # below
+    def merge_query_args(self, query=None, **kw):
+        if not kw and isinstance(query, dict):
+            # Short cut for the best practice.
+            return query
 
-    def make_query(self, request):
-        # This is a bit of a mess, but the ZCatalog API has traditionally
-        # supported passing in query restrictions in almost arbitrary ways.
-        real_req = None
-        if isinstance(request, dict):
-            query = request.copy()
-        elif isinstance(request, CatalogSearchArgumentsMap):
-            query = {}
-            query.update(request.keywords)
-            real_req = request.request
-            if isinstance(real_req, dict):
-                query.update(real_req)
-                real_req = None
-        else:
-            real_req = request
+        merged_query = {}
+        if isinstance(query, dict):
+            merged_query.update(query)
+        merged_query.update(kw)
+        return merged_query
 
-        if real_req:
-            warnings.warn('You have specified a query using either a request '
-                          'object or a mixture of a query dict and keyword '
-                          'arguments. Please use only a simple query dict. '
-                          'Your query contained "%s". This support is '
-                          'deprecated and will be removed in Zope 4.' %
-                          repr(real_req), DeprecationWarning, stacklevel=4)
-
-            known_keys = query.keys()
-            # The request has too many places where an index restriction
-            # might be specified. Putting all of request.form,
-            # request.other, ... into the query isn't what we want.
-            # So we iterate over all known indexes instead and see if they
-            # are in the request.
-            for iid in self.indexes.keys():
-                if iid in known_keys:
-                    continue
-                value = real_req.get(iid)
-                if value:
-                    query[iid] = value
-
+    def make_query(self, query):
         for iid in self.indexes.keys():
             index = self.getIndex(iid)
             if ITransposeQuery.providedBy(index):
@@ -579,7 +550,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         """Iterate through the indexes, applying the query to each one. If
         merge is true then return a lazy result set (sorted if appropriate)
         otherwise return the raw (possibly scored) results for later merging.
-        Limit is used in conjuntion with sorting or scored results to inform
+        Limit is used in conjunction with sorting or scored results to inform
         the catalog how many results you are really interested in. The catalog
         can then use optimizations to save time and memory. The number of
         results is not guaranteed to fall within the limit however, you should
@@ -1052,28 +1023,15 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             return sort_indexes
         return None
 
-    def searchResults(self, REQUEST=None, used=None, _merge=True, **kw):
-        # You should pass in a simple dictionary as the request argument,
+    def searchResults(self, query=None, _merge=True, **kw):
+        # You should pass in a simple dictionary as the first argument,
         # which only contains the relevant query.
-        # The used argument is deprecated and is ignored
-        if REQUEST is None and not kw:
-            # Try to acquire request if we get no args for bw compat
-            warnings.warn('Calling searchResults without a query argument nor '
-                          'keyword arguments is deprecated. In Zope 4 the '
-                          'query will no longer be automatically taken from '
-                          'the acquired request.',
-                          DeprecationWarning, stacklevel=3)
-            REQUEST = getattr(self, 'REQUEST', None)
-        if isinstance(REQUEST, dict) and not kw:
-            # short cut for the best practice
-            args = REQUEST
-        else:
-            args = CatalogSearchArgumentsMap(REQUEST, kw)
-        sort_indexes = self._getSortIndex(args)
-        sort_limit = self._get_sort_attr('limit', args)
+        query = self.merge_query_args(query, **kw)
+        sort_indexes = self._getSortIndex(query)
+        sort_limit = self._get_sort_attr('limit', query)
         reverse = False
         if sort_indexes is not None:
-            order = self._get_sort_attr("order", args)
+            order = self._get_sort_attr("order", query)
             reverse = []
             if order is None:
                 order = ['']
@@ -1085,7 +1043,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # be nice and keep the old API intact for single sort_order
                 reverse = reverse[0]
         # Perform searches with indexes and sort_index
-        return self.search(args, sort_indexes, reverse, sort_limit, _merge)
+        return self.search(query, sort_indexes, reverse, sort_limit, _merge)
 
     __call__ = searchResults
 
@@ -1095,42 +1053,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         parent = aq_base(aq_parent(self))
         threshold = getattr(parent, 'long_query_time', 0.1)
         return CatalogPlan(self, query, threshold)
-
-
-class CatalogSearchArgumentsMap(object):
-    """Multimap catalog arguments coming simultaneously from keywords
-    and request.
-    """
-
-    def __init__(self, request, keywords):
-        self.request = request or {}
-        self.keywords = keywords or {}
-
-    def __getitem__(self, key):
-        marker = []
-        v = self.keywords.get(key, marker)
-        if v is marker:
-            v = self.request[key]
-        return v
-
-    def get(self, key, default=None):
-        try:
-            v = self[key]
-        except KeyError:
-            return default
-        else:
-            return v
-
-    def has_key(self, key):
-        try:
-            self[key]
-        except KeyError:
-            return False
-        else:
-            return True
-
-    def __contains__(self, name):
-        return self.has_key(name)  # NOQA
 
 
 def mergeResults(results, has_sort_keys, reverse):

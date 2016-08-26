@@ -123,15 +123,15 @@ class IZCatalog(Interface):
         """Returns a list of acquisition wrapped index objects
         """
 
-    def searchResults(REQUEST=None, **kw):
+    def searchResults(query=None, **kw):
         """Search the catalog.
 
-        Search terms can be passed in the REQUEST or as keyword
+        Search terms can be passed in the query or as keyword
         arguments.
 
         Search queries consist of a mapping of index names to search
-        parameters.  You can either pass a mapping to searchResults as
-        the variable 'REQUEST' or you can use index names and search
+        parameters. You can either pass a mapping to searchResults as
+        the variable 'query' or you can use index names and search
         parameters as keyword arguments to the method, in other words::
 
           searchResults(title='Elvis Exposed',
@@ -142,15 +142,15 @@ class IZCatalog(Interface):
           searchResults({'title' : 'Elvis Exposed',
                          'author : 'The Great Elvonso'})
 
-        In these examples, 'title' and 'author' are indexes.  This
+        In these examples, 'title' and 'author' are indexes. This
         query will return any objects that have the title *Elvis
-        Exposed* AND also are authored by *The Great Elvonso*.  Terms
+        Exposed* AND also are authored by *The Great Elvonso*. Terms
         that are passed as keys and values in a searchResults() call
         are implicitly ANDed together. To OR two search results, call
         searchResults() twice and add concatenate the results like this::
 
-          results = ( searchResults(title='Elvis Exposed') +
-                      searchResults(author='The Great Elvonso') )
+          results = (searchResults(title='Elvis Exposed') +
+                     searchResults(author='The Great Elvonso'))
 
         This will return all objects that have the specified title OR
         the specified author.
@@ -170,39 +170,37 @@ class IZCatalog(Interface):
 
         There are some rules to consider when querying this method:
 
-            - an empty query mapping (or a bogus REQUEST) returns all
-              items in the catalog.
+            - an empty query mapping returns an empty result.
 
             - results from a query involving only field/keyword
-              indexes, e.g.  {'id':'foo'} and no 'sort_on' will be
+              indexes, e.g. {'id':'foo'} and no 'sort_on' will be
               returned unsorted.
 
             - results from a complex query involving a field/keyword
               index *and* a text index,
-              e.g. {'id':'foo','PrincipiaSearchSource':'bar'} and no
+              e.g. {'id':'foo','SearchableText':'bar'} and no
               'sort_on' will be returned unsorted.
 
             - results from a simple text index query
-              e.g.{'PrincipiaSearchSource':'foo'} will be returned
-              sorted in descending order by 'score'.  A text index
-              cannot beused as a 'sort_on' parameter, and attempting
+              e.g.{'SearchableText':'foo'} will be returned
+              sorted in descending order by 'score'. A text index
+              cannot be used as a 'sort_on' parameter, and attempting
               to do so will raise an error.
 
         Depending on the type of index you are querying, you may be
         able to provide more advanced search parameters that can
-        specify range searches or wildcards.  These features are
-        documented in The Zope Book.
+        specify range searches or wildcards.
         """
 
-    def __call__(REQUEST=None, **kw):
+    def __call__(query=None, **kw):
         """Search the catalog, the same way as 'searchResults'.
         """
 
-    def search(query_request, sort_index=None, reverse=0, limit=None, merge=1):
+    def search(query, sort_index=None, reverse=0, limit=None, merge=1):
         """Programmatic search interface, use for searching the catalog from
         scripts.
 
-        query_request -- Dictionary containing catalog query. This uses the
+        query -- Dictionary containing catalog query. This uses the
         same format as searchResults.
 
         sort_index -- Name of sort index

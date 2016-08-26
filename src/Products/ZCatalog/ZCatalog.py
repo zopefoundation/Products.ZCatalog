@@ -610,37 +610,33 @@ class ZCatalog(Folder, Persistent, Implicit):
         return r
 
     security.declareProtected(search_zcatalog, 'searchResults')
-    def searchResults(self, REQUEST=None, used=None, **kw):
-        """Search the catalog
+    def searchResults(self, query=None, **kw):
+        """Search the catalog.
 
-        Search terms can be passed in the REQUEST or as keyword
-        arguments.
-
-        The used argument is now deprecated and ignored
+        Search terms can be passed as a query or as keyword arguments.
         """
-
-        return self._catalog.searchResults(REQUEST, used, **kw)
+        return self._catalog.searchResults(query, **kw)
 
     security.declareProtected(search_zcatalog, '__call__')
     __call__ = searchResults
 
     security.declareProtected(search_zcatalog, 'search')
-    def search(self, query_request,
+    def search(self, query,
                sort_index=None, reverse=0, limit=None, merge=1):
         """Programmatic search interface, use for searching the catalog from
         scripts.
 
-        query_request: Dictionary containing catalog query
-        sort_index:    Name of sort index
-        reverse:       Reverse sort order?
-        limit:         Limit sorted result count (optimization hint)
-        merge:         Return merged results (like searchResults) or raw
-                       results for later merging.
+        query:      Dictionary containing catalog query
+        sort_index: Name of sort index
+        reverse:    Reverse sort order?
+        limit:      Limit sorted result count (optimization hint)
+        merge:      Return merged results (like searchResults) or raw
+                    results for later merging.
         """
         if sort_index is not None:
             sort_index = self._catalog.indexes[sort_index]
         return self._catalog.search(
-            query_request, sort_index, reverse, limit, merge)
+            query, sort_index, reverse, limit, merge)
 
     security.declareProtected(search_zcatalog, 'valid_roles')
     def valid_roles(self):

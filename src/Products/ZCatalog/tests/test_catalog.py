@@ -310,7 +310,7 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(len(a), self.upper,
                          'length should be %s, its %s' % (self.upper, len(a)))
 
-    def testEmptyMapping(self):
+    def test_query_empty(self):
         # Queries with empty mappings used to return all.
         def extra(catalog):
             col1 = FieldIndex('col1')
@@ -320,10 +320,9 @@ class TestCatalog(unittest.TestCase):
         all_data = catalog({})
         self.assertEqual(len(all_data), 0)
 
-    def testMappingWithEmptyKeysDoesntReturnAll(self):
-        # Queries with empty keys used to return all, because of a bug in the
-        # parseIndexRequest function, mistaking a CatalogSearchArgumentsMap
-        # for a Record class
+    def test_query_empty_keys(self):
+        # Queries with empty keys used to return all, because of a bug
+        # in the parseIndexRequest function.
         def extra(catalog):
             col1 = FieldIndex('col1')
             catalog.addIndex('col1', col1)
@@ -920,61 +919,6 @@ class TestRangeSearch(unittest.TestCase):
                 size = r.number
                 self.assert_(m <= size and size <= n,
                              "%d vs [%d,%d]" % (r.number, m, n))
-
-
-class TestCatalogSearchArgumentsMap(unittest.TestCase):
-
-    def _make_one(self, request=None, keywords=None):
-        from Products.ZCatalog.Catalog import CatalogSearchArgumentsMap
-        return CatalogSearchArgumentsMap(request, keywords)
-
-    def test_init_empty(self):
-        argmap = self._make_one()
-        self.assert_(argmap)
-
-    def test_init_request(self):
-        argmap = self._make_one(dict(foo='bar'), None)
-        self.assertEquals(argmap.get('foo'), 'bar')
-
-    def test_init_keywords(self):
-        argmap = self._make_one(None, dict(foo='bar'))
-        self.assertEquals(argmap.get('foo'), 'bar')
-
-    def test_getitem(self):
-        argmap = self._make_one(dict(a='a'), dict(b='b'))
-        self.assertEquals(argmap['a'], 'a')
-        self.assertEquals(argmap['b'], 'b')
-        self.assertRaises(KeyError, argmap.__getitem__, 'c')
-
-    def test_getitem_emptystring(self):
-        argmap = self._make_one(dict(a='', c='c'), dict(b='', c=''))
-        self.assertEqual(argmap['a'], '')
-        self.assertEqual(argmap['b'], '')
-        self.assertEquals(argmap['c'], '')
-
-    def test_get(self):
-        argmap = self._make_one(dict(a='a'), dict(b='b'))
-        self.assertEquals(argmap.get('a'), 'a')
-        self.assertEquals(argmap.get('b'), 'b')
-        self.assertEquals(argmap.get('c'), None)
-        self.assertEquals(argmap.get('c', 'default'), 'default')
-
-    def test_keywords_precedence(self):
-        argmap = self._make_one(dict(a='a', c='r'), dict(b='b', c='k'))
-        self.assertEquals(argmap.get('c'), 'k')
-        self.assertEquals(argmap['c'], 'k')
-
-    def test_haskey(self):
-        argmap = self._make_one(dict(a='a'), dict(b='b'))
-        self.assert_(argmap.has_key('a'))  # NOQA
-        self.assert_(argmap.has_key('b'))  # NOQA
-        self.assert_(not argmap.has_key('c'))  # NOQA
-
-    def test_contains(self):
-        argmap = self._make_one(dict(a='a'), dict(b='b'))
-        self.assert_('a' in argmap)
-        self.assert_('b' in argmap)
-        self.assert_('c' not in argmap)
 
 
 class TestMergeResults(unittest.TestCase):
