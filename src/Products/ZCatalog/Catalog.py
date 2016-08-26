@@ -489,7 +489,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             index = self.getIndex(iid)
             if ITransposeQuery.providedBy(index):
                 query = index.make_query(query)
-        return query
+
+        # Canonicalize tuple/list query arguments.
+        new_query = {}
+        for key, value in query.items():
+            if isinstance(value, (list, tuple)):
+                new_query[key] = list(sorted(value))
+            else:
+                new_query[key] = value
+
+        return new_query
 
     def _get_index_query_names(self, index):
         if hasattr(index, 'getIndexQueryNames'):

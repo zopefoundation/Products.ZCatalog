@@ -235,12 +235,7 @@ class CatalogPlan(object):
             # matter including their value into the key
             key = [name for name in keys if name not in values]
             for name in values:
-
                 v = query.get(name, [])
-                if isinstance(v, (tuple, list)):
-                    v = list(v)
-                    v.sort()
-
                 # We need to make sure the key is immutable,
                 # repr() is an easy way to do this without imposing
                 # restrictions on the types of values.
