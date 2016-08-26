@@ -112,7 +112,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         self.paths = IOBTree()  # mapping of rid to uid
         self._length = BTrees.Length.Length()
 
-        for index in self.indexes.keys():
+        for index in self.indexes:
             self.getIndex(index).clear()
 
     def updateBrains(self):
@@ -354,7 +354,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             use_indexes = self.indexes.keys()
         else:
             use_indexes = set(idxs)
-            for iid in self.indexes.keys():
+            for iid in self.indexes:
                 x = self.getIndex(iid)
                 if ITransposeQuery.providedBy(x):
                     # supported index names for query optimization
@@ -469,7 +469,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
     def getIndexDataForRID(self, rid):
         result = {}
-        for name in self.indexes.keys():
+        for name in self.indexes:
             result[name] = self.getIndex(name).getEntryForObject(rid, "")
         return result
 
@@ -485,7 +485,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         return merged_query
 
     def make_query(self, query):
-        for iid in self.indexes.keys():
+        for iid in self.indexes:
             index = self.getIndex(iid)
             if ITransposeQuery.providedBy(index):
                 query = index.make_query(query)
@@ -545,6 +545,43 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             sequence.reverse()
         return (sequence, slen)
 
+    def _search_index(self, cr, index_id, query, rs):
+        cr.start_split(index_id)
+
+        index = self.getIndex(index_id)
+        limit_result = ILimitedResultIndex.providedBy(index)
+        if limit_result:
+            index_result = index._apply_index(query, rs)
+        else:
+            index_result = index._apply_index(query)
+
+        # Parse (resultset, used_attributes) index return value.
+        index_rs = None
+        if index_result:
+            index_rs, _ = index_result
+
+        if not index_rs:
+            # Short circuit if empty index result.
+            rs = None
+        else:
+            # Provide detailed info about the pure intersection time.
+            intersect_id = index_id + '#intersection'
+            cr.start_split(intersect_id)
+            # weightedIntersection preserves the values from any mappings
+            # we get, as some indexes don't return simple sets.
+            if hasattr(rs, 'items') or hasattr(index_rs, 'items'):
+                _, rs = weightedIntersection(rs, index_rs)
+            else:
+                rs = intersection(rs, index_rs)
+
+            cr.stop_split(intersect_id)
+
+        # Consider the time it takes to intersect the index result
+        # with the total result set to be part of the index time.
+        cr.stop_split(index_id, result=index_rs, limit=limit_result)
+
+        return rs
+
     def search(self, query,
                sort_index=None, reverse=False, limit=None, merge=True):
         """Iterate through the indexes, applying the query to each one. If
@@ -575,50 +612,14 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             plan = self._sorted_search_indexes(query)
 
         rs = None  # result set
-        indexes = self.indexes.keys()
-        for i in plan:
-            if i not in indexes:
+        for index_id in plan:
+            # The actual core loop over all indices.
+            if index_id not in self.indexes:
                 # We can have bogus keys or the plan can contain index names
                 # that have been removed in the meantime.
                 continue
 
-            index = self.getIndex(i)
-            _apply_index = getattr(index, '_apply_index', None)
-            if _apply_index is None:
-                continue
-
-            cr.start_split(i)
-            limit_result = ILimitedResultIndex.providedBy(index)
-            if limit_result:
-                index_result = _apply_index(query, rs)
-            else:
-                index_result = _apply_index(query)
-
-            # Parse (resultset, used_attributes) index return value.
-            index_rs = None
-            if index_result:
-                index_rs, _ = index_result
-
-            if not index_rs:
-                # Short circuit if empty index result.
-                rs = None
-            else:
-                # Provide detailed info about the pure intersection time.
-                intersect_id = i + '#intersection'
-                cr.start_split(intersect_id)
-                # weightedIntersection preserves the values from any mappings
-                # we get, as some indexes don't return simple sets.
-                if hasattr(rs, 'items') or hasattr(index_rs, 'items'):
-                    _, rs = weightedIntersection(rs, index_rs)
-                else:
-                    rs = intersection(rs, index_rs)
-
-                cr.stop_split(intersect_id)
-
-            # Consider the time it takes to intersect the index result
-            # with the total result set to be part of the index time.
-            cr.stop_split(i, result=index_rs, limit=limit_result)
-
+            rs = self._search_index(cr, index_id, query, rs)
             if not rs:
                 break
 
