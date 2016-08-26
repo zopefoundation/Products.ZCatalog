@@ -694,6 +694,217 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         cr.stop()
         return result
 
+    def _sort_iterate_index(self, actual_result_count, result, rs,
+                            limit, merge, reverse,
+                            sort_index, sort_index_length, sort_spec,
+                            second_indexes_key_map):
+        # The result set is much larger than the sorted index,
+        # so iterate over the sorted index for speed.
+        # TODO: len(sort_index) isn't actually what we want for a keyword
+        # index, as it's only the unique values, not the documents.
+        # Don't use this case while using limit, as we return results of
+        # non-flattened intsets, and would have to merge/unflattened those
+        # before limiting.
+        length = 0
+        try:
+            intersection(rs, IISet(()))
+        except TypeError:
+            # rs is not an object in the IIBTree family.
+            # Try to turn rs into an IISet.
+            rs = IISet(rs)
+
+        if sort_index_length == 1:
+            for k, intset in sort_index.items():
+                # We have an index that has a set of values for
+                # each sort key, so we intersect with each set and
+                # get a sorted sequence of the intersections.
+                intset = intersection(rs, intset)
+                if intset:
+                    keys = getattr(intset, 'keys', None)
+                    if keys is not None:
+                        # Is this ever true?
+                        intset = keys()
+                    length += len(intset)
+                    result.append((k, intset, self.__getitem__))
+            result.sort(reverse=reverse)
+        else:
+            for k, intset in sort_index.items():
+                # We have an index that has a set of values for
+                # each sort key, so we intersect with each set and
+                # get a sorted sequence of the intersections.
+                intset = intersection(rs, intset)
+                if intset:
+                    keys = getattr(intset, 'keys', None)
+                    if keys is not None:
+                        # Is this ever true?
+                        intset = keys()
+                    length += len(intset)
+                    # sort on secondary index
+                    keysets = defaultdict(list)
+                    for i in intset:
+                        full_key = (k, )
+                        for km in second_indexes_key_map:
+                            try:
+                                full_key += (km[i], )
+                            except KeyError:
+                                pass
+                        keysets[full_key].append(i)
+                    for k2, v2 in keysets.items():
+                        result.append((k2, v2, self.__getitem__))
+            result = multisort(result, sort_spec)
+
+        return (actual_result_count, length, result)
+
+    def _sort_iterate_resultset(self, actual_result_count, result, rs,
+                                limit, merge, reverse,
+                                sort_index, sort_index_length, sort_spec,
+                                second_indexes_key_map):
+        # Iterate over the result set getting sort keys from the index.
+        # If we are interested in at least 25% or more of the result set,
+        # the N-Best algorithm is slower, so we iterate over all.
+        index_key_map = sort_index.documentToKeyMap()
+
+        if sort_index_length == 1:
+            for did in rs:
+                try:
+                    key = index_key_map[did]
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    # The reference back to __getitem__ is used in case
+                    # we do not merge now and need to intermingle the
+                    # results with those of other catalogs while avoiding
+                    # the cost of instantiating a LazyMap per result
+                    result.append((key, did, self.__getitem__))
+            if merge:
+                result.sort(reverse=reverse)
+        else:
+            for did in rs:
+                try:
+                    full_key = (index_key_map[did], )
+                    for km in second_indexes_key_map:
+                        full_key += (km[did], )
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    result.append((full_key, did, self.__getitem__))
+            if merge:
+                result = multisort(result, sort_spec)
+
+        if merge and limit is not None:
+            result = result[:limit]
+
+        return (actual_result_count, 0, result)
+
+    def _sort_nbest(self, actual_result_count, result, rs,
+                    limit, merge, reverse,
+                    sort_index, sort_index_length, sort_spec,
+                    second_indexes_key_map):
+        # Limit / sort results using N-Best algorithm
+        # This is faster for large sets then a full sort
+        # And uses far less memory
+        index_key_map = sort_index.documentToKeyMap()
+        keys = []
+        n = 0
+        worst = None
+        if sort_index_length == 1:
+            for did in rs:
+                try:
+                    key = index_key_map[did]
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    if n >= limit and key <= worst:
+                        continue
+                    i = bisect(keys, key)
+                    keys.insert(i, key)
+                    result.insert(i, (key, did, self.__getitem__))
+                    if n == limit:
+                        del keys[0], result[0]
+                    else:
+                        n += 1
+                    worst = keys[0]
+            result.reverse()
+        else:
+            for did in rs:
+                try:
+                    key = index_key_map[did]
+                    full_key = (key, )
+                    for km in second_indexes_key_map:
+                        full_key += (km[did], )
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    if n >= limit and key <= worst:
+                        continue
+                    i = bisect(keys, key)
+                    keys.insert(i, key)
+                    result.insert(i, (full_key, did, self.__getitem__))
+                    if n == limit:
+                        del keys[0], result[0]
+                    else:
+                        n += 1
+                    worst = keys[0]
+            result = multisort(result, sort_spec)
+
+        return (actual_result_count, 0, result)
+
+    def _sort_nbest_reverse(self, actual_result_count, result, rs,
+                            limit, merge, reverse,
+                            sort_index, sort_index_length, sort_spec,
+                            second_indexes_key_map):
+        # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
+        index_key_map = sort_index.documentToKeyMap()
+        keys = []
+        n = 0
+        best = None
+        if sort_index_length == 1:
+            for did in rs:
+                try:
+                    key = index_key_map[did]
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    if n >= limit and key >= best:
+                        continue
+                    i = bisect(keys, key)
+                    keys.insert(i, key)
+                    result.insert(i, (key, did, self.__getitem__))
+                    if n == limit:
+                        del keys[-1], result[-1]
+                    else:
+                        n += 1
+                    best = keys[-1]
+        else:
+            for did in rs:
+                try:
+                    key = index_key_map[did]
+                    full_key = (key, )
+                    for km in second_indexes_key_map:
+                        full_key += (km[did], )
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    actual_result_count -= 1
+                else:
+                    if n >= limit and key >= best:
+                        continue
+                    i = bisect(keys, key)
+                    keys.insert(i, key)
+                    result.insert(i, (full_key, did, self.__getitem__))
+                    if n == limit:
+                        del keys[-1], result[-1]
+                    else:
+                        n += 1
+                    best = keys[-1]
+            result = multisort(result, sort_spec)
+
+        return (actual_result_count, 0, result)
+
     def sortResults(self, rs, sort_index,
                     reverse=False, limit=None, merge=True,
                     actual_result_count=None, b_start=0, b_size=None):
@@ -713,11 +924,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 for si in second_indexes:
                     second_indexes_key_map.append(si.documentToKeyMap())
             sort_index = sort_index[0]
-        _self__getitem__ = self.__getitem__
-        index_key_map = sort_index.documentToKeyMap()
+
         result = []
-        r_append = result.append
-        r_insert = result.insert
         if hasattr(rs, 'keys'):
             rs = rs.keys()
         if actual_result_count is None:
@@ -765,217 +973,38 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 sort_spec.append(reverse and -1 or 1)
             first_reverse = reverse
 
-        if merge and limit is None and (
-           rlen > (len(sort_index) * (rlen / 100 + 1))):
-            # The result set is much larger than the sorted index,
-            # so iterate over the sorted index for speed.
-            # TODO: len(sort_index) isn't actually what we want for a keyword
-            # index, as it's only the unique values, not the documents.
-            # Don't use this case while using limit, as we return results of
-            # non-flattened intsets, and would have to merge/unflattened those
-            # before limiting.
-            length = 0
-            try:
-                intersection(rs, IISet(()))
-            except TypeError:
-                # rs is not an object in the IIBTree family.
-                # Try to turn rs into an IISet.
-                rs = IISet(rs)
+        # Special first condition, as it changes post-processing.
+        iterate_sort_index = (
+            merge and limit is None and (
+                rlen > (len(sort_index) * (rlen / 100 + 1))))
 
-            if sort_index_length == 1:
-                for k, intset in sort_index.items():
-                    # We have an index that has a set of values for
-                    # each sort key, so we intersect with each set and
-                    # get a sorted sequence of the intersections.
-                    intset = intersection(rs, intset)
-                    if intset:
-                        keys = getattr(intset, 'keys', None)
-                        if keys is not None:
-                            # Is this ever true?
-                            intset = keys()
-                        length += len(intset)
-                        r_append((k, intset, _self__getitem__))
-                result.sort(reverse=reverse)
-            else:
-                for k, intset in sort_index.items():
-                    # We have an index that has a set of values for
-                    # each sort key, so we intersect with each set and
-                    # get a sorted sequence of the intersections.
-                    intset = intersection(rs, intset)
-                    if intset:
-                        keys = getattr(intset, 'keys', None)
-                        if keys is not None:
-                            # Is this ever true?
-                            intset = keys()
-                        length += len(intset)
-                        # sort on secondary index
-                        keysets = defaultdict(list)
-                        for i in intset:
-                            full_key = (k, )
-                            for km in second_indexes_key_map:
-                                try:
-                                    full_key += (km[i], )
-                                except KeyError:
-                                    pass
-                            keysets[full_key].append(i)
-                        for k2, v2 in keysets.items():
-                            r_append((k2, v2, _self__getitem__))
-                result = multisort(result, sort_spec)
-            sequence, slen = self._limit_sequence(
-                result, length, b_start, b_size, switched_reverse)
-            result = LazyCat(LazyValues(sequence), slen, actual_result_count)
+        # Choose one of the sort algorithms.
+        if iterate_sort_index:
+            sort_func = self._sort_iterate_index
         elif limit is None or (limit * 4 > rlen):
-            # Iterate over the result set getting sort keys from the index.
-            # If we are interested in at least 25% or more of the result set,
-            # the N-Best algorithm is slower, so we iterate over all.
-            if sort_index_length == 1:
-                for did in rs:
-                    try:
-                        key = index_key_map[did]
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        # The reference back to __getitem__ is used in case
-                        # we do not merge now and need to intermingle the
-                        # results with those of other catalogs while avoiding
-                        # the cost of instantiating a LazyMap per result
-                        r_append((key, did, _self__getitem__))
-                if merge:
-                    result.sort(reverse=reverse)
-            else:
-                for did in rs:
-                    try:
-                        full_key = (index_key_map[did], )
-                        for km in second_indexes_key_map:
-                            full_key += (km[did], )
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        r_append((full_key, did, _self__getitem__))
-                if merge:
-                    result = multisort(result, sort_spec)
-            if merge:
-                if limit is not None:
-                    result = result[:limit]
-                sequence, _ = self._limit_sequence(
-                    result, 0, b_start, b_size, switched_reverse)
-                result = LazyValues(sequence)
-                result.actual_result_count = actual_result_count
-            else:
-                sequence, _ = self._limit_sequence(
-                    result, 0, b_start, b_size, switched_reverse)
-                return sequence
+            sort_func = self._sort_iterate_resultset
         elif first_reverse:
-            # Limit / sort results using N-Best algorithm
-            # This is faster for large sets then a full sort
-            # And uses far less memory
-            keys = []
-            k_insert = keys.insert
-            n = 0
-            worst = None
-            if sort_index_length == 1:
-                for did in rs:
-                    try:
-                        key = index_key_map[did]
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        if n >= limit and key <= worst:
-                            continue
-                        i = bisect(keys, key)
-                        k_insert(i, key)
-                        r_insert(i, (key, did, _self__getitem__))
-                        if n == limit:
-                            del keys[0], result[0]
-                        else:
-                            n += 1
-                        worst = keys[0]
-                result.reverse()
-            else:
-                for did in rs:
-                    try:
-                        key = index_key_map[did]
-                        full_key = (key, )
-                        for km in second_indexes_key_map:
-                            full_key += (km[did], )
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        if n >= limit and key <= worst:
-                            continue
-                        i = bisect(keys, key)
-                        k_insert(i, key)
-                        r_insert(i, (full_key, did, _self__getitem__))
-                        if n == limit:
-                            del keys[0], result[0]
-                        else:
-                            n += 1
-                        worst = keys[0]
-                result = multisort(result, sort_spec)
-            sequence, _ = self._limit_sequence(
-                result, 0, b_start, b_size, switched_reverse)
-            if merge:
-                result = LazyValues(sequence)
-                result.actual_result_count = actual_result_count
-            else:
+            sort_func = self._sort_nbest
+        else:
+            sort_func = self._sort_nbest_reverse
+
+        actual_result_count, length, result = sort_func(
+            actual_result_count, result, rs,
+            limit, merge, reverse,
+            sort_index, sort_index_length, sort_spec,
+            second_indexes_key_map)
+
+        sequence, slen = self._limit_sequence(
+            result, length, b_start, b_size, switched_reverse)
+
+        if iterate_sort_index:
+            result = LazyCat(LazyValues(sequence), slen, actual_result_count)
+        else:
+            if not merge:
                 return sequence
-        elif not first_reverse:
-            # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
-            keys = []
-            k_insert = keys.insert
-            n = 0
-            best = None
-            if sort_index_length == 1:
-                for did in rs:
-                    try:
-                        key = index_key_map[did]
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        if n >= limit and key >= best:
-                            continue
-                        i = bisect(keys, key)
-                        k_insert(i, key)
-                        r_insert(i, (key, did, _self__getitem__))
-                        if n == limit:
-                            del keys[-1], result[-1]
-                        else:
-                            n += 1
-                        best = keys[-1]
-            else:
-                for did in rs:
-                    try:
-                        key = index_key_map[did]
-                        full_key = (key, )
-                        for km in second_indexes_key_map:
-                            full_key += (km[did], )
-                    except KeyError:
-                        # This document is not in the sort key index, skip it.
-                        actual_result_count -= 1
-                    else:
-                        if n >= limit and key >= best:
-                            continue
-                        i = bisect(keys, key)
-                        k_insert(i, key)
-                        r_insert(i, (full_key, did, _self__getitem__))
-                        if n == limit:
-                            del keys[-1], result[-1]
-                        else:
-                            n += 1
-                        best = keys[-1]
-                result = multisort(result, sort_spec)
-            sequence, _ = self._limit_sequence(
-                result, 0, b_start, b_size, switched_reverse)
-            if merge:
-                result = LazyValues(sequence)
-                result.actual_result_count = actual_result_count
-            else:
-                return sequence
+
+            result = LazyValues(sequence)
+            result.actual_result_count = actual_result_count
 
         return LazyMap(self.__getitem__, result, len(result),
                        actual_result_count=actual_result_count)
