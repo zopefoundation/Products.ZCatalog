@@ -18,13 +18,7 @@ from Acquisition import Implicit
 from Record import Record
 from zope.globalrequest import getRequest
 from zope.interface import implements
-try:
-    from ZPublisher.BaseRequest import RequestContainer
-except ImportError:
-    # BBB: Zope 4 removes RequestContainer
-    _REQUESTCONTAINER_EXISTS = False
-else:
-    _REQUESTCONTAINER_EXISTS = True
+from ZPublisher.BaseRequest import RequestContainer
 
 from .interfaces import ICatalogBrain
 
@@ -59,8 +53,7 @@ class AbstractCatalogBrain(Record, Implicit):
         Same as getObject, but does not do security checks.
         """
         parent = aq_parent(self)
-        if (aq_get(parent, 'REQUEST', None) is None and
-                _REQUESTCONTAINER_EXISTS):
+        if (aq_get(parent, 'REQUEST', None) is None):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root
@@ -84,8 +77,7 @@ class AbstractCatalogBrain(Record, Implicit):
         if not path:
             return None
         parent = aq_parent(self)
-        if (aq_get(parent, 'REQUEST', None) is None and
-                _REQUESTCONTAINER_EXISTS):
+        if (aq_get(parent, 'REQUEST', None) is None):
             request = getRequest()
             if request is not None:
                 # path should be absolute, starting at the physical root

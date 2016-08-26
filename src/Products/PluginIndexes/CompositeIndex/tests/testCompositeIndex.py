@@ -272,10 +272,10 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                             (duration1 / duration2,))
 
             if not warmup:
-                # if lenghth of result is greater than zero composite
+                # if length of result is greater than zero composite
                 # search must be roughly faster than default search
                 if res1 and res2:
-                    assert 0.95 * duration2 < duration1, (duration2, duration1)
+                    assert 0.9 * duration2 < duration1, (duration2, duration1)
 
             # is result identical?
             self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
