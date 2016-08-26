@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Empty catalog queries now return no results.
+
 - No longer special-case empty strings in catalog queries.
 
 - Add new CompositeIndex index type.

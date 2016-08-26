@@ -479,7 +479,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
     def make_query(self, request):
         # This is a bit of a mess, but the ZCatalog API has traditionally
-        # supported passing in query restrictions in almost arbitary ways
+        # supported passing in query restrictions in almost arbitrary ways.
         real_req = None
         if isinstance(request, dict):
             query = request.copy()
@@ -524,6 +524,34 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if hasattr(index, 'getIndexQueryNames'):
             return index.getIndexQueryNames()
         return (index.getId(),)
+
+    def _sort_limit_arguments(self, query, sort_index, reverse, limit):
+        b_start = int(query.get('b_start', 0))
+        b_size = query.get('b_size', None)
+        if b_size is not None:
+            b_size = int(b_size)
+
+        if b_size is not None:
+            limit = b_start + b_size
+        elif limit and b_size is None:
+            b_size = limit
+
+        if sort_index is None:
+            sort_report_name = None
+        else:
+            if isinstance(sort_index, list):
+                sort_name = '-'.join(i.getId() for i in sort_index)
+            else:
+                sort_name = sort_index.getId()
+            if isinstance(reverse, list):
+                reverse_name = '-'.join(
+                    'desc' if r else 'asc' for r in reverse)
+            else:
+                reverse_name = 'desc' if reverse else 'asc'
+            sort_report_name = 'sort_on#' + sort_name + '#' + reverse_name
+            if limit is not None:
+                sort_report_name += '#limit-%s' % limit
+        return (b_start, b_size, limit, sort_report_name)
 
     def _sorted_search_indexes(self, query):
         # Simple implementation ordering only by limited result support
@@ -580,167 +608,118 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         for i in plan:
             if i not in indexes:
                 # We can have bogus keys or the plan can contain index names
-                # that have been removed in the meantime
+                # that have been removed in the meantime.
                 continue
 
             index = self.getIndex(i)
-            _apply_index = getattr(index, "_apply_index", None)
+            _apply_index = getattr(index, '_apply_index', None)
             if _apply_index is None:
                 continue
 
             cr.start_split(i)
             limit_result = ILimitedResultIndex.providedBy(index)
             if limit_result:
-                r = _apply_index(query, rs)
+                index_result = _apply_index(query, rs)
             else:
-                r = _apply_index(query)
+                index_result = _apply_index(query)
 
-            if r is not None:
-                r, u = r
-                # Short circuit if empty result
-                # BBB: We can remove the "r is not None" check in Zope 4
-                # once we don't need to support the "return everything" case
-                # anymore
-                if r is not None and not r:
-                    cr.stop_split(i, result=None, limit=limit_result)
-                    return LazyCat([])
+            # Parse (resultset, used_attributes) index return value.
+            index_rs = None
+            if index_result:
+                index_rs, _ = index_result
 
-                # provide detailed info about the pure intersection time
+            if not index_rs:
+                # Short circuit if empty index result.
+                rs = None
+            else:
+                # Provide detailed info about the pure intersection time.
                 intersect_id = i + '#intersection'
                 cr.start_split(intersect_id)
                 # weightedIntersection preserves the values from any mappings
-                # we get, as some indexes don't return simple sets
-                if hasattr(rs, 'items') or hasattr(r, 'items'):
-                    _, rs = weightedIntersection(rs, r)
+                # we get, as some indexes don't return simple sets.
+                if hasattr(rs, 'items') or hasattr(index_rs, 'items'):
+                    _, rs = weightedIntersection(rs, index_rs)
                 else:
-                    rs = intersection(rs, r)
+                    rs = intersection(rs, index_rs)
 
                 cr.stop_split(intersect_id)
 
-                # consider the time it takes to intersect the index result
-                # with the total result set to be part of the index time
-                cr.stop_split(i, result=r, limit=limit_result)
-                if not rs:
-                    break
+            # Consider the time it takes to intersect the index result
+            # with the total result set to be part of the index time.
+            cr.stop_split(i, result=index_rs, limit=limit_result)
+
+            if not rs:
+                break
+
+        if not rs:
+            # None of the indexes found anything to do with the query.
+            result = LazyCat([])
+            cr.stop()
+            return result
+
+        # Try to deduce the sort limit from batching arguments.
+        b_start, b_size, limit, sort_report_name = self._sort_limit_arguments(
+            query, sort_index, reverse, limit)
+
+        # We got some results from the indexes, sort and convert to sequences.
+        rlen = len(rs)
+        if sort_index is None and hasattr(rs, 'items'):
+            # Having a 'items' means we have a data structure with
+            # scores. Build a new result set, sort it by score, reverse
+            # it, compute the normalized score, and Lazify it.
+
+            if not merge:
+                # Don't bother to sort here, return a list of
+                # three tuples to be passed later to mergeResults.
+                # Note that data_record_normalized_score_ cannot be
+                # calculated and will always be 1 in this case.
+                result = [(score, (1, score, rid), self.__getitem__)
+                          for rid, score in rs.items()]
             else:
-                cr.stop_split(i, result=None, limit=limit_result)
+                cr.start_split('sort_on#score')
 
-        # Try to deduce the sort limit from batching arguments
-        b_start = int(query.get('b_start', 0))
-        b_size = query.get('b_size', None)
-        if b_size is not None:
-            b_size = int(b_size)
+                # Sort it by score.
+                rs = rs.byValue(0)
+                max = float(rs[0][0])
 
-        if b_size is not None:
-            limit = b_start + b_size
-        elif limit and b_size is None:
-            b_size = limit
+                # Here we define our getter function inline so that
+                # we can conveniently store the max value as a default arg
+                # and make the normalized score computation lazy
+                def getScoredResult(item, max=max, self=self):
+                    """
+                    Returns instances of self._v_brains, or whatever is
+                    passed into self.useBrains.
+                    """
+                    score, key = item
+                    norm_score = int(100.0 * score / max)
+                    return self.instantiate((key, self.data[key]),
+                                            score_data=(score, norm_score))
 
-        if sort_index is None:
-            sort_report_name = None
-        else:
-            if isinstance(sort_index, list):
-                sort_name = '-'.join(i.getId() for i in sort_index)
-            else:
-                sort_name = sort_index.getId()
-            if isinstance(reverse, list):
-                reverse_name = '-'.join(
-                    'desc' if r else 'asc' for r in reverse)
-            else:
-                reverse_name = 'desc' if reverse else 'asc'
-            sort_report_name = 'sort_on#' + sort_name + '#' + reverse_name
-            if limit is not None:
-                sort_report_name += '#limit-%s' % limit
-
-        if rs is None:
-            # None of the indexes found anything to do with the query
-            # We take this to mean that the query was empty (an empty filter)
-            # and so we return everything in the catalog
-            warnings.warn('Your query %s produced no query restriction. '
-                          'Currently the entire catalog content is returned. '
-                          'In Zope 4 this will result in an empty LazyCat '
-                          'to be returned.' % repr(cr.make_key(query)),
-                          DeprecationWarning, stacklevel=3)
-
-            rlen = len(self)
-            if sort_index is None:
-                sequence, slen = self._limit_sequence(
-                    self.data.items(), rlen, b_start, b_size)
-                result = LazyMap(
-                    self.instantiate, sequence, slen,
-                    actual_result_count=rlen)
-            else:
-                cr.start_split(sort_report_name)
-                result = self.sortResults(
-                    self.data, sort_index, reverse, limit, merge,
-                    actual_result_count=rlen, b_start=b_start, b_size=b_size)
-                cr.stop_split(sort_report_name, None)
-        elif rs:
-            # We got some results from the indexes.
-            # Sort and convert to sequences.
-            # XXX: The check for 'values' is really stupid since we call
-            # items() and *not* values()
-            rlen = len(rs)
-            if sort_index is None and hasattr(rs, 'items'):
-                # having a 'items' means we have a data structure with
-                # scores.  Build a new result set, sort it by score, reverse
-                # it, compute the normalized score, and Lazify it.
-
-                if not merge:
-                    # Don't bother to sort here, return a list of
-                    # three tuples to be passed later to mergeResults
-                    # note that data_record_normalized_score_ cannot be
-                    # calculated and will always be 1 in this case
-                    getitem = self.__getitem__
-                    result = [(score, (1, score, rid), getitem)
-                              for rid, score in rs.items()]
-                else:
-                    cr.start_split('sort_on#score')
-
-                    # sort it by score
-                    rs = rs.byValue(0)
-                    max = float(rs[0][0])
-
-                    # Here we define our getter function inline so that
-                    # we can conveniently store the max value as a default arg
-                    # and make the normalized score computation lazy
-                    def getScoredResult(item, max=max, self=self):
-                        """
-                        Returns instances of self._v_brains, or whatever is
-                        passed into self.useBrains.
-                        """
-                        score, key = item
-                        norm_score = int(100.0 * score / max)
-                        return self.instantiate((key, self.data[key]),
-                                                score_data=(score, norm_score))
-
-                    sequence, slen = self._limit_sequence(
-                        rs, rlen, b_start, b_size)
-                    result = LazyMap(getScoredResult, sequence, slen,
-                                     actual_result_count=rlen)
-                    cr.stop_split('sort_on#score', None)
-
-            elif sort_index is None and not hasattr(rs, 'values'):
-                # no scores
-                if hasattr(rs, 'keys'):
-                    rs = rs.keys()
                 sequence, slen = self._limit_sequence(
                     rs, rlen, b_start, b_size)
-                result = LazyMap(self.__getitem__, sequence, slen,
+                result = LazyMap(getScoredResult, sequence, slen,
                                  actual_result_count=rlen)
-            else:
-                # sort.  If there are scores, then this block is not
-                # reached, therefore 'sort-on' does not happen in the
-                # context of a text index query.  This should probably
-                # sort by relevance first, then the 'sort-on' attribute.
-                cr.start_split(sort_report_name)
-                result = self.sortResults(
-                    rs, sort_index, reverse, limit, merge,
-                    actual_result_count=rlen, b_start=b_start, b_size=b_size)
-                cr.stop_split(sort_report_name, None)
+                cr.stop_split('sort_on#score', None)
+
+        elif sort_index is None and not hasattr(rs, 'values'):
+            # no scores
+            if hasattr(rs, 'keys'):
+                rs = rs.keys()
+            sequence, slen = self._limit_sequence(
+                rs, rlen, b_start, b_size)
+            result = LazyMap(self.__getitem__, sequence, slen,
+                             actual_result_count=rlen)
         else:
-            # Empty result set
-            result = LazyCat([])
+            # Sort. If there are scores, then this block is not
+            # reached, therefore 'sort-on' does not happen in the
+            # context of a text index query.  This should probably
+            # sort by relevance first, then the 'sort-on' attribute.
+            cr.start_split(sort_report_name)
+            result = self.sortResults(
+                rs, sort_index, reverse, limit, merge,
+                actual_result_count=rlen, b_start=b_start, b_size=b_size)
+            cr.stop_split(sort_report_name, None)
+
         cr.stop()
         return result
 

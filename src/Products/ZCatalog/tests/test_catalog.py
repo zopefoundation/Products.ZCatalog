@@ -12,7 +12,6 @@
 ##############################################################################
 
 import unittest
-from Testing.ZopeTestCase.warnhook import WarningsHook
 
 from itertools import chain
 import random
@@ -310,6 +309,16 @@ class TestCatalog(unittest.TestCase):
         a = catalog(att1='att1')
         self.assertEqual(len(a), self.upper,
                          'length should be %s, its %s' % (self.upper, len(a)))
+
+    def testEmptyMapping(self):
+        # Queries with empty mappings used to return all.
+        def extra(catalog):
+            col1 = FieldIndex('col1')
+            catalog.addIndex('col1', col1)
+        catalog = self._make_one(extra=extra)
+        self.assertTrue(len(catalog) > 0)
+        all_data = catalog({})
+        self.assertEqual(len(all_data), 0)
 
     def testMappingWithEmptyKeysDoesntReturnAll(self):
         # Queries with empty keys used to return all, because of a bug in the
@@ -911,35 +920,6 @@ class TestRangeSearch(unittest.TestCase):
                 size = r.number
                 self.assert_(m <= size and size <= n,
                              "%d vs [%d,%d]" % (r.number, m, n))
-
-
-class TestCatalogReturnAll(unittest.TestCase):
-
-    def _make_one(self):
-        from Products.ZCatalog.Catalog import Catalog
-        return Catalog()
-
-    def setUp(self):
-        self.warningshook = WarningsHook()
-        self.warningshook.install()
-
-    def tearDown(self):
-        self.warningshook.uninstall()
-
-    def testEmptyMappingReturnsAll(self):
-        catalog = self._make_one()
-        col1 = FieldIndex('col1')
-        catalog.addIndex('col1', col1)
-        for x in range(0, 10):
-            catalog.catalogObject(Dummy(x), repr(x))
-        self.assertEqual(len(catalog), 10)
-        all_data = catalog({})
-        self.assertEqual(len(all_data), 10)
-        for rec in all_data:
-            self.assertEqual(rec.aq_parent, catalog)
-            self.assertNotEqual(rec.data_record_id_, None)
-            self.assertEqual(rec.data_record_score_, None)
-            self.assertEqual(rec.data_record_normalized_score_, None)
 
 
 class TestCatalogSearchArgumentsMap(unittest.TestCase):
