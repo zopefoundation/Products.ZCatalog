@@ -4,6 +4,13 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Add new IQueryIndex interface for indices. This introduces a new
+  `query` method on each index with a simplified contract compared to
+  `_apply_index`. The responsibility for parsing and skipping the query
+  has moved into the catalog, and the return value no longer has to be
+  a tuple of (result, used_attributes), as the later wasn't used by the
+  catalog.
+
 - Rename `parseIndexRequest` to `IndexQuery` and move it to `ZCatalog.query`.
 
 - Remove unused ZMI icons.

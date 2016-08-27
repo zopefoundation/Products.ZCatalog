@@ -245,32 +245,22 @@ class DateRangeIndex(UnIndex):
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):
-        """Apply the index to query parameters given in 'request', which
-        should be a mapping object.
-
-        If the request does not contain the needed parameters, then
-        return None.
-
-        Otherwise return two objects.  The first object is a ResultSet
-        containing the record numbers of the matching records.  The
-        second object is a tuple containing the names of all data fields
-        used.
-        """
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
+        return (self.query(record, resultset=resultset),
+                (self._since_field, self._until_field))
 
+    def query(self, record, resultset=None):
         cache = self.getRequestCache()
         if cache is not None:
             cachekey = self.getRequestCacheKey(record, resultset)
             cached = cache.get(cachekey, None)
             if cached is not None:
                 if resultset is None:
-                    return (cached,
-                            (self._since_field, self._until_field))
+                    return cached
                 else:
-                    return (difference(resultset, cached),
-                            (self._since_field, self._until_field))
+                    return difference(resultset, cached)
 
         term = self._convertDateTime(record.keys[0])
         if resultset is None:
@@ -288,7 +278,7 @@ class DateRangeIndex(UnIndex):
             if cache is not None:
                 cache[cachekey] = result
 
-            return (result, (self._since_field, self._until_field))
+            return result
         else:
             # Compute the inverse and subtract from res
             until_only = multiunion(self._until_only.values(None, term - 1))
@@ -300,8 +290,7 @@ class DateRangeIndex(UnIndex):
             if cache is not None:
                 cache[cachekey] = result
 
-            return (difference(resultset, result),
-                    (self._since_field, self._until_field))
+            return difference(resultset, result)
 
     def _insert_migrate(self, tree, key, value):
         treeset = tree.get(key, None)

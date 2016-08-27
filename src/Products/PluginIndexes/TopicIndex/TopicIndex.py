@@ -22,8 +22,10 @@ from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implements
 
-from Products.PluginIndexes.interfaces import IPluggableIndex
-from Products.PluginIndexes.interfaces import ITopicIndex
+from Products.PluginIndexes.interfaces import (
+    IQueryIndex,
+    ITopicIndex,
+)
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
 from Products.ZCatalog.query import IndexQuery
 
@@ -37,7 +39,7 @@ class TopicIndex(Persistent, SimpleItem):
     Every FilteredSet object consists of an expression and and IISet with all
     Ids of indexed objects that eval with this expression to 1.
     """
-    implements(ITopicIndex, IPluggableIndex)
+    implements(ITopicIndex, IQueryIndex)
 
     meta_type = "TopicIndex"
     query_options = ('query', 'operator')
@@ -89,13 +91,15 @@ class TopicIndex(Persistent, SimpleItem):
             return f.getIds()
 
     def _apply_index(self, request):
-        """hook for (Z)Catalog
-        'request' --  mapping type (usually {"topic": "..." }
-        """
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
+        return (self.query(record), (self.id, ))
 
+    def query(self, record, resultset=None):
+        """Hook for (Z)Catalog
+        'record' --  mapping type (usually {"topic": "..." }
+        """
         operator = record.get('operator', self.defaultOperator).lower()
         if operator == 'or':
             set_func = union
@@ -108,9 +112,8 @@ class TopicIndex(Persistent, SimpleItem):
             res = set_func(res, rows)
 
         if res:
-            return res, (self.id,)
-        else:
-            return IITreeSet(), (self.id,)
+            return res
+        return IITreeSet()
 
     def uniqueValues(self, name=None, withLength=0):
         """ needed to be consistent with the interface """

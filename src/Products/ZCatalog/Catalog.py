@@ -31,11 +31,15 @@ from Missing import MV
 from Persistence import Persistent
 from ZTUtils.Lazy import LazyMap, LazyCat, LazyValues
 
-from Products.PluginIndexes.interfaces import ILimitedResultIndex
-from Products.PluginIndexes.interfaces import ITransposeQuery
-from .CatalogBrains import AbstractCatalogBrain, NoBrainer
-from .plan import CatalogPlan
-from .ProgressHandler import ZLogHandler
+from Products.PluginIndexes.interfaces import (
+    ILimitedResultIndex,
+    IQueryIndex,
+    ITransposeQuery,
+)
+from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain, NoBrainer
+from Products.ZCatalog.plan import CatalogPlan
+from Products.ZCatalog.ProgressHandler import ZLogHandler
+from Products.ZCatalog.query import IndexQuery
 
 try:
     from functools import cmp_to_key
@@ -557,17 +561,23 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
     def _search_index(self, cr, index_id, query, rs):
         cr.start_split(index_id)
 
+        index_rs = None
         index = self.getIndex(index_id)
         limit_result = ILimitedResultIndex.providedBy(index)
-        if limit_result:
-            index_result = index._apply_index(query, rs)
-        else:
-            index_result = index._apply_index(query)
 
-        # Parse (resultset, used_attributes) index return value.
-        index_rs = None
-        if index_result:
-            index_rs, _ = index_result
+        if IQueryIndex.providedBy(index):
+            index_query = IndexQuery(query, index.id, index.query_options)
+            if index_query.keys is not None:
+                index_rs = index.query(index_query, rs)
+        else:
+            if limit_result:
+                index_result = index._apply_index(query, rs)
+            else:
+                index_result = index._apply_index(query)
+
+            # Parse (resultset, used_attributes) index return value.
+            if index_result:
+                index_rs, _ = index_result
 
         if not index_rs:
             # Short circuit if empty index result.

@@ -27,9 +27,12 @@ from Persistence import Persistent
 from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
-from Products.PluginIndexes.interfaces import IPathIndex
-from Products.PluginIndexes.interfaces import ISortIndex
-from Products.PluginIndexes.interfaces import IUniqueValueIndex
+from Products.PluginIndexes.interfaces import (
+    IPathIndex,
+    IQueryIndex,
+    ISortIndex,
+    IUniqueValueIndex,
+)
 from Products.ZCatalog.query import IndexQuery
 
 LOG = getLogger('Zope.PathIndex')
@@ -50,7 +53,7 @@ class PathIndex(Persistent, SimpleItem):
     - the value is a mapping 'level of the path component' to
       'all docids with this path component on this level'
     """
-    implements(IPathIndex, IUniqueValueIndex, ISortIndex)
+    implements(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
 
     meta_type = "PathIndex"
     query_options = ('query', 'level', 'operator')
@@ -153,19 +156,21 @@ class PathIndex(Persistent, SimpleItem):
         del self._unindex[docid]
 
     def _apply_index(self, request):
-        """ See IPluggableIndex.
-
-        o Unpacks args from catalog and mapps onto '_search'.
-        """
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
+        return (self.query(record), (self.id, ))
 
-        level = record.get("level", 0)
+    def query(self, record, resultset=None):
+        """See IPluggableIndex.
+
+        o Unpacks args from catalog and mapps onto '_search'.
+        """
+        level = record.get('level', 0)
         operator = record.get('operator', self.useOperator).lower()
 
         # depending on the operator we use intersection of union
-        if operator == "or":
+        if operator == 'or':
             set_func = union
         else:
             set_func = intersection
@@ -176,9 +181,8 @@ class PathIndex(Persistent, SimpleItem):
             res = set_func(res, rows)
 
         if res:
-            return res, (self.id,)
-        else:
-            return IISet(), (self.id,)
+            return res
+        return IISet()
 
     def numObjects(self):
         """ See IPluggableIndex.

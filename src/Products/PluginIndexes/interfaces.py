@@ -13,7 +13,7 @@
 """PluginIndexes interfaces.
 """
 
-from zope.interface import Interface
+from zope.interface import Attribute, Interface
 from zope.schema import Bool
 
 
@@ -93,6 +93,17 @@ class ILimitedResultIndex(IPluggableIndex):
         """Same as IPluggableIndex' _apply_index method. The additional
         resultset argument contains the resultset, as already calculated by
         ZCatalog's search method.
+        """
+
+
+class IQueryIndex(IPluggableIndex):
+
+    id = Attribute('Index id used to query the index.')
+    query_options = Attribute('Supported query options for the index.')
+
+    def query(record, resultset=None):
+        """Same as _apply_index, but the query is already a pre-parsed
+        IndexQuery object.
         """
 
 

@@ -194,26 +194,21 @@ class BooleanIndex(UnIndex):
             LOG.debug('Attempt to unindex nonexistent document'
                       ' with id %s' % documentId, exc_info=True)
 
-    def _apply_index(self, request, resultset=None):
-        record = IndexQuery(request, self.id, self.query_options)
-        if record.keys is None:
-            return None
-
+    def query(self, record, resultset=None):
         index = self._index
         indexed = self._index_value
 
         for key in record.keys:
             if bool(key) is bool(indexed):
                 # If we match the indexed value, check index
-                return (intersection(index, resultset), (self.id, ))
+                return intersection(index, resultset)
             else:
                 # Otherwise, remove from resultset or _unindex
                 if resultset is None:
-                    return (union(difference(self._unindex, index), IISet([])),
-                            (self.id, ))
+                    return union(difference(self._unindex, index), IISet([]))
                 else:
-                    return (difference(resultset, index), (self.id, ))
-        return (IISet(), (self.id, ))
+                    return difference(resultset, index)
+        return IISet()
 
     def indexSize(self):
         """Return distinct values, as an optimization we always claim 2."""

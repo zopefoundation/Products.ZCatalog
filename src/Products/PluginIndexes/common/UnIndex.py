@@ -33,10 +33,13 @@ from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.util import RequestCache
-from Products.PluginIndexes.interfaces import ILimitedResultIndex
-from Products.PluginIndexes.interfaces import ISortIndex
-from Products.PluginIndexes.interfaces import IUniqueValueIndex
-from Products.PluginIndexes.interfaces import IRequestCacheIndex
+from Products.PluginIndexes.interfaces import (
+    ILimitedResultIndex,
+    IQueryIndex,
+    ISortIndex,
+    IUniqueValueIndex,
+    IRequestCacheIndex,
+)
 from Products.ZCatalog.query import IndexQuery
 
 _marker = []
@@ -44,13 +47,13 @@ LOG = getLogger('Zope.UnIndex')
 
 
 class UnIndex(SimpleItem):
-
     """Simple forward and reverse index.
     """
-    implements(ILimitedResultIndex, IUniqueValueIndex,
+    implements(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
                ISortIndex, IRequestCacheIndex)
 
     _counter = None
+    query_options = ()
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -385,42 +388,31 @@ class UnIndex(SimpleItem):
     def _apply_index(self, request, resultset=None):
         """Apply the index to query parameters given in the request arg.
 
-        The request argument should be a mapping object.
+        If the query does not match the index, return None, otherwise
+        return a tuple of (result, used_attributes), where used_attributes
+        is again a tuple with the names of all used data fields.
+        """
+        record = IndexQuery(request, self.id, self.query_options)
+        if record.keys is None:
+            return None
+        return (self.query(record, resultset=resultset), (self.id, ))
 
-        If the request does not have a key which matches the "id" of
-        the index instance, then None is returned.
+    def query(self, record, resultset=None):
+        """Search the index with the given IndexQuery object.
 
-        If the request *does* have a key which matches the "id" of
+        If the query has a key which matches the 'id' of
         the index instance, one of a few things can happen:
 
-          - if the value is a blank string, None is returned (in
-            order to support requests from web forms where
-            you can't tell a blank string from empty).
-
-          - if the value is a nonblank string, turn the value into
+          - if the value is a string, turn the value into
             a single-element sequence, and proceed.
 
           - if the value is a sequence, return a union search.
 
           - If the value is a dict and contains a key of the form
             '<index>_operator' this overrides the default method
-            ('or') to combine search results. Valid values are "or"
-            and "and".
-
-        If None is not returned as a result of the abovementioned
-        constraints, two objects are returned.  The first object is a
-        ResultSet containing the record numbers of the matching
-        records.  The second object is a tuple containing the names of
-        all data fields used.
-
-        FAQ answer:  to search a Field Index for documents that
-        have a blank string as their value, wrap the request value
-        up in a tuple ala: request = {'id':('',)}
+            ('or') to combine search results. Valid values are 'or'
+            and 'and'.
         """
-        record = IndexQuery(request, self.id, self.query_options)
-        if record.keys is None:
-            return None
-
         index = self._index
         r = None
         opr = None
@@ -431,7 +423,7 @@ class UnIndex(SimpleItem):
         # experimental code for specifing the operator
         operator = record.get('operator', self.useOperator)
         if operator not in self.operators:
-            raise RuntimeError("operator not valid: %s" % escape(operator))
+            raise RuntimeError('operator not valid: %s' % escape(operator))
 
         cachekey = None
         cache = self.getRequestCache()
@@ -463,7 +455,7 @@ class UnIndex(SimpleItem):
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
-                    return cached, (self.id,)
+                    return cached
 
         if not record.keys and not_parm:
             # convert into indexed format
@@ -518,7 +510,7 @@ class UnIndex(SimpleItem):
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
-                return result, (self.id,)
+                return result
 
             if operator == 'or':
                 tmp = []
@@ -576,7 +568,7 @@ class UnIndex(SimpleItem):
                         # If operator is 'and', we have to cache a list of
                         # IISet objects
                         cache[cachekey] = [IISet()]
-                    return IISet(), (self.id,)
+                    return IISet()
                 elif isinstance(s, int):
                     s = IISet((s,))
                 setlist.append(s)
@@ -596,7 +588,7 @@ class UnIndex(SimpleItem):
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
-                return result, (self.id,)
+                return result
 
             if operator == 'or':
                 # If we already get a small result set passed in, intersecting
@@ -639,11 +631,11 @@ class UnIndex(SimpleItem):
         if isinstance(r, int):
             r = IISet((r, ))
         if r is None:
-            return IISet(), (self.id,)
+            return IISet()
         if not_parm:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
-        return r, (self.id,)
+        return r
 
     def hasUniqueValuesFor(self, name):
         """has unique values for column name"""
