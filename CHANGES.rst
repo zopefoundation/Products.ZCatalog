@@ -5,8 +5,8 @@ Changelog
 ----------------
 
 - Add new IQueryIndex interface for indices. This introduces a new
-  `query` method on each index with a simplified contract compared to
-  `_apply_index`. The responsibility for parsing and skipping the query
+  `query_index` method on each index with a simplified contract compared
+  to `_apply_index`. The responsibility for parsing and skipping the query
   has moved into the catalog, and the return value no longer has to be
   a tuple of (result, used_attributes), as the later wasn't used by the
   catalog.

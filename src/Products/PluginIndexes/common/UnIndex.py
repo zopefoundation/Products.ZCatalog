@@ -395,9 +395,9 @@ class UnIndex(SimpleItem):
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
-        return (self.query(record, resultset=resultset), (self.id, ))
+        return (self.query_index(record, resultset=resultset), (self.id, ))
 
-    def query(self, record, resultset=None):
+    def query_index(self, record, resultset=None):
         """Search the index with the given IndexQuery object.
 
         If the query has a key which matches the 'id' of

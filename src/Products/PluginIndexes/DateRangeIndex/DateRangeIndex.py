@@ -248,10 +248,10 @@ class DateRangeIndex(UnIndex):
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
-        return (self.query(record, resultset=resultset),
+        return (self.query_index(record, resultset=resultset),
                 (self._since_field, self._until_field))
 
-    def query(self, record, resultset=None):
+    def query_index(self, record, resultset=None):
         cache = self.getRequestCache()
         if cache is not None:
             cachekey = self.getRequestCacheKey(record, resultset)

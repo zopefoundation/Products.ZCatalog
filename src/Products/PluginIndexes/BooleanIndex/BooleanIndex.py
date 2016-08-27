@@ -194,7 +194,7 @@ class BooleanIndex(UnIndex):
             LOG.debug('Attempt to unindex nonexistent document'
                       ' with id %s' % documentId, exc_info=True)
 
-    def query(self, record, resultset=None):
+    def query_index(self, record, resultset=None):
         index = self._index
         indexed = self._index_value
 

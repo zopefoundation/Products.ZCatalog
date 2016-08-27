@@ -159,9 +159,9 @@ class PathIndex(Persistent, SimpleItem):
         record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
-        return (self.query(record), (self.id, ))
+        return (self.query_index(record), (self.id, ))
 
-    def query(self, record, resultset=None):
+    def query_index(self, record, resultset=None):
         """See IPluggableIndex.
 
         o Unpacks args from catalog and mapps onto '_search'.

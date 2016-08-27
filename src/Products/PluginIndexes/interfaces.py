@@ -101,7 +101,7 @@ class IQueryIndex(IPluggableIndex):
     id = Attribute('Index id used to query the index.')
     query_options = Attribute('Supported query options for the index.')
 
-    def query(record, resultset=None):
+    def query_index(record, resultset=None):
         """Same as _apply_index, but the query is already a pre-parsed
         IndexQuery object.
         """
