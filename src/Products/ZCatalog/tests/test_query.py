@@ -13,29 +13,15 @@
 
 import unittest
 
-from ZPublisher.HTTPRequest import record as Record
 
-
-class ParseIndexRequestTests(unittest.TestCase):
+class TestIndexQuery(unittest.TestCase):
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.common.util import parseIndexRequest
-
-        return parseIndexRequest
+        from Products.ZCatalog.query import IndexQuery
+        return IndexQuery
 
     def _makeOne(self, *args, **kw):
         return self._getTargetClass()(*args, **kw)
-
-    def test_get_record(self):
-        record = Record()
-        record.query = 'foo'
-        record.level = 0
-        record.operator = 'and'
-        request = {'path': record}
-        parser = self._makeOne(request, 'path', ('query', 'level', 'operator'))
-        self.assertEqual(parser.get('keys'), ['foo'])
-        self.assertEqual(parser.get('level'), 0)
-        self.assertEqual(parser.get('operator'), 'and')
 
     def test_get_dict(self):
         request = {'path': {'query': 'foo', 'level': 0, 'operator': 'and'}}

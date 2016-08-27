@@ -12,27 +12,23 @@
 ##############################################################################
 
 import logging
+from itertools import product
+from itertools import combinations
 import time
 import transaction
 
 from Acquisition import aq_parent
 from Acquisition import aq_inner
-from Persistence import PersistentMapping
-
 from App.special_dtml import DTMLFile
-
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
-
+from Persistence import PersistentMapping
 from zope.interface import implements
 
 from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.common.UnIndex import _marker
-
-from itertools import product
-from itertools import combinations
+from Products.ZCatalog.query import IndexQuery
 
 LOG = logging.getLogger('CompositeIndex')
 
@@ -322,7 +318,7 @@ class CompositeIndex(KeywordIndex):
         c_records = []
         for c in components:
             query_options = QUERY_OPTIONS[c.meta_type]
-            rec = parseIndexRequest(query, c.id, query_options)
+            rec = IndexQuery(query, c.id, query_options)
 
             # not supported: 'not' parameter
             not_parm = rec.get('not', None)

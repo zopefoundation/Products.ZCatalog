@@ -32,12 +32,12 @@ from ZODB.POSException import ConflictError
 from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.common.util import RequestCache
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 from Products.PluginIndexes.interfaces import ISortIndex
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from Products.PluginIndexes.interfaces import IRequestCacheIndex
+from Products.ZCatalog.query import IndexQuery
 
 _marker = []
 LOG = getLogger('Zope.UnIndex')
@@ -417,7 +417,7 @@ class UnIndex(SimpleItem):
         have a blank string as their value, wrap the request value
         up in a tuple ala: request = {'id':('',)}
         """
-        record = parseIndexRequest(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
 

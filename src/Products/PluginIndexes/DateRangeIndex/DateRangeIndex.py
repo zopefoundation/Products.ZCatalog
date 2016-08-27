@@ -31,8 +31,8 @@ from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IDateRangeIndex
+from Products.ZCatalog.query import IndexQuery
 
 _dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2 ** 31 - 1)
@@ -256,7 +256,7 @@ class DateRangeIndex(UnIndex):
         second object is a tuple containing the names of all data fields
         used.
         """
-        record = parseIndexRequest(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
 

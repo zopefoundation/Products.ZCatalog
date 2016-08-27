@@ -27,10 +27,10 @@ from Persistence import Persistent
 from zope.interface import implements
 
 from Products.PluginIndexes.common import safe_callable
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IPathIndex
 from Products.PluginIndexes.interfaces import ISortIndex
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
+from Products.ZCatalog.query import IndexQuery
 
 LOG = getLogger('Zope.PathIndex')
 
@@ -157,7 +157,7 @@ class PathIndex(Persistent, SimpleItem):
 
         o Unpacks args from catalog and mapps onto '_search'.
         """
-        record = parseIndexRequest(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
 

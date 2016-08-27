@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Rename `parseIndexRequest` to `IndexQuery` and move it to `ZCatalog.query`.
+
 - Remove unused ZMI icons.
 
 - Remove deprecated Catalog(Path)Awareness modules.

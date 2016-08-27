@@ -22,11 +22,10 @@ from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implements
 
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.interfaces import IPluggableIndex
 from Products.PluginIndexes.interfaces import ITopicIndex
-
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
+from Products.ZCatalog.query import IndexQuery
 
 _marker = []
 LOG = getLogger('Zope.TopicIndex')
@@ -93,7 +92,7 @@ class TopicIndex(Persistent, SimpleItem):
         """hook for (Z)Catalog
         'request' --  mapping type (usually {"topic": "..." }
         """
-        record = parseIndexRequest(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
 

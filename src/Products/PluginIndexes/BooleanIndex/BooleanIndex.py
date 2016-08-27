@@ -19,9 +19,9 @@ from BTrees.IIBTree import union, intersection, difference
 import BTrees.Length
 from ZODB.POSException import ConflictError
 
-from Products.PluginIndexes.common.util import parseIndexRequest
 from Products.PluginIndexes.common.UnIndex import _marker
 from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.ZCatalog.query import IndexQuery
 
 LOG = getLogger('BooleanIndex.UnIndex')
 
@@ -195,7 +195,7 @@ class BooleanIndex(UnIndex):
                       ' with id %s' % documentId, exc_info=True)
 
     def _apply_index(self, request, resultset=None):
-        record = parseIndexRequest(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options)
         if record.keys is None:
             return None
 

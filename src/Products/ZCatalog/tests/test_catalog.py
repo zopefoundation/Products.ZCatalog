@@ -321,8 +321,7 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(len(all_data), 0)
 
     def test_query_empty_keys(self):
-        # Queries with empty keys used to return all, because of a bug
-        # in the parseIndexRequest function.
+        # Queries with empty keys used to return all.
         def extra(catalog):
             col1 = FieldIndex('col1')
             catalog.addIndex('col1', col1)
