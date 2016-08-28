@@ -29,7 +29,6 @@ from AccessControl.SecurityInfo import ClassSecurityInfo
 from Acquisition import aq_base
 from Acquisition import aq_parent
 from Acquisition import Implicit
-from App.Dialogs import MessageDialog
 from App.special_dtml import DTMLFile
 from DateTime.DateTime import DateTime
 from DocumentTemplate.DT_Util import InstanceDict
@@ -41,6 +40,7 @@ from OFS.ObjectManager import ObjectManager
 from Persistence import Persistent
 from Products.PluginIndexes.interfaces import IPluggableIndex
 import transaction
+from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
 from zope.interface import implements
 
@@ -378,10 +378,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                         REQUEST=None, RESPONSE=None, URL1=None):
         """ delete an index or some indexes """
         if not ids:
-            return MessageDialog(
-                title='No items specified',
-                message='No items were specified!',
-                action="./manage_catalogIndexes")
+            raise BadRequest('No items specified')
 
         if isinstance(ids, str):
             ids = (ids, )
@@ -399,10 +396,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                           REQUEST=None, RESPONSE=None, URL1=None):
         """ clear an index or some indexes """
         if not ids:
-            return MessageDialog(
-                title='No items specified',
-                message='No items were specified!',
-                action="./manage_catalogIndexes")
+            raise BadRequest('No items specified')
 
         if isinstance(ids, str):
             ids = (ids, )
@@ -451,10 +445,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                             URL1=None):
         """Reindex indexe(s) from a ZCatalog"""
         if not ids:
-            return MessageDialog(
-                title='No items specified',
-                message='No items were specified!',
-                action="./manage_catalogIndexes")
+            raise BadRequest('No items specified')
 
         pgthreshold = self._getProgressThreshold()
         handler = (pgthreshold > 0) and ZLogHandler(pgthreshold) or None
@@ -807,12 +798,6 @@ class ZCatalog(Folder, Persistent, Implicit):
             uids[ppath] = rid
         for path in removed:
             self.uncatalog_object(path)
-
-        return MessageDialog(
-            title='Done Normalizing Paths',
-            message='%s paths normalized, %s paths removed, and '
-                    '%s unchanged.' % (len(fixed), len(removed), unchanged),
-            action='./manage_main')
 
     security.declareProtected(manage_zcatalog_entries, 'manage_setProgress')
     def manage_setProgress(self, pgthreshold=0, RESPONSE=None, URL1=None):

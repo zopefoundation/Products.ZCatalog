@@ -4,6 +4,7 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Raise BadRequest instead of returning MessageDialog.
 
 4.0a2 (2016-08-28)
 ------------------

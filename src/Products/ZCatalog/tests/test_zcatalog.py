@@ -294,7 +294,6 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
     # resolve_url
     # resolve_path
-    # manage_normalize_paths
     # manage_setProgress
     # _getProgressThreshold
 
