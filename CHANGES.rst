@@ -4,6 +4,9 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Remove unused `Products.PluginIndexes.common.ResultList` and
+  `randid` modules.
+
 - Merge in the ZCTextIndex code.
 
 - Extend IQueryIndex interface to handle operator parsing.
