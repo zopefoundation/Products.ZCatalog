@@ -11,19 +11,21 @@
 #
 ##############################################################################
 
-from cgi import escape
 from logging import getLogger
 import sys
 
-from Acquisition import aq_inner
-from Acquisition import aq_parent
-from Acquisition import aq_get
-
-from BTrees.IIBTree import difference
-from BTrees.IIBTree import intersection
-from BTrees.IIBTree import IITreeSet
-from BTrees.IIBTree import IISet
-from BTrees.IIBTree import multiunion
+from Acquisition import (
+    aq_inner,
+    aq_parent,
+    aq_get,
+)
+from BTrees.IIBTree import (
+    difference,
+    intersection,
+    IITreeSet,
+    IISet,
+    multiunion,
+)
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree

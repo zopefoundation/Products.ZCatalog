@@ -21,7 +21,6 @@ from ZODB.POSException import ConflictError
 
 from Products.PluginIndexes.common.UnIndex import _marker
 from Products.PluginIndexes.common.UnIndex import UnIndex
-from Products.ZCatalog.query import IndexQuery
 
 LOG = getLogger('BooleanIndex.UnIndex')
 
