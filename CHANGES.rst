@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Merge in the ZCTextIndex code.
+
 - Extend IQueryIndex interface to handle operator parsing.
 
 - Add new IQueryIndex interface for indices. This introduces a new

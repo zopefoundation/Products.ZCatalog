@@ -49,7 +49,6 @@ setup(
         'five.globalrequest',
         'Missing',
         'Persistence',
-        'Products.ZCTextIndex',
         'Record',
         'RestrictedPython',
         'zExceptions',
