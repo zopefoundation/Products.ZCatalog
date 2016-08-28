@@ -33,8 +33,8 @@ from OFS.SimpleItem import SimpleItem
 from ZODB.POSException import ConflictError
 from zope.interface import implements
 
+from Products.PluginIndexes.cache import RequestCache
 from Products.PluginIndexes.common import safe_callable
-from Products.PluginIndexes.common.util import RequestCache
 from Products.PluginIndexes.interfaces import (
     ILimitedResultIndex,
     IQueryIndex,
