@@ -99,6 +99,8 @@ class ILimitedResultIndex(IPluggableIndex):
 class IQueryIndex(IPluggableIndex):
 
     id = Attribute('Index id used to query the index.')
+    operators = Attribute('A tuple of known/allowed operators.')
+    useOperator = Attribute('A string specifying the default operator.')
     query_options = Attribute('Supported query options for the index.')
 
     def query_index(record, resultset=None):

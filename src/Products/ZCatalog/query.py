@@ -39,17 +39,23 @@ class IndexQuery(object):
 
       other parameters depend on the the index
     """
+    operators = ('or', 'and')
 
-    def __init__(self, request, iid, options=()):
+    def __init__(self, request, iid, options=(), operators=('or', 'and'),
+                 default_operator='or'):
         """Parse a query from the ZPublisher and return a uniform
         datastructure back to the _apply_index() method of the index.
 
           query -- the query dictionary send from the ZPublisher
           iid     -- Id of index
           options -- a list of options the index is interested in
+          operators -- a tuple of allowed operators
+          default_operator -- the default operator
         """
 
         self.id = iid
+        self.operators = operators
+        self.operator = default_operator
         if iid not in request:
             self.keys = None
             return
@@ -70,7 +76,7 @@ class IndexQuery(object):
                     continue
 
                 if op in param:
-                    setattr(self, op, param[op])
+                    self.set(op, param[op])
 
         else:
             # query is tuple, list, string, number, or something else
@@ -82,17 +88,31 @@ class IndexQuery(object):
             for op in options:
                 field = iid + "_" + op
                 if field in request:
-                    setattr(self, op, request[field])
+                    self.set(op, request[field])
 
         self.keys = keys
         not_value = getattr(self, 'not', None)
         if not_value is not None:
             if not isinstance(not_value, (tuple, list)):
                 not_value = [not_value]
-                setattr(self, 'not', not_value)
+                self.set('not', not_value)
+
+    @property
+    def operator(self):
+        return self._operator
+
+    @operator.setter
+    def operator(self, value):
+        value = value.lower()
+        if value not in self.operators:
+            raise RuntimeError('operator not valid: %r' % value)
+        self._operator = value.lower()
 
     def get(self, key, default_v=None):
         value = getattr(self, key, _marker)
         if value is not _marker:
             return value
         return default_v
+
+    def set(self, key, value):
+        setattr(self, key, value)

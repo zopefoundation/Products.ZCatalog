@@ -32,10 +32,16 @@ from Products.ZCatalog.query import IndexQuery
 
 LOG = logging.getLogger('CompositeIndex')
 
-QUERY_OPTIONS = {'FieldIndex': ('query', 'range', 'not'),
-                 'KeywordIndex': ('query', 'range', 'not', 'operator'),
-                 'BooleanIndex': ('query', 'range', 'not'),
-                 }
+QUERY_OPTIONS = {
+    'BooleanIndex': ('query', 'range', 'not'),
+    'FieldIndex': ('query', 'range', 'not'),
+    'KeywordIndex': ('query', 'range', 'not', 'operator'),
+}
+QUERY_OPERATORS = {
+    'BooleanIndex': (('and', 'or'), 'or'),
+    'FieldIndex': (('and', 'or'), 'or'),
+    'KeywordIndex': (('and', 'or'), 'or'),
+}
 
 MIN_COMPONENTS = 2
 
@@ -163,11 +169,8 @@ class CompositeIndex(KeywordIndex):
         """Create an composite index"""
 
         self.id = id
-        self.ignore_ex = ignore_ex        # currently unimplimented
+        self.ignore_ex = ignore_ex        # currently unimplemented
         self.call_methods = call_methods
-
-        self.operators = ('or', 'and')
-        self.useOperator = 'or'
 
         # set components
         self._components = ComponentMapping()
@@ -318,7 +321,9 @@ class CompositeIndex(KeywordIndex):
         c_records = []
         for c in components:
             query_options = QUERY_OPTIONS[c.meta_type]
-            rec = IndexQuery(query, c.id, query_options)
+            query_operators = QUERY_OPERATORS[c.meta_type]
+            rec = IndexQuery(query, c.id, query_options,
+                             query_operators[0], query_operators[1])
 
             # not supported: 'not' parameter
             not_parm = rec.get('not', None)
@@ -326,8 +331,7 @@ class CompositeIndex(KeywordIndex):
                 continue
 
             # not supported: 'and' operator
-            operator = rec.get('operator', self.useOperator)
-            if rec.keys and operator == 'and':
+            if rec.keys and rec.operator == 'and':
                 continue
 
             # continue if no keys in query were set

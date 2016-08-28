@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Extend IQueryIndex interface to handle operator parsing.
+
 - Add new IQueryIndex interface for indices. This introduces a new
   `query_index` method on each index with a simplified contract compared
   to `_apply_index`. The responsibility for parsing and skipping the query

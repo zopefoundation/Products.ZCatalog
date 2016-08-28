@@ -245,7 +245,8 @@ class DateRangeIndex(UnIndex):
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):
-        record = IndexQuery(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options,
+                            self.operators, self.useOperator)
         if record.keys is None:
             return None
         return (self.query_index(record, resultset=resultset),

@@ -53,6 +53,8 @@ class UnIndex(SimpleItem):
                ISortIndex, IRequestCacheIndex)
 
     _counter = None
+    operators = ('or', 'and')
+    useOperator = 'or'
     query_options = ()
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
@@ -102,9 +104,6 @@ class UnIndex(SimpleItem):
         self.id = id
         self.ignore_ex = ignore_ex  # currently unimplemented
         self.call_methods = call_methods
-
-        self.operators = ('or', 'and')
-        self.useOperator = 'or'
 
         # allow index to index multiple attributes
         ia = _get(extra, 'indexed_attrs', id)
@@ -358,8 +357,7 @@ class UnIndex(SimpleItem):
         params = []
 
         # record operator (or, and)
-        operator = record.get('operator', self.useOperator)
-        params.append(('operator', operator))
+        params.append(('operator', record.operator))
 
         # not / exclude operator
         not_value = record.get('not', None)
@@ -392,7 +390,8 @@ class UnIndex(SimpleItem):
         return a tuple of (result, used_attributes), where used_attributes
         is again a tuple with the names of all used data fields.
         """
-        record = IndexQuery(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options,
+                            self.operators, self.useOperator)
         if record.keys is None:
             return None
         return (self.query_index(record, resultset=resultset), (self.id, ))
@@ -420,10 +419,7 @@ class UnIndex(SimpleItem):
         # not / exclude parameter
         not_parm = record.get('not', None)
 
-        # experimental code for specifing the operator
-        operator = record.get('operator', self.useOperator)
-        if operator not in self.operators:
-            raise RuntimeError('operator not valid: %s' % escape(operator))
+        operator = record.operator
 
         cachekey = None
         cache = self.getRequestCache()

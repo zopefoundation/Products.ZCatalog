@@ -56,6 +56,9 @@ class PathIndex(Persistent, SimpleItem):
     implements(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
 
     meta_type = "PathIndex"
+
+    operators = ('or', 'and')
+    useOperator = 'or'
     query_options = ('query', 'level', 'operator')
 
     manage_options = (
@@ -64,8 +67,6 @@ class PathIndex(Persistent, SimpleItem):
 
     def __init__(self, id, caller=None):
         self.id = id
-        self.operators = ('or', 'and')
-        self.useOperator = 'or'
         self.clear()
 
     def __len__(self):
@@ -156,7 +157,8 @@ class PathIndex(Persistent, SimpleItem):
         del self._unindex[docid]
 
     def _apply_index(self, request):
-        record = IndexQuery(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options,
+                            self.operators, self.useOperator)
         if record.keys is None:
             return None
         return (self.query_index(record), (self.id, ))
@@ -164,12 +166,12 @@ class PathIndex(Persistent, SimpleItem):
     def query_index(self, record, resultset=None):
         """See IPluggableIndex.
 
-        o Unpacks args from catalog and mapps onto '_search'.
+        o Unpacks record from catalog and map onto '_search'.
         """
         level = record.get('level', 0)
-        operator = record.get('operator', self.useOperator).lower()
+        operator = record.operator
 
-        # depending on the operator we use intersection of union
+        # depending on the operator we use intersection or union
         if operator == 'or':
             set_func = union
         else:

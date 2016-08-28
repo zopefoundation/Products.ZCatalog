@@ -566,7 +566,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         limit_result = ILimitedResultIndex.providedBy(index)
 
         if IQueryIndex.providedBy(index):
-            index_query = IndexQuery(query, index.id, index.query_options)
+            index_query = IndexQuery(query, index.id, index.query_options,
+                                     index.operators, index.useOperator)
             if index_query.keys is not None:
                 index_rs = index.query_index(index_query, rs)
         else:
