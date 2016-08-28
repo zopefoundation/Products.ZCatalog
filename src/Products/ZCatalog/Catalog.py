@@ -11,7 +11,6 @@
 #
 ##############################################################################
 
-import types
 import logging
 from bisect import bisect
 from collections import defaultdict
@@ -36,6 +35,7 @@ from Products.PluginIndexes.interfaces import (
     IQueryIndex,
     ITransposeQuery,
 )
+from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain, NoBrainer
 from Products.ZCatalog.plan import CatalogPlan
 from Products.ZCatalog.ProgressHandler import ZLogHandler
@@ -53,14 +53,6 @@ except NameError:
     xrange = range
 
 LOG = logging.getLogger('Zope.ZCatalog')
-
-
-def safe_callable(ob):
-    # Works with ExtensionClasses and Acquisition.
-    if hasattr(ob, '__class__'):
-        return hasattr(ob, '__call__') or isinstance(ob, types.ClassType)
-    else:
-        return callable(ob)
 
 
 class CatalogError(Exception):

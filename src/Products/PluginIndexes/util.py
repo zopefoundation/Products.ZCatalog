@@ -11,17 +11,12 @@
 #
 ##############################################################################
 
-from zope.deferredimport import deprecated
+import types
 
-# BBB ZCatalog 5.0
-deprecated(
-    'Please import from Products.ZCatalog.query.',
-    IndexRequestParseError='Products.ZCatalog.query:IndexQueryParseError',
-    parseIndexRequest='Products.ZCatalog.query:IndexQuery',
-)
 
-# BBB ZCatalog 5.0
-deprecated(
-    'Please import from Products.PluginIndexes.cache.',
-    RequestCache='Products.PluginIndexes.cache:RequestCache',
-)
+def safe_callable(ob):
+    # Works with ExtensionClasses and Acquisition.
+    if hasattr(ob, '__class__'):
+        return hasattr(ob, '__call__') or isinstance(ob, types.ClassType)
+    else:
+        return callable(ob)

@@ -18,8 +18,8 @@ from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from App.special_dtml import DTMLFile
 
-from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.PluginIndexes.util import safe_callable
 
 LOG = getLogger('Zope.KeywordIndex')
 

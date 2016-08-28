@@ -7,16 +7,14 @@
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
-# FOR A PARTICULAR PURPOSE
+# FOR A PARTICULAR PURPOSE.
 #
-#############################################################################
+##############################################################################
 
-import types
+from zope.deferredimport import deprecated
 
-
-def safe_callable(ob):
-    # Works with ExtensionClasses and Acquisition.
-    if hasattr(ob, '__class__'):
-        return hasattr(ob, '__call__') or isinstance(ob, types.ClassType)
-    else:
-        return callable(ob)
+# BBB ZCatalog 5.0
+deprecated(
+    'Please import from Products.PluginIndexes.util.',
+    safe_callable='Products.PluginIndexes.util:safe_callable',
+)

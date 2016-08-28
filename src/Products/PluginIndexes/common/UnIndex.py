@@ -34,7 +34,6 @@ from ZODB.POSException import ConflictError
 from zope.interface import implements
 
 from Products.PluginIndexes.cache import RequestCache
-from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.interfaces import (
     ILimitedResultIndex,
     IQueryIndex,
@@ -42,6 +41,7 @@ from Products.PluginIndexes.interfaces import (
     IUniqueValueIndex,
     IRequestCacheIndex,
 )
+from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
 
 _marker = []

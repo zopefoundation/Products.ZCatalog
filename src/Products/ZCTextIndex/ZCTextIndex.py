@@ -31,18 +31,10 @@ from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implements
 
-from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.interfaces import IPluggableIndex
-
-# BBB New ZCatalog 4.0 release
-try:
-    from Products.ZCatalog.query import IndexQuery
-    from Products.PluginIndexes.interfaces import IQueryIndex
-except ImportError:
-    from zope.interface import Interface
-    from Products.PluginIndexes.common.util import \
-        parseIndexRequest as IndexQuery
-    IQueryIndex = Interface
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.ZCatalog.query import IndexQuery
+from Products.PluginIndexes.util import safe_callable
 
 from Products.ZCTextIndex.Lexicon import Lexicon
 from Products.ZCTextIndex.NBest import NBest

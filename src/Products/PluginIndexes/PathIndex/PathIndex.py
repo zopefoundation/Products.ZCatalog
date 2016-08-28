@@ -26,13 +26,13 @@ from BTrees.Length import Length
 from Persistence import Persistent
 from zope.interface import implements
 
-from Products.PluginIndexes.common import safe_callable
 from Products.PluginIndexes.interfaces import (
     IPathIndex,
     IQueryIndex,
     ISortIndex,
     IUniqueValueIndex,
 )
+from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
 
 LOG = getLogger('Zope.PathIndex')
