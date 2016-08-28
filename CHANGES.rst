@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Move PluginIndexes.common.UnIndex module to PluginIndexes.unindex.
+
 - Remove unused `Products.PluginIndexes.common.ResultList` and
   `randid` modules.
 

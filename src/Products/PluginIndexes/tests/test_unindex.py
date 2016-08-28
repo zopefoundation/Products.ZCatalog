@@ -13,15 +13,15 @@
 
 import unittest
 
+from BTrees.IIBTree import difference
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
-from BTrees.IIBTree import difference
 
 
-class UnIndexTests(unittest.TestCase):
+class TestUnIndex(unittest.TestCase):
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.common.UnIndex import UnIndex
+        from Products.PluginIndexes.unindex import UnIndex
         return UnIndex
 
     def _makeOne(self, *args, **kw):

@@ -19,8 +19,8 @@ from BTrees.IIBTree import union, intersection, difference
 import BTrees.Length
 from ZODB.POSException import ConflictError
 
-from Products.PluginIndexes.common.UnIndex import _marker
-from Products.PluginIndexes.common.UnIndex import UnIndex
+from Products.PluginIndexes.unindex import _marker
+from Products.PluginIndexes.unindex import UnIndex
 
 LOG = getLogger('BooleanIndex.UnIndex')
 

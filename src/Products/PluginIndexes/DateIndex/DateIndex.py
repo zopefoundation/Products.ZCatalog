@@ -25,8 +25,8 @@ from OFS.PropertyManager import PropertyManager
 from ZODB.POSException import ConflictError
 from zope.interface import implements
 
-from Products.PluginIndexes.common.UnIndex import UnIndex
 from Products.PluginIndexes.interfaces import IDateIndex
+from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
 
 LOG = getLogger('DateIndex')

@@ -29,8 +29,8 @@ from BTrees.Length import Length
 from DateTime.DateTime import DateTime
 from zope.interface import implements
 
-from Products.PluginIndexes.common.UnIndex import UnIndex
 from Products.PluginIndexes.interfaces import IDateRangeIndex
+from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
 

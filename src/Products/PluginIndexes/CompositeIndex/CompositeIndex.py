@@ -27,7 +27,7 @@ from zope.interface import implements
 
 from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
-from Products.PluginIndexes.common.UnIndex import _marker
+from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
 
 LOG = logging.getLogger('CompositeIndex')
