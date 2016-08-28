@@ -1,8 +1,8 @@
 Changelog
 =========
 
-4.0 (unreleased)
-----------------
+4.0a2 (2016-08-28)
+------------------
 
 - Move PluginIndexes.common.UnIndex module to PluginIndexes.unindex.
 
