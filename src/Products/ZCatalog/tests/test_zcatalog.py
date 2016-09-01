@@ -211,6 +211,18 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
     # manage_reindexIndex
     # catalog_object
     # uncatalog_object
+
+    def test_getcounter(self):
+        counter = self._catalog.getCounter()
+
+        self._catalog.catalog_object(ZDummy(1), 'xyz123')
+        counter_1 = self._catalog.getCounter()
+        self.assertEquals(counter + 1, counter_1)
+
+        self._catalog.uncatalog_object('xyz123')
+        counter_2 = self._catalog.getCounter()
+        self.assertEquals(counter_1 + 1, counter_2)
+
     # uniqueValuesFor
     # getpath
     # getrid
