@@ -145,7 +145,10 @@ class DateRangeIndex(UnIndex):
         self._until = IOBTree()
         self._unindex = IOBTree()  # 'datum' will be a tuple of date ints
         self._length = Length()
-        self._counter = Length()
+        if self._counter is None:
+            self._counter = Length()
+        else:
+            self._increment_counter()
 
     def getEntryForObject(self, documentId, default=None):
         """Get all information contained for the specific object

@@ -148,9 +148,8 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply({'foo': 'a'}, [(0, obj)])
 
     def test_getCounter(self):
-        index = self._index
+        index = self._makeOne('foo')
 
-        index.clear()
         self.assertEqual(index.getCounter(), 0)
 
         obj = Dummy('a')
@@ -164,8 +163,9 @@ class UUIDIndexTests(unittest.TestCase):
         index.unindex_object(1234)
         self.assertEqual(index.getCounter(), 2)
 
+        # clear is a change
         index.clear()
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), 3)
 
 
 class UUIDIndexTestsCache(UUIDIndexTests):
