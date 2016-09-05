@@ -288,9 +288,8 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertFalse(self._index._unindex.get(10))
 
     def test_getCounter(self):
-        index = self._index
+        index = self._makeOne('foo')
 
-        index.clear()
         self.assertEqual(index.getCounter(), 0)
 
         obj = Dummy(['hello'])
@@ -304,5 +303,6 @@ class TestKeywordIndex(unittest.TestCase):
         index.unindex_object(1234)
         self.assertEqual(index.getCounter(), 2)
 
+        # clear is a change
         index.clear()
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), 3)

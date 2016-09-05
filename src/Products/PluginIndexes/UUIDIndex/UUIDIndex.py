@@ -53,7 +53,10 @@ class UUIDIndex(UnIndex):
         self._length = Length()
         self._index = OIBTree()
         self._unindex = IOBTree()
-        self._counter = Length()
+        if self._counter is None:
+            self._counter = Length()
+        else:
+            self._increment_counter()
 
     def numObjects(self):
         """Return the number of indexed objects. Since we have a 1:1 mapping

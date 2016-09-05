@@ -161,5 +161,6 @@ class TestUnIndex(unittest.TestCase):
         index.unindex_object(1234)
         self.assertEqual(index.getCounter(), 2)
 
+        # clear changes the index
         index.clear()
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), 3)

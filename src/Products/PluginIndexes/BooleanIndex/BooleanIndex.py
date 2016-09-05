@@ -61,7 +61,10 @@ class BooleanIndex(UnIndex):
         self._index_value = 1
         self._unindex = IIBTree()
         self._length = BTrees.Length.Length()
-        self._counter = BTrees.Length.Length()
+        if self._counter is None:
+            self._counter = BTrees.Length.Length()
+        else:
+            self._increment_counter()
 
     def histogram(self):
         """Return a mapping which provides a histogram of the number of

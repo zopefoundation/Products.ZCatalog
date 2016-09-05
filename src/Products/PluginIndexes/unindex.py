@@ -128,9 +128,13 @@ class UnIndex(SimpleItem):
 
     def clear(self):
         self._length = Length()
-        self._counter = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+
+        if self._counter is None:
+            self._counter = Length()
+        else:
+            self._increment_counter()
 
     def __nonzero__(self):
         return not not self._unindex
