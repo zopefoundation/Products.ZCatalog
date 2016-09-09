@@ -30,7 +30,6 @@ _marker = []
 
 
 class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
-
     """A mapping object, responding to getattr requests by looking up
     the requested indexes in an object manager."""
 
@@ -53,10 +52,6 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
         RESPONSE.redirect('../manage_catalogIndexes')
 
     manage_workspace = manage_main
-
-    #
-    # Object Manager methods
-    #
 
     # base accessors loop back through our dictionary interface
     def _setOb(self, id, object):
@@ -92,13 +87,9 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
 
         return indexes.keys()
 
-    # Eat _setObject calls
     def _setObject(self, id, object, roles=None, user=None, set_owner=1):
+        # Eat _setObject calls
         pass
-
-    #
-    # traversal
-    #
 
     def __bobo_traverse__(self, REQUEST, name):
         indexes = aq_parent(self)._catalog.indexes
@@ -117,8 +108,7 @@ InitializeClass(ZCatalogIndexes)
 class OldCatalogWrapperObject(SimpleItem, Implicit):
 
     manage_options = (
-        {'label': 'Settings',
-         'action': 'manage_main'},
+        {'label': 'Settings', 'action': 'manage_main'},
     )
 
     manage_main = DTMLFile('dtml/manageOldindex', globals())

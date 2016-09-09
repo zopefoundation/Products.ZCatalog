@@ -46,9 +46,9 @@ from zope.interface import implements
 
 from Products.ZCatalog.Catalog import Catalog, CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
+from Products.ZCatalog.plan import PriorityMap
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
-from .plan import PriorityMap
 
 try:
     xrange
