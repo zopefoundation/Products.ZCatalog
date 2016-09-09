@@ -16,34 +16,6 @@ whole Catalog.
 </b>
 </p>
 
-<script type="text/javascript">
-<!--
-
-isSelected = false;
-
-function toggleSelect() {
-  if (isSelected == false) {
-    for (i = 0; i < document.objectItems.length; i++)
-      document.objectItems.elements[i].checked = true ;
-      isSelected = true;
-      document.objectItems.selectButton.value = "Deselect All";
-      return isSelected;
-  }
-  else {
-    for (i = 0; i < document.objectItems.length; i++)
-      document.objectItems.elements[i].checked = false ;
-      isSelected = false;
-      document.objectItems.selectButton.value = "Select All";
-      return isSelected;
-  }
-}
-
-//-->
-</script>
-
-<dtml-unless skey><dtml-call expr="REQUEST.set('skey', 'id')"></dtml-unless>
-<dtml-unless rkey><dtml-call expr="REQUEST.set('rkey', '')"></dtml-unless>
-
 <dtml-with Indexes>
 
 <!-- Add object widget -->
@@ -77,47 +49,25 @@ function toggleSelect() {
   </table>
 </dtml-if>
 
-
-
 <form action="&dtml-URL1;/" name="objectItems" method="post">
 <dtml-if objectItems>
 <table width="100%" cellspacing="0" cellpadding="2" border="0">
 <tr class="list-header">
   <td>&nbsp;
   </td>
-  <td width="30%" align="left"><div class="list-item"><a
-   href="./manage_catalogIndexes?skey=id<dtml-if
-   "rkey == ''">&rkey=id</dtml-if>"
-   onMouseOver="window.status='Sort objects by name'; return true"
-   onMouseOut="window.status=''; return true"><dtml-if
-   "skey == 'id' or rkey == 'id'"
-   ><strong>Name</strong><dtml-else>Name</dtml-if></a></div>
+  <td width="30%" align="left">
+    <div class="list-item"><strong>Name</strong></div>
   </td>
-  <td width="30%" align="left"><div class="list-item"><a
-   href="./manage_catalogIndexes?skey=meta_type<dtml-if
-   "rkey == ''">&rkey=meta_type</dtml-if
-   >"
-   onMouseOver="window.status='Sort objects by type'; return true"
-   onMouseOut="window.status=''; return true"><dtml-if
-   "skey == 'meta_type' or rkey == 'meta_type'"
-   ><strong>Index type</strong><dtml-else>Index type</dtml-if></a></div>
+  <td width="30%" align="left">
+    <div class="list-item">Index type</div>
   </td>
-
-  <td width="20%" align="left"><div class="list-item"><a
-   href="./manage_catalogIndexes?skey=indexSize<dtml-if
-   "rkey == ''">&rkey=indexSize</dtml-if
-   >"
-   onMouseOver="window.status='Sort objects by number of distinct values indexed'; return true"
-   onMouseOut="window.status=''; return true"><dtml-if
-   "skey == 'indexSize' or rkey == 'indexSize'"
-   ><strong># distinct values</strong><dtml-else># distinct values</dtml-if></a></div>
+  <td width="20%" align="left">
+    <div class="list-item"># distinct values</div>
   </td>
 
 </tr>
 
-<dtml-call "REQUEST.set('oldidx',0)">
-
-<dtml-in objectItems sort_expr="skey" reverse_expr="rkey">
+<dtml-in objectItems>
 <dtml-if sequence-odd>
 <tr class="row-normal">
 <dtml-else>
@@ -150,10 +100,6 @@ function toggleSelect() {
     <td>
     <div class="list-item">
       <dtml-var meta_type>
-      <dtml-if isDeprecatedIndex>
-         <dtml-call "REQUEST.set('oldidx',1)">
-         (pre-2.4 index)
-      </dtml-if>
     </div>
     </td>
 
@@ -175,20 +121,9 @@ function toggleSelect() {
   <td align="left" valign="top" width="16"></td>
   <td align="left" valign="top">
   <div class="form-element">
-
-  <input class="form-element" type="submit" name="manage_delIndex:method"     value="Remove index">
-  <input class="form-element" type="submit" name="manage_reindexIndex:method" value="Reindex">
-  <input class="form-element" type="submit" name="manage_clearIndex:method"   value="Clear index">
-  <dtml-if oldidx>
-    <input class="form-element" type="submit" name="manage_convertIndex:method" value="Convert index">
-  </dtml-if>
-<script type="text/javascript">
-<!--
-if (document.forms[0]) {
-  document.write('<input class="form-element" type="submit" name="selectButton" value="Select All" onClick="toggleSelect(); return false">')
-  }
-//-->
-</script>
+    <input class="form-element" type="submit" name="manage_delIndex:method" value="Remove index">
+    <input class="form-element" type="submit" name="manage_reindexIndex:method" value="Reindex">
+    <input class="form-element" type="submit" name="manage_clearIndex:method" value="Clear index">
   </div>
   </td>
 </tr>
@@ -208,13 +143,6 @@ if (document.forms[0]) {
 </dtml-if>
 </form>
 
-<dtml-if update_menu>
-<script type="text/javascript">
-<!--
-window.parent.update_menu();
-//-->
-</script>
-</dtml-if>
 </dtml-with>
 
 <dtml-var manage_page_footer>
