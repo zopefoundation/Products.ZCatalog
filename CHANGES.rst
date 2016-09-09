@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Add `__contains__` method to ZCatalogIndexes, fixes zopefoundation/Zope#69.
+
 - Raise BadRequest instead of returning MessageDialog.
 
 4.0a2 (2016-08-28)

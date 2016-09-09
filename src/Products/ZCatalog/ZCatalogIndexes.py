@@ -87,6 +87,9 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
 
         return indexes.keys()
 
+    def __contains__(self, name):
+        return name in aq_parent(self)._catalog.indexes
+
     def _setObject(self, id, object, roles=None, user=None, set_owner=1):
         # Eat _setObject calls
         pass
