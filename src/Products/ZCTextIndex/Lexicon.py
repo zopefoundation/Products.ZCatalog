@@ -21,7 +21,7 @@ from BTrees.IOBTree import IOBTree
 from BTrees.OIBTree import OIBTree
 from BTrees.Length import Length
 from Persistence import Persistent
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import ILexicon
 from Products.ZCTextIndex.StopDict import get_stopdict
@@ -29,9 +29,8 @@ from Products.ZCTextIndex.ParseTree import QueryError
 from Products.ZCTextIndex.PipelineFactory import element_factory
 
 
+@implementer(ILexicon)
 class Lexicon(Persistent):
-
-    implements(ILexicon)
 
     _v_nextid = None
     _wid_length_based = True  # Flag to distinguish new and old lexica

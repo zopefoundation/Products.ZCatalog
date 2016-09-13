@@ -23,7 +23,7 @@ from App.special_dtml import DTMLFile
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from Persistence import PersistentMapping
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
@@ -146,12 +146,12 @@ class Component(object):
             (self.id, self.meta_type, self.attributes)
 
 
+@implementer(ITransposeQuery)
 class CompositeIndex(KeywordIndex):
 
     """Index for composition of simple fields.
        or sequences of items
     """
-    implements(ITransposeQuery)
 
     meta_type = "CompositeIndex"
 

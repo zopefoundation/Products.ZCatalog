@@ -29,7 +29,7 @@ from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IPluggableIndex
 from Products.PluginIndexes.interfaces import IQueryIndex
@@ -55,11 +55,11 @@ except NameError:
     basestring = str
 
 
+@implementer(IZCTextIndex, IQueryIndex, IPluggableIndex)
 class ZCTextIndex(Persistent, Implicit, SimpleItem):
 
     """Persistent text index.
     """
-    implements(IZCTextIndex, IQueryIndex, IPluggableIndex)
 
     meta_type = 'ZCTextIndex'
     operators = ('and', 'or')
@@ -312,12 +312,11 @@ LexiconQueryPerm = query_vocabulary
 LexiconMgmtPerm = manage_vocabulary
 
 
+@implementer(IZCLexicon)
 class PLexicon(Lexicon, Implicit, SimpleItem):
 
     """Lexicon for ZCTextIndex.
     """
-
-    implements(IZCLexicon)
 
     meta_type = 'ZCTextIndex Lexicon'
 

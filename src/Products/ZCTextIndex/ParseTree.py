@@ -14,7 +14,7 @@
 
 """Generic parser support: exception and parse tree nodes."""
 from BTrees.IIBTree import difference
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import IQueryParseTree
 from Products.ZCTextIndex.SetOps import mass_weightedIntersection
@@ -29,9 +29,8 @@ class ParseError(Exception):
     pass
 
 
+@implementer(IQueryParseTree)
 class ParseTreeNode(object):
-
-    implements(IQueryParseTree)
 
     _nodeType = None
 

@@ -11,14 +11,13 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import IPipelineElementFactory
 
 
+@implementer(IPipelineElementFactory)
 class PipelineElementFactory(object):
-
-    implements(IPipelineElementFactory)
 
     def __init__(self):
         self._groups = {}

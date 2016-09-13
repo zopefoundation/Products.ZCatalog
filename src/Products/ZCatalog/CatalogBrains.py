@@ -17,18 +17,18 @@ from Acquisition import aq_parent
 from Acquisition import Implicit
 from Record import Record
 from zope.globalrequest import getRequest
-from zope.interface import implements
+from zope.interface import implementer
 from ZPublisher.BaseRequest import RequestContainer
 
 from .interfaces import ICatalogBrain
 
 
+@implementer(ICatalogBrain)
 class AbstractCatalogBrain(Record, Implicit):
     """Abstract base brain that handles looking up attributes as
     required, and provides just enough smarts to let us get the URL, path,
     and cataloged object without having to ask the catalog directly.
     """
-    implements(ICatalogBrain)
 
     def has_key(self, key):
         return key in self.__record_schema__

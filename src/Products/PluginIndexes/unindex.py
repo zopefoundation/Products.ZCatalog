@@ -31,7 +31,7 @@ from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from ZODB.POSException import ConflictError
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
 from Products.PluginIndexes.interfaces import (
@@ -48,11 +48,11 @@ _marker = []
 LOG = getLogger('Zope.UnIndex')
 
 
+@implementer(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
+             ISortIndex, IRequestCacheIndex)
 class UnIndex(SimpleItem):
     """Simple forward and reverse index.
     """
-    implements(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
-               ISortIndex, IRequestCacheIndex)
 
     _counter = None
     operators = ('or', 'and')

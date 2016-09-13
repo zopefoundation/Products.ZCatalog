@@ -27,7 +27,7 @@ from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from DateTime.DateTime import DateTime
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 from Products.PluginIndexes.unindex import UnIndex
@@ -38,6 +38,7 @@ _dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2 ** 31 - 1)
 
 
+@implementer(IDateRangeIndex)
 class DateRangeIndex(UnIndex):
 
     """Index for date ranges, such as the "effective-expiration" range in CMF.
@@ -58,7 +59,6 @@ class DateRangeIndex(UnIndex):
 
     - Objects which match only during a specific interval.
     """
-    implements(IDateRangeIndex)
 
     security = ClassSecurityInfo()
 

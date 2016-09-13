@@ -20,7 +20,7 @@ from BTrees.IIBTree import union
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import (
     IQueryIndex,
@@ -33,13 +33,13 @@ _marker = []
 LOG = getLogger('Zope.TopicIndex')
 
 
+@implementer(ITopicIndex, IQueryIndex)
 class TopicIndex(Persistent, SimpleItem):
     """A TopicIndex maintains a set of FilteredSet objects.
 
     Every FilteredSet object consists of an expression and and IISet with all
     Ids of indexed objects that eval with this expression to 1.
     """
-    implements(ITopicIndex, IQueryIndex)
 
     meta_type = "TopicIndex"
     query_options = ('query', 'operator')

@@ -23,7 +23,7 @@ from BTrees.Length import Length
 from DateTime.DateTime import DateTime
 from OFS.PropertyManager import PropertyManager
 from ZODB.POSException import ConflictError
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateIndex
 from Products.PluginIndexes.unindex import UnIndex
@@ -76,10 +76,10 @@ Local = LocalTimezone()
 ###############################################################################
 
 
+@implementer(IDateIndex)
 class DateIndex(UnIndex, PropertyManager):
     """Index for dates.
     """
-    implements(IDateIndex)
 
     meta_type = 'DateIndex'
     query_options = ('query', 'range', 'not')

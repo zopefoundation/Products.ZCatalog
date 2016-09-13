@@ -42,7 +42,7 @@ from Products.PluginIndexes.interfaces import IPluggableIndex
 import transaction
 from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCatalog.Catalog import Catalog, CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
@@ -72,6 +72,7 @@ def manage_addZCatalog(self, id, title, vocab_id=None, REQUEST=None):
         return self.manage_main(self, REQUEST, update_menu=1)
 
 
+@implementer(IZCatalog)
 class ZCatalog(Folder, Persistent, Implicit):
     """ZCatalog object
 
@@ -90,8 +91,6 @@ class ZCatalog(Folder, Persistent, Implicit):
     class is that it is not Zope specific.  You can use it in any
     Python program to catalog objects.
     """
-
-    implements(IZCatalog)
 
     security = ClassSecurityInfo()
     security.setPermissionDefault(manage_zcatalog_entries, ('Manager', ))

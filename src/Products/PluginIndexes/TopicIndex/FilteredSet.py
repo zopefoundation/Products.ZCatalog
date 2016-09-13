@@ -18,17 +18,16 @@ from BTrees.IIBTree import IITreeSet
 from Persistence import Persistent
 from RestrictedPython.Eval import RestrictionCapableEval
 from ZODB.POSException import ConflictError
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IFilteredSet
 
 LOG = getLogger('Zope.TopicIndex.FilteredSet')
 
 
+@implementer(IFilteredSet)
 class FilteredSetBase(Persistent):
     # A pre-calculated result list based on an expression.
-
-    implements(IFilteredSet)
 
     def __init__(self, id, expr):
         self.id = id

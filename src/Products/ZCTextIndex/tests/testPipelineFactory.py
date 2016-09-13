@@ -14,15 +14,15 @@
 
 from unittest import TestCase
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import IPipelineElement
 from Products.ZCTextIndex.PipelineFactory import PipelineElementFactory
 
 
+@implementer(IPipelineElement)
 class NullPipelineElement(object):
-
-    implements(IPipelineElement)
+    pass
 
 
 class PipelineFactoryTest(TestCase):

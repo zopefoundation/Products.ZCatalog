@@ -13,15 +13,14 @@
 ##############################################################################
 import re
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import ISplitter
 from Products.ZCTextIndex.PipelineFactory import element_factory
 
 
+@implementer(ISplitter)
 class HTMLWordSplitter(object):
-
-    implements(ISplitter)
 
     def process(self, text, wordpat=r"(?L)\w+"):
         splat = []

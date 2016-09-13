@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- Use `@implementer` class decorator.
+
 - Add `__contains__` method to ZCatalogIndexes, fixes zopefoundation/Zope#69.
 
 - Raise BadRequest instead of returning MessageDialog.

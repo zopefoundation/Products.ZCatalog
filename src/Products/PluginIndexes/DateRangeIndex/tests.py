@@ -149,7 +149,7 @@ class DateRangeIndexTests(unittest.TestCase):
         for value in range(-1, 15):
             matches = matchingDummiesByTimeValue(value)
             results, used = self._checkApply(index, {'work': value}, matches)
-            matches = sorted(matches, key=lambda d: d[1].name)
+            matches = sorted(matches, key=lambda d: d[1].name())
 
             for result, match in map(None, results, matches):
                 self.assertEqual(index.getEntryForObject(result),

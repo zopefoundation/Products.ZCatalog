@@ -24,7 +24,7 @@ from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
 from BTrees.Length import Length
 from Persistence import Persistent
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex import WidCode
 from Products.ZCTextIndex.interfaces import IIndex
@@ -55,9 +55,8 @@ def unique(l):
     return IITreeSet(l).keys()
 
 
+@implementer(IIndex)
 class BaseIndex(Persistent):
-
-    implements(IIndex)
 
     def __init__(self, lexicon):
         self._lexicon = lexicon

@@ -57,7 +57,7 @@ Summarizing the default operator rules:
 import re
 import sys
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import IQueryParser
 from Products.ZCTextIndex import ParseTree
@@ -118,9 +118,8 @@ _tokenizer_unicode_regex = re.compile(
     _tokenizer_regex.pattern, _tokenizer_regex.flags | re.UNICODE)
 
 
+@implementer(IQueryParser)
 class QueryParser(object):
-
-    implements(IQueryParser)
 
     # This class is not thread-safe;
     # each thread should have its own instance

@@ -17,17 +17,16 @@ from logging import getLogger
 
 import transaction
 from DateTime.DateTime import DateTime
-from zope.interface import implements
+from zope.interface import implementer
 
 from .interfaces import IProgressHandler
 
 LOG = getLogger('ProgressHandler')
 
 
+@implementer(IProgressHandler)
 class StdoutHandler(object):
     """ A simple progress handler """
-
-    implements(IProgressHandler)
 
     def __init__(self, steps=100):
         self._steps = steps

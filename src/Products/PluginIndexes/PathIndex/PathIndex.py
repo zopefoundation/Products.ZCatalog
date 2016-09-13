@@ -24,7 +24,7 @@ from BTrees.IOBTree import IOBTree
 from BTrees.OOBTree import OOBTree
 from BTrees.Length import Length
 from Persistence import Persistent
-from zope.interface import implements
+from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import (
     IPathIndex,
@@ -38,6 +38,7 @@ from Products.ZCatalog.query import IndexQuery
 LOG = getLogger('Zope.PathIndex')
 
 
+@implementer(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
 class PathIndex(Persistent, SimpleItem):
 
     """Index for paths returned by getPhysicalPath.
@@ -53,7 +54,6 @@ class PathIndex(Persistent, SimpleItem):
     - the value is a mapping 'level of the path component' to
       'all docids with this path component on this level'
     """
-    implements(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
 
     meta_type = "PathIndex"
 
