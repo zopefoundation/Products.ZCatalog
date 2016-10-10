@@ -29,7 +29,6 @@ import ExtensionClass
 from Missing import MV
 from Persistence import Persistent
 from ZTUtils.Lazy import LazyMap, LazyCat, LazyValues
-from plone.memoize import ram
 
 from Products.PluginIndexes.interfaces import (
     ILimitedResultIndex,
@@ -39,7 +38,7 @@ from Products.PluginIndexes.interfaces import (
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain, NoBrainer
 from Products.ZCatalog.plan import CatalogPlan
-from Products.ZCatalog.cache import _apply_query_plan_cachekey
+from Products.ZCatalog.cache import cache
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.query import IndexQuery
 
@@ -596,9 +595,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         return rs
 
-    @ram.cache(_apply_query_plan_cachekey)
+    @cache()
     def _apply_query_plan(self, cr, query):
-        
+
         plan = cr.plan()
         if not plan:
             plan = self._sorted_search_indexes(query)

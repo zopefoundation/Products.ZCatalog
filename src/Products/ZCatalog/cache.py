@@ -19,6 +19,7 @@ from plone.memoize.volatile import DontCache
 from Products.PluginIndexes.interfaces import IIndexCounter
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 from Products.PluginIndexes.interfaces import IDateIndex
+from plone.memoize import ram
 
 
 class CatalogCacheKey(object):
@@ -45,7 +46,7 @@ class CatalogCacheKey(object):
 
         catalog = self.catalog
 
-        key = []
+        keys = []
         for name, value in query.items():
             if name in catalog.indexes:
                 index = catalog.getIndex(name)
@@ -63,15 +64,15 @@ class CatalogCacheKey(object):
                 kvl = []
                 for k, v in value.items():
                     v = self._convert_datum(index, v)
-                    v.append((k, v))
-                value = sorted(kvl)
+                    kvl.append((k, v))
+                value = frozenset(kvl)
 
             else:
                 value = self._convert_datum(index, value)
 
-            key.append((name, counter, value))
+            keys.append((name, counter, value))
 
-        key = tuple(sorted(key))
+        key = frozenset(keys)
         cache_key = '%s-%s' % (self.cid, hash(key))
         return cache_key
 
@@ -114,3 +115,7 @@ def _apply_query_plan_cachekey(method, catalog, plan, query):
     if cc.key is None:
         raise DontCache
     return cc.key
+
+
+def cache():
+    return ram.cache(_apply_query_plan_cachekey)
