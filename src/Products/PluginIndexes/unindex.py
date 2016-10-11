@@ -40,6 +40,7 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
+    IIndexCounter,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -49,7 +50,7 @@ LOG = getLogger('Zope.UnIndex')
 
 
 @implementer(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
-             ISortIndex, IRequestCacheIndex)
+             ISortIndex, IRequestCacheIndex, IIndexCounter)
 class UnIndex(SimpleItem):
     """Simple forward and reverse index.
     """
