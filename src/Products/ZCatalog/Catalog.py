@@ -595,7 +595,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         return rs
 
-    @cache()
+    @cache
     def _apply_query_plan(self, cr, query):
 
         plan = cr.plan()

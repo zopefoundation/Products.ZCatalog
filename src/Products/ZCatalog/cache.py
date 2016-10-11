@@ -31,10 +31,11 @@ class CatalogCacheKey(object):
         self.key = self.make_key(query)
 
     def get_id(self):
-        parent = aq_parent(self.catalog)
+        catalog = self.catalog
+        parent = aq_parent(catalog)
         path = getattr(aq_base(parent), 'getPhysicalPath', None)
         if path is None:
-            path = ('', 'NonPersistentCatalog')
+            path = ('', 'NonPersistentCatalog', id(catalog))
         else:
             path = tuple(parent.getPhysicalPath())
         return path
@@ -73,7 +74,7 @@ class CatalogCacheKey(object):
             keys.append((name, counter, value))
 
         key = frozenset(keys)
-        cache_key = '%s-%s' % (self.cid, hash(key))
+        cache_key = (self.cid, key)
         return cache_key
 
     def _convert_datum(self, index, value):
@@ -117,5 +118,8 @@ def _apply_query_plan_cachekey(method, catalog, plan, query):
     return cc.key
 
 
-def cache():
-    return ram.cache(_apply_query_plan_cachekey)
+def cache(fun):
+    @ram.cache(_apply_query_plan_cachekey)
+    def decorator(*args, **kwargs):
+        return fun(*args, **kwargs)
+    return decorator
