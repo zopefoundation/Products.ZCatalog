@@ -102,7 +102,7 @@ class ZCatalogBase(object):
 
     def _makeOne(self):
         from Products.ZCatalog.ZCatalog import ZCatalog
-        return ZCatalog('Catalog')
+        return ZCatalog('Catalog-%s' % id(self))
 
     def _makeOneIndex(self, name):
         from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
