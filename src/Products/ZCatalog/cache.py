@@ -35,7 +35,7 @@ class CatalogCacheKey(object):
         parent = aq_parent(catalog)
         path = getattr(aq_base(parent), 'getPhysicalPath', None)
         if path is None:
-            path = ('', 'NonPersistentCatalog', id(catalog))
+            path = ('', 'NonPersistentCatalog')
         else:
             path = tuple(parent.getPhysicalPath())
         return path
@@ -123,3 +123,16 @@ def cache(fun):
     def decorator(*args, **kwargs):
         return fun(*args, **kwargs)
     return decorator
+
+
+# Make sure we provide test isolation, works only for ramcache
+def _cache_clear():
+    cache_adapter = ram.store_in_cache(_apply_query_plan_cachekey)
+    if hasattr(cache_adapter, 'ramcache'):
+        cache_adapter.ramcache.invalidateAll()
+    else:
+        raise AttributeError('Only ramcache supported for testing')
+
+from zope.testing.cleanup import addCleanUp  # NOQA
+addCleanUp(_cache_clear)
+del addCleanUp
