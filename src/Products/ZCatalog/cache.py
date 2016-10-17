@@ -126,12 +126,17 @@ def cache(fun):
 
 
 # Make sure we provide test isolation, works only for ramcache
-def _cache_clear():
+def _get_cache():
     cache_adapter = ram.store_in_cache(_apply_query_plan_cachekey)
     if hasattr(cache_adapter, 'ramcache'):
-        cache_adapter.ramcache.invalidateAll()
+        return cache_adapter.ramcache
     else:
         raise AttributeError('Only ramcache supported for testing')
+
+
+def _cache_clear():
+    ram_cache = _get_cache()
+    ram_cache.invalidateAll()
 
 from zope.testing.cleanup import addCleanUp  # NOQA
 addCleanUp(_cache_clear)

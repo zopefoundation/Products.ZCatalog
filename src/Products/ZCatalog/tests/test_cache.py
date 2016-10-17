@@ -25,6 +25,7 @@ from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
 from Products.ZCatalog.Catalog import Catalog
 from Products.ZCatalog.ZCatalog import ZCatalog
 from Products.ZCatalog.cache import CatalogCacheKey
+from Products.ZCatalog.cache import _get_cache
 
 
 class Dummy(object):
@@ -88,15 +89,82 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
 
         self.zcat = zcat
 
+    def _apply_query(self, query):
+        cache = _get_cache()
+
+        res1 = self.zcat.search(query)
+        stats = cache.getStatistics()
+
+        hits = stats[0]['hits']
+        misses = stats[0]['misses']
+
+        res2 = self.zcat.search(query)
+        stats = cache.getStatistics()
+
+        # check if chache hits
+        self.assertEqual(stats[0]['hits'], hits + 1)
+        self.assertEqual(stats[0]['misses'], misses)
+
+        # compare result
+        rset1 = map(lambda x: x.getRID(), res1)
+        rset2 = map(lambda x: x.getRID(), res2)
+        self.assertEqual(rset1, rset2)
+
     def _get_cache_key(self, query=None):
         catalog = self.zcat._catalog
+        query = catalog.make_query(query)
         return CatalogCacheKey(catalog, query=query).key
 
     def test_make_key(self):
         query = {'big': True}
-        key = (('catalog',), frozenset([('big', self.length, (True,))]))
+        key = (('catalog',),
+               frozenset([('big', self.length, (True,))]))
         self.assertEquals(self._get_cache_key(query), key)
 
-#class TestCatalogCaching(unittest.TestCase):
-#
-#      def test_caching
+        query = {'start': '2013-07-01'}
+        key = (('catalog',),
+               frozenset([('start', self.length, ('2013-07-01',))]))
+        self.assertEquals(self._get_cache_key(query), key)
+
+        query = {'path': '/1', 'date': '2013-07-05', 'numbers': [1, 3]}
+        key = (('catalog',),
+               frozenset([('date', 9, ('2013-07-05',)),
+                          ('numbers', 9, (1, 3)),
+                          ('path', 9, ('/1',))]))
+        self.assertEquals(self._get_cache_key(query), key)
+
+    def test_cache(self):
+        query = {'big': True}
+        self._apply_query(query)
+
+        query = {'start': '2013-07-01'}
+        self._apply_query(query)
+
+        query = {'path': '/1', 'date': '2013-07-05', 'numbers': [1, 3]}
+        self._apply_query(query)
+
+    def test_cache_invalidate(self):
+        cache = _get_cache()
+        query = {'big': False}
+
+        res1 = self.zcat.search(query)
+        stats = cache.getStatistics()
+
+        hits = stats[0]['hits']
+        misses = stats[0]['misses']
+
+        # catalog new object
+        obj = Dummy(20)
+        self.zcat.catalog_object(obj, str(20))
+
+        res2 = self.zcat.search(query)
+        stats = cache.getStatistics()
+
+        # check if chache misses
+        self.assertEqual(stats[0]['hits'], hits)
+        self.assertEqual(stats[0]['misses'], misses + 1)
+
+        # compare result
+        rset1 = map(lambda x: x.getRID(), res1)
+        rset2 = map(lambda x: x.getRID(), res2)
+        self.assertEqual(rset1, rset2)
