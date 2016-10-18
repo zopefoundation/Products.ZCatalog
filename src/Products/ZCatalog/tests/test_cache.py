@@ -117,21 +117,32 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
 
     def test_make_key(self):
         query = {'big': True}
-        key = (('catalog',),
-               frozenset([('big', self.length, (True,))]))
-        self.assertEquals(self._get_cache_key(query), key)
+        expect = (('catalog',),
+                  frozenset([('big', (True,), self.length)]))
+        self.assertEquals(self._get_cache_key(query), expect)
 
         query = {'start': '2013-07-01'}
-        key = (('catalog',),
-               frozenset([('start', self.length, ('2013-07-01',))]))
-        self.assertEquals(self._get_cache_key(query), key)
+        expect = (('catalog',),
+                  frozenset([('start', ('2013-07-01',), self.length)]))
+        self.assertEquals(self._get_cache_key(query), expect)
 
         query = {'path': '/1', 'date': '2013-07-05', 'numbers': [1, 3]}
-        key = (('catalog',),
-               frozenset([('date', 9, ('2013-07-05',)),
-                          ('numbers', 9, (1, 3)),
-                          ('path', 9, ('/1',))]))
-        self.assertEquals(self._get_cache_key(query), key)
+        expect = (('catalog',),
+                  frozenset([('date', ('2013-07-05',), self.length),
+                             ('numbers', (1, 3), self.length),
+                             ('path', ('/1',), self.length)]))
+        self.assertEquals(self._get_cache_key(query), expect)
+
+        queries = [{'big': True, 'b_start': 0},
+                   {'big': True, 'b_start': 0, 'b_size': 5},
+                   {'big': True, 'sort_on': 'big'},
+                   {'big': True, 'sort_on': 'big', 'sort_limit': 3},
+                   {'big': True, 'sort_on': 'big', 'sort_order': 'descending'},
+                   ]
+        expect = (('catalog',),
+                  frozenset([('big', (True,), self.length)]))
+        for query in queries:
+            self.assertEquals(self._get_cache_key(query), expect)
 
     def test_cache(self):
         query = {'big': True}

@@ -47,6 +47,17 @@ class CatalogCacheKey(object):
 
         catalog = self.catalog
 
+        def skip(name, value):
+            if name in ['b_start', 'b_size']:
+                return True
+            elif catalog._get_sort_attr('on', {name: value}):
+                return True
+            elif catalog._get_sort_attr('limit', {name: value}):
+                return True
+            elif catalog._get_sort_attr('order', {name: value}):
+                return True
+            return False
+
         keys = []
         for name, value in query.items():
             if name in catalog.indexes:
@@ -57,6 +68,10 @@ class CatalogCacheKey(object):
                     # cache key invalidation cannot be supported if
                     # any index of query cannot be tested for changes
                     return None
+            elif skip(name, value):
+                # applying the query to indexes is invariant of
+                # sort or pagination options
+                continue
             else:
                 # return None if query has a nonexistent index key
                 return None
@@ -71,7 +86,7 @@ class CatalogCacheKey(object):
             else:
                 value = self._convert_datum(index, value)
 
-            keys.append((name, counter, value))
+            keys.append((name, value, counter))
 
         key = frozenset(keys)
         cache_key = (self.cid, key)
