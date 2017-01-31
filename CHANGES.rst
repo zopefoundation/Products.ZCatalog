@@ -4,6 +4,8 @@ Changelog
 4.0 (unreleased)
 ----------------
 
+- #19: Fix stale cache results after clearing an index.
+
 - Use `@implementer` class decorator.
 
 - Add `__contains__` method to ZCatalogIndexes, fixes zopefoundation/Zope#69.
