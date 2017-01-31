@@ -16,7 +16,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Products.ZCatalog',
-    version='3.2',
+    version='3.2.1.dev0',
     url='https://pypi.python.org/pypi/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope 2's indexing and search solution.",
@@ -53,7 +53,7 @@ setup(
         'Record',
         'RestrictedPython',
         'zExceptions',
-        'ZODB',
+        'ZODB3',
         'Zope2',
         'zope.dottedname',
         'zope.globalrequest',

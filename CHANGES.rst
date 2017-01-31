@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.2.1 (unreleased)
+------------------
+
+- #19: Fix stale cache results after clearing an index.
+
 3.2 (2016-07-18)
 ----------------
 
