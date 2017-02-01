@@ -40,7 +40,7 @@ setup(
     ],
     install_requires=[
         'setuptools',
-        'AccessControl',
+        'AccessControl >= 4.0a4',
         'Acquisition',
         'BTrees',
         'DateTime',
