@@ -64,7 +64,7 @@ class IZCatalog(Interface):
     URL, this is an excellent unique qualifier in Zope).
     """
 
-    def catalog_object(obj, uid, idxs=None, update_metadata=1):
+    def catalog_object(obj, uid, idxs=None, update_metadata=1, pghandler=None):
         """Catalogs the object 'obj' with the unique identifier 'uid'.
 
         The uid must be a physical path, either absolute or relative to
