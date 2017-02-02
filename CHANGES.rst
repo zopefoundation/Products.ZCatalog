@@ -1,8 +1,8 @@
 Changelog
 =========
 
-4.0 (unreleased)
-----------------
+4.0a3 (2017-02-02)
+------------------
 
 - #19: Fix stale cache results after clearing an index.
 
