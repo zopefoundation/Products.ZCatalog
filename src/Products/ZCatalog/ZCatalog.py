@@ -16,12 +16,11 @@
 import logging
 import operator
 import sys
-import string
 import time
 import urllib
 
 from AccessControl.class_init import InitializeClass
-from AccessControl.Permission import name_trans
+from AccessControl.Permission import getPermissionIdentifier
 from AccessControl.Permissions import manage_zcatalog_entries
 from AccessControl.Permissions import manage_zcatalog_indexes
 from AccessControl.Permissions import search_zcatalog
@@ -669,7 +668,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 obj_mtime = DateTime(obj_mtime).timeTime()
 
             if obj_permission:
-                obj_permission = p_name(obj_permission)
+                obj_permission = getPermissionIdentifier(obj_permission)
 
             if obj_roles and isinstance(obj_roles, str):
                 obj_roles = [obj_roles]
@@ -928,10 +927,6 @@ class ZCatalog(Folder, Persistent, Implicit):
                 'Long%20query%20time%20changed'))
 
 InitializeClass(ZCatalog)
-
-
-def p_name(name):
-    return '_' + string.translate(name, name_trans) + '_Permission'
 
 
 def absattr(attr):
