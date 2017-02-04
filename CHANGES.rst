@@ -4,6 +4,9 @@ Changelog
 4.0a4 (unreleased)
 ------------------
 
+- Use aq_inner before aq_parent at some places to safely get the parent
+  [MrTango]
+
 
 4.0a3 (2017-02-02)
 ------------------

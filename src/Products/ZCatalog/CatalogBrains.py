@@ -14,6 +14,7 @@
 from Acquisition import aq_base
 from Acquisition import aq_get
 from Acquisition import aq_parent
+from Acquisition import aq_inner
 from Acquisition import Implicit
 from Record import Record
 from zope.globalrequest import getRequest
@@ -38,7 +39,7 @@ class AbstractCatalogBrain(Record, Implicit):
 
     def getPath(self):
         """Get the physical path for this record"""
-        return aq_parent(self).getpath(self.data_record_id_)
+        return aq_parent(aq_inner(self)).getpath(self.data_record_id_)
 
     def getURL(self, relative=0):
         """Generate a URL for this record"""
