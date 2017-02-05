@@ -17,6 +17,7 @@ from AccessControl.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import manage_zcatalog_indexes
 from Acquisition import aq_base
+from Acquisition import aq_inner
 from Acquisition import aq_parent
 from Acquisition import Implicit
 from App.special_dtml import DTMLFile
@@ -65,14 +66,14 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
         aq_base(aq_parent(self))._indexes = indexes
 
     def _getOb(self, id, default=_marker):
-        indexes = aq_parent(self)._catalog.indexes
+        indexes = aq_parent(aq_inner(self))._catalog.indexes
         if default is _marker:
             return indexes.get(id)
         return indexes.get(id, default)
 
     security.declareProtected(manage_zcatalog_indexes, 'objectIds')
     def objectIds(self, spec=None):
-        indexes = aq_parent(self)._catalog.indexes
+        indexes = aq_parent(aq_inner(self))._catalog.indexes
         if spec is not None:
             if isinstance(spec, str):
                 spec = [spec]
@@ -104,6 +105,7 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
             return o.__of__(self)
 
         return getattr(self, name)
+
 
 InitializeClass(ZCatalogIndexes)
 
