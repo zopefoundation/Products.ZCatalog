@@ -29,6 +29,7 @@ from Acquisition import aq_base
 from Acquisition import aq_parent
 from Acquisition import Implicit
 from App.special_dtml import DTMLFile
+from BTrees.Length import Length
 from DateTime.DateTime import DateTime
 from DocumentTemplate.DT_Util import InstanceDict
 from DocumentTemplate.DT_Util import TemplateDict
@@ -156,6 +157,8 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     _v_total = 0
     _v_transaction = None
+
+    _counter = None
 
     def __init__(self, id, title='', vocab_id=None, container=None):
         # ZCatalog no longer cares about vocabularies
@@ -288,6 +291,8 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(manage_zcatalog_entries, 'manage_catalogClear')
     def manage_catalogClear(self, REQUEST=None, RESPONSE=None, URL1=None):
         """ clears the whole enchilada """
+
+        self._increment_counter()
         self._catalog.clear()
 
         if REQUEST and RESPONSE:
@@ -482,6 +487,9 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(manage_zcatalog_entries, 'catalog_object')
     def catalog_object(self, obj, uid=None, idxs=None, update_metadata=1,
                        pghandler=None):
+
+        self._increment_counter()
+
         if uid is None:
             try:
                 uid = obj.getPhysicalPath
@@ -509,7 +517,17 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     security.declareProtected(manage_zcatalog_entries, 'uncatalog_object')
     def uncatalog_object(self, uid):
+        self._increment_counter()
         self._catalog.uncatalogObject(uid)
+
+    def _increment_counter(self):
+        if self._counter is None:
+            self._counter = Length()
+        self._counter.change(1)
+
+    security.declarePrivate('getCounter')
+    def getCounter(self):
+        return self._counter is not None and self._counter() or 0
 
     security.declareProtected(search_zcatalog, 'uniqueValuesFor')
     def uniqueValuesFor(self, name):
@@ -817,6 +835,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(manage_zcatalog_indexes, 'addIndex')
     def addIndex(self, name, type, extra=None):
         if IPluggableIndex.providedBy(type):
+            self._increment_counter()
             self._catalog.addIndex(name, type)
             return
 
@@ -852,14 +871,17 @@ class ZCatalog(Folder, Persistent, Implicit):
         else:
             index = base(name)
 
+        self._increment_counter()
         self._catalog.addIndex(name, index)
 
     security.declareProtected(manage_zcatalog_indexes, 'delIndex')
     def delIndex(self, name):
+        self._increment_counter()
         self._catalog.delIndex(name)
 
     security.declareProtected(manage_zcatalog_indexes, 'clearIndex')
     def clearIndex(self, name):
+        self._increment_counter()
         self._catalog.getIndex(name).clear()
 
     security.declareProtected(manage_zcatalog_indexes, 'addColumn')
