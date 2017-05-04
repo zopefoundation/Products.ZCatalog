@@ -13,7 +13,7 @@
 
 """ZCatalog product"""
 
-import ZCatalog
+from Products.ZCatalog import ZCatalog
 
 
 def initialize(context):
