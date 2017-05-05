@@ -4,6 +4,8 @@ Changelog
 4.0a4 (unreleased)
 ------------------
 
+- `five.globalrequest` got merged into Zope2 itself.
+
 - Use aq_inner before aq_parent at some places to safely get the parent
   [MrTango]
 
