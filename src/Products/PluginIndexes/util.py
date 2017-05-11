@@ -11,12 +11,12 @@
 #
 ##############################################################################
 
-import types
+import six
 
 
 def safe_callable(ob):
     # Works with ExtensionClasses and Acquisition.
     if hasattr(ob, '__class__'):
-        return hasattr(ob, '__call__') or isinstance(ob, types.ClassType)
+        return hasattr(ob, '__call__') or isinstance(ob, six.class_types)
     else:
         return callable(ob)
