@@ -845,9 +845,9 @@ class ZCatalog(Folder, Persistent, Implicit):
         # additional parameters to the constructor. The suggested way
         # for new index types is to use an "extra" record.
 
-        if 'extra' in base.__init__.func_code.co_varnames:
+        if 'extra' in base.__init__.__code__.co_varnames:
             index = base(name, extra=extra, caller=self)
-        elif 'caller' in base.__init__.func_code.co_varnames:
+        elif 'caller' in base.__init__.__code__.co_varnames:
             index = base(name, caller=self)
         else:
             index = base(name)
