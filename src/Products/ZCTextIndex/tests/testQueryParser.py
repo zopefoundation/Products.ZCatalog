@@ -12,6 +12,7 @@
 #
 ##############################################################################
 
+import six
 from unittest import TestCase
 
 
@@ -221,7 +222,7 @@ class TestQueryParser(TestQueryParserBase):
         # Split by UTF-8 fullwidth space
         from Products.ZCTextIndex.ParseTree import AndNode
         from Products.ZCTextIndex.ParseTree import AtomNode
-        self.expect("foo\xe3\x80\x80bar",
+        self.expect(six.b("foo\xe3\x80\x80bar"),
                     AndNode([AtomNode("foo"), AtomNode("bar")]))
 
     def test025(self):
