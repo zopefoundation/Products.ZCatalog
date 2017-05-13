@@ -71,7 +71,7 @@ class Lexicon(Persistent):
         last = _text2list(text)
         for element in self._pipeline:
             last = element.process(last)
-        return map(self._getWordIdCreate, last)
+        return list(map(self._getWordIdCreate, last))
 
     def termToWordIds(self, text):
         last = _text2list(text)

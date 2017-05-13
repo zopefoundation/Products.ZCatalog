@@ -108,26 +108,26 @@ class TestBooleanIndex(unittest.TestCase):
         for i in range(0, 100):
             obj = Dummy(i, i < 80 and True or False)
             index._index_object(obj.id, obj, attr='truth')
-        self.assertEqual(list(index._index), range(80, 100))
+        self.assertEqual(list(index._index), list(range(80, 100)))
         self.assertEqual(len(index._unindex), 100)
 
         res, idx = index._apply_index({'truth': True})
-        self.assertEqual(list(res), range(0, 80))
+        self.assertEqual(list(res), list(range(0, 80)))
         res, idx = index._apply_index({'truth': False})
-        self.assertEqual(list(res), range(80, 100))
+        self.assertEqual(list(res), list(range(80, 100)))
 
     def test_index_many_false(self):
         index = self._makeOne()
         for i in range(0, 100):
             obj = Dummy(i, i >= 80 and True or False)
             index._index_object(obj.id, obj, attr='truth')
-        self.assertEqual(list(index._index), range(80, 100))
+        self.assertEqual(list(index._index), list(range(80, 100)))
         self.assertEqual(len(index._unindex), 100)
 
         res, idx = index._apply_index({'truth': False})
-        self.assertEqual(list(res), range(0, 80))
+        self.assertEqual(list(res), list(range(0, 80)))
         res, idx = index._apply_index({'truth': True})
-        self.assertEqual(list(res), range(80, 100))
+        self.assertEqual(list(res), list(range(80, 100)))
 
     def test_index_many_change(self):
         index = self._makeOne()
@@ -144,26 +144,26 @@ class TestBooleanIndex(unittest.TestCase):
         # Now add an equal number of False values
         for i in range(4, 8):
             add(i, False)
-        self.assertEqual(list(index._index), range(4, 8))
+        self.assertEqual(list(index._index), list(range(4, 8)))
         self.assertEqual(len(index._unindex), 8)
         # Once False gets to be more than 60% of the indexed set, we switch
         add(8, False)
-        self.assertEqual(list(index._index), range(4, 9))
+        self.assertEqual(list(index._index), list(range(4, 9)))
         add(9, False)
-        self.assertEqual(list(index._index), range(0, 4))
+        self.assertEqual(list(index._index), list(range(0, 4)))
         res, idx = index._apply_index({'truth': True})
-        self.assertEqual(list(res), range(0, 4))
+        self.assertEqual(list(res), list(range(0, 4)))
         res, idx = index._apply_index({'truth': False})
-        self.assertEqual(list(res), range(4, 10))
+        self.assertEqual(list(res), list(range(4, 10)))
         # and we can again switch if the percentages change again
         for i in range(6, 10):
             index.unindex_object(i)
-        self.assertEqual(list(index._index), range(4, 6))
+        self.assertEqual(list(index._index), list(range(4, 6)))
         self.assertEqual(len(index._unindex), 6)
         res, idx = index._apply_index({'truth': True})
-        self.assertEqual(list(res), range(0, 4))
+        self.assertEqual(list(res), list(range(0, 4)))
         res, idx = index._apply_index({'truth': False})
-        self.assertEqual(list(res), range(4, 6))
+        self.assertEqual(list(res), list(range(4, 6)))
 
     def test_items(self):
         index = self._makeOne()

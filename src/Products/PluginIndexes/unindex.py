@@ -466,7 +466,7 @@ class UnIndex(SimpleItem):
             record.keys = [k for k in index.keys() if k not in not_parm]
         else:
             # convert query arguments into indexed format
-            record.keys = map(self._convert, record.keys)
+            record.keys = list(map(self._convert, record.keys))
 
         # Range parameter
         range_parm = record.get('range', None)
