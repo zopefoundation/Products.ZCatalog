@@ -17,6 +17,7 @@ import time
 from collections import namedtuple
 from logging import getLogger
 from os import environ
+from six.moves._thread import allocate_lock
 
 
 from Acquisition import aq_base
@@ -24,11 +25,6 @@ from Acquisition import aq_parent
 from zope.dottedname.resolve import resolve
 
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
-
-try:
-    from _thread import allocate_lock
-except ImportError:  # PY2
-    from thread import allocate_lock
 
 
 MAX_DISTINCT_VALUES = 10
