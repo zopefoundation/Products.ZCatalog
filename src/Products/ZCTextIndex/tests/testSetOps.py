@@ -98,8 +98,7 @@ class TestSetOps(TestCase):
                 t[key] = N * i + j
             L.append((t, i + 1))
         random.shuffle(L)
-        allkeys = allkeys.keys()
-        allkeys.sort()
+        allkeys = sorted(allkeys.keys())
 
         # Test the union.
         expected = []
