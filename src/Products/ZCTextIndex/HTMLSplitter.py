@@ -22,7 +22,7 @@ from Products.ZCTextIndex.PipelineFactory import element_factory
 @implementer(ISplitter)
 class HTMLWordSplitter(object):
 
-    def process(self, text, wordpat=r"(?L)\w+"):
+    def process(self, text, wordpat=r"\w+"):
         splat = []
         for t in text:
             splat += self._split(t, wordpat)
@@ -30,7 +30,7 @@ class HTMLWordSplitter(object):
 
     def processGlob(self, text):
         # see Lexicon.globToWordIds()
-        return self.process(text, r"(?L)\w+[\w*?]*")
+        return self.process(text, r"\w+[\w*?]*")
 
     def _split(self, text, wordpat):
         text = text.lower()

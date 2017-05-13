@@ -181,8 +181,8 @@ def _text2list(text):
 class Splitter(object):
 
     import re
-    rx = re.compile(br"(?L)\w+")
-    rxGlob = re.compile(br"(?L)\w+[\w*?]*")  # See globToWordIds() above
+    rx = re.compile(r"\w+")
+    rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
 
     def process(self, lst):
         result = []
