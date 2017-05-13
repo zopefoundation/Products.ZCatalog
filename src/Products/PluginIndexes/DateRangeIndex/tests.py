@@ -151,7 +151,7 @@ class DateRangeIndexTests(unittest.TestCase):
             results, used = self._checkApply(index, {'work': value}, matches)
             matches = sorted(matches, key=lambda d: d[1].name())
 
-            for result, match in map(None, results, matches):
+            for result, match in zip(results, matches):
                 self.assertEqual(index.getEntryForObject(result),
                                  match[1].datum())
 
