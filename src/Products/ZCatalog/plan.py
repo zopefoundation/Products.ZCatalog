@@ -229,27 +229,25 @@ class CatalogPlan(object):
             return None
 
         valueindexes = self.valueindexes()
-        query_keys = set(query.keys())
-        key = set()
+        key = keys = query.keys()
 
-        # Only consider elements common to the valueindexes and the keys
-        values = query_keys & valueindexes
+        values = [name for name in keys if name in valueindexes]
         if values:
             # If we have indexes whose values should be considered, we first
             # preserve all normal indexes and then add the keys whose values
             # matter including their value into the key
-            key = query_keys - values
+            key = [name for name in keys if name not in values]
             for name in values:
                 v = query.get(name, [])
                 # We need to make sure the key is immutable,
                 # repr() is an easy way to do this without imposing
                 # restrictions on the types of values.
-                key.add((name, repr(v)))
+                key.append((name, repr(v)))
 
         # Workaround: Python 2.x accepted different types as sort key
         # for the sorted builtin. Python 3 only sorts on identical types.
-        tuple_keys = key - set([x for x in key if not isinstance(x, tuple)])
-        str_keys = key - tuple_keys
+        tuple_keys = set(key) - set([x for x in key if not isinstance(x, tuple)])
+        str_keys = set(key) - tuple_keys
         return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
 
     def plan(self):
