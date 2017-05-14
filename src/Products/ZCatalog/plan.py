@@ -229,22 +229,28 @@ class CatalogPlan(object):
             return None
 
         valueindexes = self.valueindexes()
-        key = keys = query.keys()
+        query_keys = set(query.keys())
+        key = set()
 
-        values = [name for name in keys if name in valueindexes]
+        # Only consider elements common to the valueindexes and the keys
+        values = query_keys & valueindexes
         if values:
             # If we have indexes whose values should be considered, we first
             # preserve all normal indexes and then add the keys whose values
             # matter including their value into the key
-            key = [name for name in keys if name not in values]
+            key = query_keys - values
             for name in values:
                 v = query.get(name, [])
                 # We need to make sure the key is immutable,
                 # repr() is an easy way to do this without imposing
                 # restrictions on the types of values.
-                key.append((name, repr(v)))
+                key.add((name, repr(v)))
 
-        return tuple(sorted(key))
+        # Workaround: Python 2.x accepted different types as sort key
+        # for the sorted builtin. Python 3 only sorts on identical types.
+        tuple_keys = key - set([x for x in key if not isinstance(x, tuple)])
+        str_keys = key - tuple_keys
+        return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
 
     def plan(self):
         benchmark = PriorityMap.get_entry(self.cid, self.key)
