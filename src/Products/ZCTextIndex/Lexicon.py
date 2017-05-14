@@ -16,6 +16,7 @@
 
 from random import randrange
 import re
+import six
 
 from BTrees.IOBTree import IOBTree
 from BTrees.OIBTree import OIBTree
@@ -181,8 +182,12 @@ def _text2list(text):
 class Splitter(object):
 
     import re
-    rx = re.compile(r"\w+")
-    rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
+    if six.PY2:
+        rx = re.compile(br"(?L)\w+")
+        rxGlob = re.compile(br"(?L)\w+[\w*?]*")
+    else:
+        rx = re.compile(r"\w+")
+        rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
 
     def process(self, lst):
         result = []
