@@ -94,7 +94,7 @@ class DateRangeIndexTests(unittest.TestCase):
                 result = result.keys()
             assert used == (index._since_field, index._until_field)
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (map(None, result), expectedValues)
+                '%s | %s' % (list(result), expectedValues)
             for k, v in expectedValues:
                 assert k in result
             return result, used

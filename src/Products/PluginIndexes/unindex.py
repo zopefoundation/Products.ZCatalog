@@ -453,7 +453,7 @@ class UnIndex(SimpleItem):
                         cached = IISet((cached, ))
 
                     if not_parm:
-                        not_parm = map(self._convert, not_parm)
+                        not_parm = list(map(self._convert, not_parm))
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
@@ -461,7 +461,7 @@ class UnIndex(SimpleItem):
 
         if not record.keys and not_parm:
             # convert into indexed format
-            not_parm = map(self._convert, not_parm)
+            not_parm = list(map(self._convert, not_parm))
             # we have only a 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
         else:

@@ -65,7 +65,7 @@ class FilteredSetBase(Persistent):
         self.expr = expr
 
     def __repr__(self):
-        return '%s: (%s) %s' % (self.id, self.expr, map(None, self.ids))
+        return '%s: (%s) %s' % (self.id, self.expr, list(map(None, self.ids)))
 
     __str__ = __repr__
 

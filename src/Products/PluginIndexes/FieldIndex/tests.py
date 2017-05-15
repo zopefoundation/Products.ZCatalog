@@ -114,9 +114,9 @@ class FieldIndexTests(unittest.TestCase):
                 result = result.keys()
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (map(None, result), expectedValues)
+                '%s | %s' % (list(result), expectedValues)
             for k, v in expectedValues:
-                assert k in result
+                self.assertTrue(k in result)
 
         index = self._index
 

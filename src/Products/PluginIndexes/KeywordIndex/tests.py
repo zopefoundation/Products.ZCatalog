@@ -101,8 +101,8 @@ class TestKeywordIndex(unittest.TestCase):
             result, used = self._index._apply_index(req)
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (map(None, result),
-                             map(lambda x: x[0], expectedValues))
+                '%s | %s' % (list(result),
+                             list(map(lambda x: x[0], expectedValues)))
 
             if hasattr(result, 'keys'):
                 result = result.keys()
