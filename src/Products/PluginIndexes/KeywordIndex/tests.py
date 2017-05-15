@@ -31,15 +31,6 @@ class Dummy(object):
     __repr__ = __str__
 
 
-def sortedUnique(seq):
-    unique = {}
-    for i in seq:
-        unique[i] = None
-    unique = unique.keys()
-    unique.sort()
-    return unique
-
-
 class TestKeywordIndex(unittest.TestCase):
 
     _old_log_write = None
@@ -75,20 +66,20 @@ class TestKeywordIndex(unittest.TestCase):
                         (4, Dummy(['a', 'b', 'c', 'd'])),
                         (5, Dummy(['a', 'b', 'c', 'e'])),
                         (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
-                        (7, Dummy([0])),
+                        (7, Dummy(['0'])),
                         ]
         self._noop_req = {'bar': 123}
         self._all_req = {'foo': ['a']}
         self._some_req = {'foo': ['e']}
         self._overlap_req = {'foo': ['c', 'e']}
         self._string_req = {'foo': 'a'}
-        self._zero_req = {'foo': [0]}
+        self._zero_req = {'foo': ['0']}
 
         self._not_1 = {'foo': {'query': 'f', 'not': 'f'}}
         self._not_2 = {'foo': {'query': ['e', 'f'], 'not': 'f'}}
-        self._not_3 = {'foo': {'not': 0}}
-        self._not_4 = {'foo': {'not': [0, 'e']}}
-        self._not_5 = {'foo': {'not': [0, 'no-value']}}
+        self._not_3 = {'foo': {'not': '0'}}
+        self._not_4 = {'foo': {'not': ['0', 'e']}}
+        self._not_5 = {'foo': {'not': ['0', 'no-value']}}
         self._not_6 = {'foo': 'c', 'bar': {'query': 123, 'not': 1}}
 
     def _populateIndex(self):
@@ -176,7 +167,7 @@ class TestKeywordIndex(unittest.TestCase):
         for k, v in values:
             entry = self._index.getEntryForObject(k)
             entry.sort()
-            kw = sortedUnique(v.foo())
+            kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
 
         assert len(list(self._index.uniqueValues('foo'))) == len(values) - 1
@@ -193,12 +184,6 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._not_4, values[:5])
         self._checkApply(self._not_5, values[:7])
         self._checkApply(self._not_6, values[2:7])
-
-    def testZero(self):
-        self._populateIndex()
-        values = self._values
-        self._checkApply(self._zero_req, values[-1:])
-        assert 0 in self._index.uniqueValues('foo')
 
     def testReindexChange(self):
         self._populateIndex()
