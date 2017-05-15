@@ -13,7 +13,7 @@
 
 import os
 import os.path
-from thread import LockType
+from six.moves._thread import LockType
 import time
 import unittest
 

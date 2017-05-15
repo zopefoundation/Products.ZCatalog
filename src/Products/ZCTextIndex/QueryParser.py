@@ -193,7 +193,7 @@ class QueryParser(object):
         L.append(self._parseAndExpr())
         while self._check(_OR):
             L.append(self._parseAndExpr())
-        L = filter(None, L)
+        L = list(filter(None, L))
         if not L:
             return None  # Only stopwords
         elif len(L) == 1:
@@ -241,7 +241,7 @@ class QueryParser(object):
             nodes = [self._parseAtom()]
             while self._peek(_ATOM):
                 nodes.append(self._parseAtom())
-            nodes = filter(None, nodes)
+            nodes = list(filter(None, nodes))
             if not nodes:
                 return None  # Only stopwords
             structure = [(isinstance(nodes[i], ParseTree.NotNode), i, nodes[i])

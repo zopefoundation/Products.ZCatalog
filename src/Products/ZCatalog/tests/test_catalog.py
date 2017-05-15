@@ -203,7 +203,7 @@ class TestCatalog(unittest.TestCase):
 
     upper = 10
 
-    nums = range(upper)
+    nums = list(range(upper))
     for i in range(upper):
         j = random.randrange(0, upper)
         tmp = nums[i]
@@ -355,7 +355,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     upper = 100
 
-    nums = range(upper)
+    nums = list(range(upper))
     for i in range(upper):
         j = random.randrange(0, upper)
         tmp = nums[i]
@@ -427,7 +427,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         rs = IISet([b.getRID() for b in brains])
         si = catalog.getIndex('num')
         result = catalog.sortResults(rs, si)
-        self.assertEqual([r.num for r in result], range(100))
+        self.assertEqual([r.num for r in result], list(range(100)))
 
     def test_sortResults_reversed(self):
         catalog = self._make_one()
@@ -445,7 +445,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         result = catalog.sortResults(rs, si, limit=10)
         self.assertEqual(len(result), 10)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(10))
+        self.assertEqual([r.num for r in result], list(range(10)))
 
     def test_sortResults_limit_reversed(self):
         catalog = self._make_one()
@@ -469,7 +469,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def testSortLimit(self):
         catalog = self._make_one()
-        full = catalog(att1='att1', sort_on='num')
+        full = list(catalog(att1='att1', sort_on='num'))
         a = catalog(att1='att1', sort_on='num', sort_limit=10)
         self.assertEqual([r.num for r in a], [r.num for r in full[:10]])
         self.assertEqual(a.actual_result_count, self.upper)
@@ -496,42 +496,42 @@ class TestCatalogSortBatch(unittest.TestCase):
         query = dict(att1='att1', sort_on='num', b_start=-5, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(0, 3))
+        self.assertEqual([r.num for r in result], list(range(0, 3)))
 
     def testSortLimitViaBatchingArgsStart(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=0, b_size=5)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(0, 5))
+        self.assertEqual([r.num for r in result], list(range(0, 5)))
 
     def testSortLimitViaBatchingEarlyFirstHalf(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=11, b_size=17)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(11, 28))
+        self.assertEqual([r.num for r in result], list(range(11, 28)))
 
     def testSortLimitViaBatchingArgsLateFirstHalf(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=30, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(30, 45))
+        self.assertEqual([r.num for r in result], list(range(30, 45)))
 
     def testSortLimitViaBatchingArgsLeftMiddle(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=45, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(45, 53))
+        self.assertEqual([r.num for r in result], list(range(45, 53)))
 
     def testSortLimitViaBatchingArgsRightMiddle(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=48, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(48, 56))
+        self.assertEqual([r.num for r in result], list(range(48, 56)))
 
     def testSortLimitViaBatchingArgsRightMiddleSortOnTwoSecond(self):
         catalog = self._make_one()
@@ -539,14 +539,14 @@ class TestCatalogSortBatch(unittest.TestCase):
                      sort_order=('', 'reverse'), b_start=48, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(51, 43, -1))
+        self.assertEqual([r.num for r in result], list(range(51, 43, -1)))
 
     def testSortLimitViaBatchingArgsEarlySecondHalf(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(55, 70))
+        self.assertEqual([r.num for r in result], list(range(55, 70)))
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoFirst(self):
         catalog = self._make_one()
@@ -554,7 +554,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                      sort_order=('reverse', ''), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(55, 70))
+        self.assertEqual([r.num for r in result], list(range(55, 70)))
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoSecond(self):
         catalog = self._make_one()
@@ -562,7 +562,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                      sort_order=('', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(44, 29, -1))
+        self.assertEqual([r.num for r in result], list(range(44, 29, -1)))
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoBoth(self):
         catalog = self._make_one()
@@ -570,28 +570,28 @@ class TestCatalogSortBatch(unittest.TestCase):
                      sort_order=('reverse', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(44, 29, -1))
+        self.assertEqual([r.num for r in result], list(range(44, 29, -1)))
 
     def testSortLimitViaBatchingArgsSecondHalf(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=70, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(70, 85))
+        self.assertEqual([r.num for r in result], list(range(70, 85)))
 
     def testSortLimitViaBatchingArgsEnd(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=90, b_size=10)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(90, 100))
+        self.assertEqual([r.num for r in result], list(range(90, 100)))
 
     def testSortLimitViaBatchingArgsOverEnd(self):
         catalog = self._make_one()
         query = dict(att1='att1', sort_on='num', b_start=90, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
-        self.assertEqual([r.num for r in result], range(90, 100))
+        self.assertEqual([r.num for r in result], list(range(90, 100)))
 
     def testSortLimitViaBatchingArgsOutside(self):
         catalog = self._make_one()

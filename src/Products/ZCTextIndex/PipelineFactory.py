@@ -34,13 +34,11 @@ class PipelineElementFactory(object):
         elements[name] = factory
 
     def getFactoryGroups(self):
-        groups = self._groups.keys()
-        groups.sort()
+        groups = sorted(self._groups.keys())
         return groups
 
     def getFactoryNames(self, group):
-        names = self._groups[group].keys()
-        names.sort()
+        names = sorted(self._groups[group].keys())
         return names
 
     def instantiate(self, group, name):

@@ -20,8 +20,8 @@ logger = logging.getLogger('zope.testCompositeIndex')
 states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
 default_pages = [True, False, False, False, False, False]
-subjects = map(lambda x: 'subject_%s' % x, range(6))
-keywords = map(lambda x: 'keyword_%s' % x, range(6))
+subjects = list(map(lambda x: 'subject_%s' % x, range(6)))
+keywords = list(map(lambda x: 'keyword_%s' % x, range(6)))
 
 
 class TestObject(object):

@@ -379,7 +379,7 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
                     end_word=end,
                     word_count=word_count,
                     page_count=page_count,
-                    page_range=range(page_count),
+                    page_range=range(int(page_count)),
                     page_columns=columns)
 
         if REQUEST is not None:

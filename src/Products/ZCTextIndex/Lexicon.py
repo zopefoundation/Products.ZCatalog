@@ -16,6 +16,7 @@
 
 from random import randrange
 import re
+import six
 
 from BTrees.IOBTree import IOBTree
 from BTrees.OIBTree import OIBTree
@@ -71,7 +72,7 @@ class Lexicon(Persistent):
         last = _text2list(text)
         for element in self._pipeline:
             last = element.process(last)
-        return map(self._getWordIdCreate, last)
+        return list(map(self._getWordIdCreate, last))
 
     def termToWordIds(self, text):
         last = _text2list(text)
@@ -181,8 +182,12 @@ def _text2list(text):
 class Splitter(object):
 
     import re
-    rx = re.compile(br"(?L)\w+")
-    rxGlob = re.compile(br"(?L)\w+[\w*?]*")  # See globToWordIds() above
+    if six.PY2:
+        rx = re.compile(br"(?L)\w+")
+        rxGlob = re.compile(br"(?L)\w+[\w*?]*")
+    else:
+        rx = re.compile(r"\w+")
+        rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
 
     def process(self, lst):
         result = []

@@ -60,9 +60,9 @@ class UUIDIndexTests(unittest.TestCase):
         self._values = [
             (0, Dummy('a')),
             (1, Dummy('ab')),
-            (2, Dummy(123)),
-            (3, Dummy(234)),
-            (4, Dummy(0))]
+            (2, Dummy('123')),
+            (3, Dummy('234')),
+            (4, Dummy('0'))]
         self._forward = {}
         self._backward = {}
         for k, v in self._values:
@@ -137,7 +137,7 @@ class UUIDIndexTests(unittest.TestCase):
             self.assertEqual(self._index.getEntryForObject(k), v.foo())
 
         self._checkApply({'foo': 'a'}, [values[0]])
-        self._checkApply({'foo': 0}, [values[4]])
+        self._checkApply({'foo': '0'}, [values[4]])
         self._checkApply({'foo': ['a', 'ab']}, values[:2])
 
     def test_none(self):

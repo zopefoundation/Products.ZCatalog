@@ -12,17 +12,26 @@
 #
 ##############################################################################
 import re
+import six
 
 from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import ISplitter
 from Products.ZCTextIndex.PipelineFactory import element_factory
 
+if six.PY2:
+    word_pattern = r"(?L)\w+"
+    glob_pattern = r"(?L)\w+[\w*?]*"
+else:
+    # in Python 3, the locale flag can only be applied to bytes patterns
+    word_pattern = r"\w+"
+    glob_pattern = r"\w+[\w*?]*"
+
 
 @implementer(ISplitter)
 class HTMLWordSplitter(object):
 
-    def process(self, text, wordpat=r"(?L)\w+"):
+    def process(self, text, wordpat=word_pattern):
         splat = []
         for t in text:
             splat += self._split(t, wordpat)
@@ -30,7 +39,7 @@ class HTMLWordSplitter(object):
 
     def processGlob(self, text):
         # see Lexicon.globToWordIds()
-        return self.process(text, r"(?L)\w+[\w*?]*")
+        return self.process(text, glob_pattern)
 
     def _split(self, text, wordpat):
         text = text.lower()

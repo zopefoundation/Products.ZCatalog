@@ -2,7 +2,11 @@ language: python
 sudo: false
 python:
     - 2.7
+    - 3.4
+    - 3.5
+    - 3.6
 install:
+    - pip install -U setuptools==33.1.1
     - python bootstrap.py
     - bin/buildout
 script:

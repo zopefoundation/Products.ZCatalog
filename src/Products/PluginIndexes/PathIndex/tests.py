@@ -280,14 +280,14 @@ class PathIndexTests(unittest.TestCase):
         _populateIndex(index)
         query = {'path': {'query': '/', 'level': 0}}
         res = index._apply_index(query)
-        self.assertEqual(list(res[0].keys()), range(1, 19))
+        self.assertEqual(list(res[0].keys()), list(range(1, 19)))
 
     def test___apply_index_root_levelO_tuple(self):
         index = self._makeOne()
         _populateIndex(index)
         query = {'path': (('/', 0),)}
         res = index._apply_index(query)
-        self.assertEqual(list(res[0].keys()), range(1, 19))
+        self.assertEqual(list(res[0].keys()), list(range(1, 19)))
 
     def test__apply_index_simple(self):
         index = self._makeOne()

@@ -882,7 +882,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         output.append('queryplan = {')
         for cid, plan in sorted(pmap.items()):
             output.append('  %s: {' % repr(cid))
-            for querykey, details in sorted(plan.items()):
+            for querykey, details in plan.items():
                 if isinstance(details, (frozenset, set)):
                     output.append('    %r: %r,' % (querykey, details))
                 else:

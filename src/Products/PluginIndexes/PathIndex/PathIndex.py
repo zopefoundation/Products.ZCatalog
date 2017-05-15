@@ -116,7 +116,7 @@ class PathIndex(Persistent, SimpleItem):
         if isinstance(path, (list, tuple)):
             path = '/' + '/'.join(path[1:])
 
-        comps = filter(None, path.split('/'))
+        comps = list(filter(None, path.split('/')))
 
         old_value = self._unindex.get(docid, None)
         if old_value == path:
@@ -280,7 +280,7 @@ class PathIndex(Persistent, SimpleItem):
                 [self._search(path, level)
                  for level in range(self._depth + 1)])
 
-        comps = filter(None, path.split('/'))
+        comps = list(filter(None, path.split('/')))
 
         if level + len(comps) - 1 > self._depth:
             # Our search is for a path longer than anything in the index

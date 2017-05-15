@@ -17,6 +17,7 @@ import time
 from collections import namedtuple
 from logging import getLogger
 from os import environ
+from six.moves._thread import allocate_lock
 
 
 from Acquisition import aq_base
@@ -24,11 +25,6 @@ from Acquisition import aq_parent
 from zope.dottedname.resolve import resolve
 
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
-
-try:
-    from _thread import allocate_lock
-except ImportError:  # PY2
-    from thread import allocate_lock
 
 
 MAX_DISTINCT_VALUES = 10
@@ -248,7 +244,11 @@ class CatalogPlan(object):
                 # restrictions on the types of values.
                 key.append((name, repr(v)))
 
-        return tuple(sorted(key))
+        # Workaround: Python 2.x accepted different types as sort key
+        # for the sorted builtin. Python 3 only sorts on identical types.
+        tuple_keys = set(key) - set([x for x in key if not isinstance(x, tuple)])
+        str_keys = set(key) - tuple_keys
+        return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
 
     def plan(self):
         benchmark = PriorityMap.get_entry(self.cid, self.key)

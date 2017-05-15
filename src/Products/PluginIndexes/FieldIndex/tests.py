@@ -67,7 +67,7 @@ class FieldIndexTests(unittest.TestCase):
                         (4, Dummy('abcd')),
                         (5, Dummy('abce')),
                         (6, Dummy('abce')),
-                        (7, Dummy(0))]
+                        (7, Dummy('0'))]
         self._forward = {}
         self._backward = {}
         for k, v in self._values:
@@ -85,7 +85,7 @@ class FieldIndexTests(unittest.TestCase):
                                  'range': 'max'}}
         self._max_req_n = {'foo': {'query': 'abc',
                                    'range': 'max',
-                                   'not': ['a', 'b', 0]}}
+                                   'not': ['a', 'b', '0']}}
         self._range_req = {'foo': {'query': ('abc', 'abcd'),
                                    'range': 'min:max'}}
         self._range_ren = {'foo': {'query': ('abc', 'abcd'),
@@ -94,11 +94,11 @@ class FieldIndexTests(unittest.TestCase):
         self._range_non = {'foo': {'query': ('a', 'aa'),
                                    'range': 'min:max',
                                    'not': 'a'}}
-        self._zero_req = {'foo': 0}
+        self._zero_req = {'foo': '0'}
         self._not_1 = {'foo': {'query': 'a', 'not': 'a'}}
         self._not_2 = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
         self._not_3 = {'foo': {'not': 'a'}}
-        self._not_4 = {'foo': {'not': [0]}}
+        self._not_4 = {'foo': {'not': ['0']}}
         self._not_5 = {'foo': {'not': ['a', 'b']}}
         self._not_6 = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
@@ -114,9 +114,9 @@ class FieldIndexTests(unittest.TestCase):
                 result = result.keys()
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (map(None, result), expectedValues)
+                '%s | %s' % (list(result), expectedValues)
             for k, v in expectedValues:
-                assert k in result
+                self.assertTrue(k in result)
 
         index = self._index
 
@@ -209,13 +209,6 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._not_4, values[:7])
         self._checkApply(self._not_5, values[1:])
         self._checkApply(self._not_6, values[0:1])
-
-    def testZero(self):
-        # Make sure 0 gets indexed.
-        self._populateIndex()
-        values = self._values
-        self._checkApply(self._zero_req, values[-1:])
-        assert 0 in self._index.uniqueValues('foo')
 
     def testNone(self):
         # Make sure None is ignored.

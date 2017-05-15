@@ -99,7 +99,7 @@ class ComponentMapping(PersistentMapping):
             self.__setitem__(key, val)
 
     def values(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
 
 class Component(object):

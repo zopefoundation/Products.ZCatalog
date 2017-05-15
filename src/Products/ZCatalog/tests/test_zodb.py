@@ -57,7 +57,7 @@ class ContentLayer(object):
 
     @staticmethod
     def _make_dummy():
-        num = random.randint(0, sys.maxint)
+        num = random.randint(0, sys.maxsize)
         return ZDummy(num)
 
     @staticmethod

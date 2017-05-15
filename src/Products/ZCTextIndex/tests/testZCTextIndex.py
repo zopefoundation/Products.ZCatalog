@@ -480,27 +480,27 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self.assertEqual(num, 9)
         self.assertEqual(len(r), 9)
         # The more twos in a doc, the better the score should be.
-        self.assertEqual([doc for doc, score in r], range(9, 0, -1))
+        self.assertEqual([doc for doc, score in r], list(range(9, 0, -1)))
 
         # Search for "two" alone shouldn't make any difference to relative
         # results.
         r, num = self.zc_index.query("two")
         self.assertEqual(num, 9)
         self.assertEqual(len(r), 9)
-        self.assertEqual([doc for doc, score in r], range(9, 0, -1))
+        self.assertEqual([doc for doc, score in r], list(range(9, 0, -1)))
 
         # Searching for xyz should skip doc 9, and favor the lower-numbered
         # docs (they have more instances of xyz).
         r, num = self.zc_index.query("xyz")
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
-        self.assertEqual([doc for doc, score in r], range(1, 9))
+        self.assertEqual([doc for doc, score in r], list(range(1, 9)))
 
         # And relative results shouldn't change if we add "one".
         r, num = self.zc_index.query("xyz one")
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
-        self.assertEqual([doc for doc, score in r], range(1, 9))
+        self.assertEqual([doc for doc, score in r], list(range(1, 9)))
 
         # But if we search for all the words, it's much muddier.  The boost
         # in going from i instances to i+1 of a given word is smaller than

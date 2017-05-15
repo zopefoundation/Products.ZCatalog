@@ -1,7 +1,11 @@
 include *.txt
 include *.rst
+include *.cfg
+exclude .*.cfg
 
 recursive-include src *
 
 global-exclude *.pyc
 global-exclude *.pyo
+
+include *.py
