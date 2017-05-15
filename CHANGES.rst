@@ -4,6 +4,10 @@ Changelog
 4.0a4 (unreleased)
 ------------------
 
+- Python 3 compatibility
+
+- Target use with Zope 4:  no longer support 2.13.x.
+
 - `five.globalrequest` got merged into Zope2 itself.
 
 - Use aq_inner before aq_parent at some places to safely get the parent
