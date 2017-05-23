@@ -58,7 +58,7 @@ setup(
         'RestrictedPython',
         'zExceptions',
         'ZODB',
-        'Zope2 >= 4.0a3',
+        'Zope2 >= 4.0a5',
         'zope.deferredimport',
         'zope.dottedname',
         'zope.globalrequest',
