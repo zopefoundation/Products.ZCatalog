@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.0a4 (unreleased)
+4.0.0 (2017-05-23)
 ------------------
 
 - Python 3 compatibility
