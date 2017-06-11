@@ -72,6 +72,7 @@ def eq(scaled1, scaled2, epsilon=scaled_int(0.01)):
     if abs(scaled1 - scaled2) > epsilon:
         raise AssertionError("%s != %s" % (scaled1, scaled2))
 
+
 # A series of text chunks to use for the re-index tests (testDocUpdate).
 text = [
     """Here's a knocking indeed! If a

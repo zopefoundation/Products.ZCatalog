@@ -24,6 +24,7 @@ class Dummy(object):
     def getPhysicalPath(self):
         return self.path.split('/')
 
+
 DUMMIES = {
     1: Dummy("/aa/aa/aa/1.html"),
     2: Dummy("/aa/aa/bb/2.html"),

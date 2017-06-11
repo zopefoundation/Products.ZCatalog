@@ -267,6 +267,7 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
         else:
             return lex.absolute_url()
 
+
 InitializeClass(ZCTextIndex)
 
 
@@ -279,6 +280,7 @@ def manage_addZCTextIndex(self, id, extra=None, REQUEST=None,
         URL3 = REQUEST.URL3
     return self.manage_addIndex(id, 'ZCTextIndex', extra,
                                 REQUEST, RESPONSE, URL3)
+
 
 manage_addZCTextIndexForm = DTMLFile('dtml/addZCTextIndex', globals())
 
@@ -305,6 +307,7 @@ def manage_addLexicon(self, id, title='', elements=[], REQUEST=None):
     self._setObject(id, lexicon)
     if REQUEST is not None:
         return self.manage_main(self, REQUEST, update_menu=1)
+
 
 # I am borrowing the existing vocabulary permissions for now to avoid
 # adding new permissions. This may change when old style Vocabs go away
@@ -389,5 +392,6 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
 
     security.declareProtected(LexiconMgmtPerm, 'manage_main')
     manage_main = DTMLFile('dtml/manageLexicon', globals())
+
 
 InitializeClass(PLexicon)

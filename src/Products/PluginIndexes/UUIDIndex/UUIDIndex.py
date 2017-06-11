@@ -115,6 +115,7 @@ class UUIDIndex(UnIndex):
             return _marker
         return super(UUIDIndex, self)._get_object_datum(obj, attr)
 
+
 manage_addUUIDIndexForm = DTMLFile('dtml/addUUIDIndex', globals())
 
 

@@ -58,6 +58,7 @@ def getElementNames(self, group):
 def getIndexTypes(self):
     return ZCTextIndex.index_types.keys()
 
+
 # Allow relevant exceptions to be caught in untrusted code
 ModuleSecurityInfo('Products').declarePublic('ZCTextIndex')
 ModuleSecurityInfo('Products.ZCTextIndex').declarePublic('ParseTree')

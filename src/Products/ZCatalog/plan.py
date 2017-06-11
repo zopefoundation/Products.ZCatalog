@@ -246,7 +246,9 @@ class CatalogPlan(object):
 
         # Workaround: Python 2.x accepted different types as sort key
         # for the sorted builtin. Python 3 only sorts on identical types.
-        tuple_keys = set(key) - set([x for x in key if not isinstance(x, tuple)])
+        tuple_keys = set(key) - set(
+            [x for x in key if not isinstance(x, tuple)])
+
         str_keys = set(key) - tuple_keys
         return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
 

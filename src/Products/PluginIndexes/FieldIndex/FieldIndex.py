@@ -31,6 +31,7 @@ class FieldIndex(UnIndex):
     manage_main._setName('manage_main')
     manage_browse = DTMLFile('../dtml/browseIndex', globals())
 
+
 manage_addFieldIndexForm = DTMLFile('dtml/addFieldIndex', globals())
 
 

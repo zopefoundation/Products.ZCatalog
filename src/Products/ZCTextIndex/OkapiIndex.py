@@ -159,6 +159,7 @@ class OkapiIndex(BaseIndex):
             d[wid] = dget(wid, 0) + 1
         return d, len(wids)
 
+
 """
 "Okapi" (much like "cosine rule" also) is a large family of scoring gimmicks.
 It's based on probability arguments about how words are distributed in

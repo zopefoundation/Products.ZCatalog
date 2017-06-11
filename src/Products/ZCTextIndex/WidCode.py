@@ -66,6 +66,7 @@ def encode(wids):
     n = len(wid2enc)
     return "".join([w < n and wid2enc[w] or _encode(w) for w in wids])
 
+
 _encoding = [None] * 0x4000  # Filled later, and converted to a tuple
 
 
@@ -80,6 +81,7 @@ def _encode(w):
     assert a < 0x80, (w, a, b, s)  # else more than 28 data bits
     return (chr(a + 0x80) + chr(b)) + s
 
+
 _prog = re.compile(r"[\x80-\xFF][\x00-\x7F]*")
 
 
@@ -89,6 +91,7 @@ def decode(code):
     # Obscure:  while _decoding does have the key '\x80', its value is 0,
     # so the "or" here calls _decode('\x80') anyway.
     return [get(p) or _decode(p) for p in _prog.findall(code)]
+
 
 _decoding = {}  # Filled later
 
@@ -119,5 +122,6 @@ def _fill():
         _encoding[i] = s
         _decoding[s] = i
     _encoding = tuple(_encoding)
+
 
 _fill()

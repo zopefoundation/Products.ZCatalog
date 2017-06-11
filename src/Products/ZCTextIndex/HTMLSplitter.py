@@ -49,6 +49,7 @@ class HTMLWordSplitter(object):
             text = re.sub(pat, " ", text)
         return re.findall(wordpat, text)
 
+
 element_factory.registerFactory('Word Splitter',
                                 'HTML aware splitter',
                                 HTMLWordSplitter)

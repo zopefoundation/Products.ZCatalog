@@ -201,6 +201,7 @@ class Splitter(object):
             result += self.rxGlob.findall(s)
         return result
 
+
 element_factory.registerFactory('Word Splitter',
                                 'Whitespace splitter',
                                 Splitter)
@@ -210,6 +211,7 @@ class CaseNormalizer(object):
 
     def process(self, lst):
         return [w.lower() for w in lst]
+
 
 element_factory.registerFactory('Case Normalizer',
                                 'Case Normalizer',
@@ -227,6 +229,7 @@ class StopWordRemover(object):
     def process(self, lst):
         return [w for w in lst if w not in self.dict]
 
+
 element_factory.registerFactory('Stop Words',
                                 'Remove listed stop words only',
                                 StopWordRemover)
@@ -237,6 +240,7 @@ class StopWordAndSingleCharRemover(StopWordRemover):
     dict = get_stopdict().copy()
     for c in range(255):
         dict[chr(c)] = None
+
 
 element_factory.registerFactory('Stop Words',
                                 'Remove listed and single char words',

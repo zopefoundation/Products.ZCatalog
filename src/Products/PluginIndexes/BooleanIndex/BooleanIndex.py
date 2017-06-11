@@ -227,6 +227,7 @@ class BooleanIndex(UnIndex):
         items.append((not bool(indexed), false))
         return items
 
+
 manage_addBooleanIndexForm = DTMLFile('dtml/addBooleanIndex', globals())
 
 

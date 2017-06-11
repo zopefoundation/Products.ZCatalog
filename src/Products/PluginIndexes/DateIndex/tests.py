@@ -110,6 +110,7 @@ class DateIndexTests(unittest.TestCase):
 
     def _makeOne(self, id='date'):
         index = self._getTargetClass()(id)
+
         class DummyZCatalog(SimpleItem):
             id = 'DummyZCatalog'
 

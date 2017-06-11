@@ -209,6 +209,7 @@ class TopicIndex(Persistent, SimpleItem):
     manage_main._setName('manage_main')
     editFilteredSet = DTMLFile('dtml/editFilteredSet', globals())
 
+
 manage_addTopicIndexForm = DTMLFile('dtml/addTopicIndex', globals())
 
 

@@ -55,6 +55,7 @@ except NameError:
     # Python 3 compatibility
     xrange = range
 
+_marker = object()
 LOG = logging.getLogger('Zope.ZCatalog')
 
 manage_addZCatalogForm = DTMLFile('dtml/addZCatalog', globals())
@@ -926,6 +927,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 '/manage_catalogReport?manage_tabs_message='
                 'Long%20query%20time%20changed'))
 
+
 InitializeClass(ZCatalog)
 
 
@@ -948,8 +950,6 @@ def expr_match(ob, ed):
     finally:
         pop()
         return r
-
-_marker = object()
 
 
 def mtime_match(ob, t, q):

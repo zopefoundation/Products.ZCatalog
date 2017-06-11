@@ -303,6 +303,7 @@ class PathIndex(Persistent, SimpleItem):
     manage = manage_main = DTMLFile('dtml/managePathIndex', globals())
     manage_main._setName('manage_main')
 
+
 manage_addPathIndexForm = DTMLFile('dtml/addPathIndex', globals())
 
 

@@ -365,6 +365,7 @@ class DateRangeIndex(UnIndex):
             return None
         return value
 
+
 InitializeClass(DateRangeIndex)
 
 manage_addDateRangeIndexForm = DTMLFile('addDateRangeIndex', _dtmldir)

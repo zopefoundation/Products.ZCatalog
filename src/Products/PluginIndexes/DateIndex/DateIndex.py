@@ -72,6 +72,7 @@ class LocalTimezone(tzinfo):
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0
 
+
 Local = LocalTimezone()
 ###############################################################################
 
@@ -185,6 +186,7 @@ class DateIndex(UnIndex, PropertyManager):
                 "%s is not within the range of indexable dates (index: %s)"
                 % (value, self.id))
         return t_val
+
 
 manage_addDateIndexForm = DTMLFile('dtml/addDateIndex', globals())
 
