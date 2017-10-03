@@ -81,26 +81,54 @@ class TestBooleanIndex(unittest.TestCase):
         index._index_object(obj.id, obj, attr='truth')
         obj = Dummy(2, False)
         index._index_object(obj.id, obj, attr='truth')
+        obj = Dummy(3, True)
+        index._index_object(obj.id, obj, attr='truth')
+
+        # The less common value is indexed
+        self.assertEqual(index._index_value, 0)
 
         res, idx = index._apply_index({'truth': True}, resultset=IISet([]))
         self.assertEqual(idx, ('truth', ))
         self.assertEqual(list(res), [])
 
-        res, idx = index._apply_index({'truth': True}, resultset=IISet([2]))
+        res, idx = index._apply_index({'truth': False}, resultset=IISet([]))
         self.assertEqual(idx, ('truth', ))
         self.assertEqual(list(res), [])
 
         res, idx = index._apply_index({'truth': True}, resultset=IISet([1]))
-        self.assertEqual(idx, ('truth', ))
         self.assertEqual(list(res), [1])
 
-        res, idx = index._apply_index({'truth': True}, resultset=IISet([1, 2]))
-        self.assertEqual(idx, ('truth', ))
+        res, idx = index._apply_index({'truth': False}, resultset=IISet([1]))
+        self.assertEqual(list(res), [])
+
+        res, idx = index._apply_index({'truth': True}, resultset=IISet([2]))
+        self.assertEqual(list(res), [])
+
+        res, idx = index._apply_index({'truth': False}, resultset=IISet([2]))
+        self.assertEqual(list(res), [2])
+
+        res, idx = index._apply_index({'truth': True},
+                                      resultset=IISet([1, 2]))
         self.assertEqual(list(res), [1])
 
         res, idx = index._apply_index({'truth': False},
                                       resultset=IISet([1, 2]))
-        self.assertEqual(idx, ('truth', ))
+        self.assertEqual(list(res), [2])
+
+        res, idx = index._apply_index({'truth': True},
+                                      resultset=IISet([1, 3]))
+        self.assertEqual(list(res), [1, 3])
+
+        res, idx = index._apply_index({'truth': False},
+                                      resultset=IISet([1, 3]))
+        self.assertEqual(list(res), [])
+
+        res, idx = index._apply_index({'truth': True},
+                                      resultset=IISet([1, 2, 3]))
+        self.assertEqual(list(res), [1, 3])
+
+        res, idx = index._apply_index({'truth': False},
+                                      resultset=IISet([1, 2, 3]))
         self.assertEqual(list(res), [2])
 
     def test_index_many_true(self):

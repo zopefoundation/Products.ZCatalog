@@ -33,8 +33,17 @@ class BooleanIndex(UnIndex):
 
        self._length is the length of the unindex
        self._index_length is the length of the index
+       self._index_value is the indexed value
 
-       False doesn't have actual entries in _index.
+       The document ids in self._index have self._index_value as their value.
+
+       Since there are only two possible values (True/False), the index
+       only stores a forward index for the less common value.
+       It starts off with the opposite of value of the first document
+       and later checks and inverts itself, if more than 60% of all
+       documents now have the indexed value. It does the inversion
+       at 60% to avoid inverting itself constantly for an index that
+       has a roughly equal 50/50 split.
     """
 
     meta_type = "BooleanIndex"
