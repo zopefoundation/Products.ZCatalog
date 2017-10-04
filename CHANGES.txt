@@ -4,6 +4,8 @@ Changelog
 2.13.28 (unreleased)
 --------------------
 
+- Fix a bug in the BooleanIndex where documents without an entry in
+  the index were not being filtered out in all queries.
 
 2.13.27 (2014-02-19)
 --------------------
