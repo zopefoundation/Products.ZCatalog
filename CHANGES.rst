@@ -4,6 +4,9 @@ Changelog
 3.2.1 (unreleased)
 ------------------
 
+- Fix a bug in the BooleanIndex where documents without an entry in
+  the index were not being filtered out in all queries.
+
 - #19: Fix stale cache results after clearing an index.
 
 3.2 (2016-07-18)
