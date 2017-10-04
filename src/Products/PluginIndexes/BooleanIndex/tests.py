@@ -103,6 +103,14 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertEqual(idx, ('truth', ))
         self.assertEqual(list(res), [2])
 
+        res, idx = index._apply_index({'truth': True},
+                                      resultset=IISet([1, 2, 99]))
+        self.assertEqual(list(res), [1])
+
+        res, idx = index._apply_index({'truth': False},
+                                      resultset=IISet([1, 2, 99]))
+        self.assertEqual(list(res), [2])
+
     def test_index_many_true(self):
         index = self._makeOne()
         for i in range(0, 100):
