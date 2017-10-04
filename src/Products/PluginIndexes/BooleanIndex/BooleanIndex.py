@@ -218,7 +218,8 @@ class BooleanIndex(UnIndex):
                 if resultset is None:
                     return union(difference(self._unindex, index), IISet([]))
                 else:
-                    return difference(resultset, index)
+                    return intersection(difference(resultset, index),
+                                        self._unindex)
         return IISet()
 
     def indexSize(self):

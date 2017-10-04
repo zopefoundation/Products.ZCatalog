@@ -4,6 +4,9 @@ Changelog
 4.0.1 (unreleased)
 ------------------
 
+- Fix a bug in the BooleanIndex where documents without an entry in
+  the index were not being filtered out in all queries.
+
 - More PEP8 compliance.
 
 
