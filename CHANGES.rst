@@ -1,6 +1,10 @@
 Changelog
 =========
 
+4.0.2 (unreleased)
+------------------
+
+
 4.0.1 (2017-10-10)
 ------------------
 
@@ -8,7 +12,6 @@ Changelog
   the index were not being filtered out in all queries.
 
 - More PEP8 compliance.
-
 
 4.0.0 (2017-05-23)
 ------------------
@@ -19,9 +22,7 @@ Changelog
 
 - `five.globalrequest` got merged into Zope2 itself.
 
-- Use aq_inner before aq_parent at some places to safely get the parent
-  [MrTango]
-
+- Use aq_inner before aq_parent at some places to safely get the parent.
 
 4.0a3 (2017-02-02)
 ------------------
