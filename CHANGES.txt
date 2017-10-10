@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.28 (unreleased)
+2.13.28 (2017-10-10)
 --------------------
 
 - Fix a bug in the BooleanIndex where documents without an entry in
