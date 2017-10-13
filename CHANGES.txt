@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.13.29 (unreleased)
+2.13.29 (2017-10-13)
 --------------------
 
 - Fix broken 2.13.28 release.
@@ -28,7 +28,7 @@ Changelog
 --------------------
 
 - Fix BooleanIndex when index inversion occurs as a result of reindexing
-  and existing document with the opposite value. Fixes LP #1236354.
+  and existing document with the opposite value. Fixes LP #1236354.
 
 2.13.24 (2013-10-15)
 --------------------
