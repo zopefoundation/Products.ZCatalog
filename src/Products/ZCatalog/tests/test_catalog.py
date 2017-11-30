@@ -232,9 +232,39 @@ class TestCatalog(unittest.TestCase):
             catalog.catalogObject(Dummy(self.nums[x]), repr(x))
         return catalog.__of__(Dummy('foo'))
 
-    # clear
+    def test_clear(self):
+        catalog = self._make_one()
+        self.assertTrue(len(catalog) > 0)
+        catalog.clear()
+        self.assertEqual(catalog._length(), 0)
+        self.assertEqual(len(catalog), 0)
+        self.assertEqual(len(catalog.data), 0)
+        self.assertEqual(len(catalog.paths), 0)
+        self.assertEqual(len(catalog.uids), 0)
+        for index_id in catalog.indexes:
+            index = catalog.getIndex(index_id)
+            self.assertEqual(index.numObjects(), 0)
+
+    def test_getitem(self):
+        def extra(catalog):
+            catalog.addColumn('att1')
+
+        catalog = self._make_one(extra=extra)
+        catalog_rids = set(catalog.data)
+        brain_class = catalog._v_result_class
+        brains = []
+        brain_rids = set()
+        for rid in catalog_rids:
+            brain = catalog[rid]
+            brains.append(brain)
+            brain_rids.add(brain.getRID())
+            self.assertIsInstance(brain, brain_class)
+            self.assertEqual(brain.att1, 'att1')
+
+        self.assertEqual(len(brains), len(catalog))
+        self.assertEqual(catalog_rids, brain_rids)
+
     # updateBrains
-    # __getitem__
     # __setstate__
     # useBrains
     # getIndex
