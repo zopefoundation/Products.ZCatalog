@@ -6,6 +6,7 @@ python:
     - 3.5
     - 3.6
 install:
+    - pip install six==1.10.0 # force here to avoid conflit with zc.recipe.testrunner
     - pip install -U setuptools==33.1.1
     - pip install zc.buildout
     - buildout bootstrap
