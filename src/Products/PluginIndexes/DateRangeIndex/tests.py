@@ -12,10 +12,13 @@
 ##############################################################################
 
 import unittest
-
+from datetime import datetime
+from DateTime.DateTime import DateTime
 from BTrees.IIBTree import IISet
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
+
+from Products.PluginIndexes.util import datetime_to_minutes
 
 
 class Dummy(object):
@@ -49,11 +52,14 @@ dummies = [(0, Dummy('a', None, None)),
            ]
 
 
-def matchingDummiesByTimeValue(value):
+def matchingDummiesByTimeValue(value, precision=1):
     result = []
+    value = datetime_to_minutes(value, precision)
     for i, dummy in dummies:
-        if ((dummy.start() is None or dummy.start() <= value) and
-                (dummy.stop() is None or dummy.stop() >= value)):
+        start = datetime_to_minutes(dummy.start(), precision)
+        stop = datetime_to_minutes(dummy.stop(), precision)
+        if ((start is None or start <= value) and
+                (stop is None or stop >= value)):
             result.append((i, dummy))
     return result
 
@@ -69,10 +75,11 @@ class DateRangeIndexTests(unittest.TestCase):
             import DateRangeIndex
         return DateRangeIndex
 
-    def _makeOne(self, id, since_field=None, until_field=None, caller=None,
-                 extra=None):
+    def _makeOne(self, id, since_field=None, until_field=None,
+                 caller=None, extra=None, precision_value=None):
         klass = self._getTargetClass()
-        index = klass(id, since_field, until_field, caller, extra)
+        index = klass(id, since_field, until_field, caller, extra,
+                      precision_value=precision_value)
 
         class DummyZCatalog(SimpleItem):
             id = 'DummyZCatalog'
@@ -94,10 +101,10 @@ class DateRangeIndexTests(unittest.TestCase):
                 result = result.keys()
             assert used == (index._since_field, index._until_field)
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (list(result), expectedValues)
+                '%s: %s | %s' % (req, list(result), expectedValues)
             for k, v in expectedValues:
                 assert k in result
-            return result, used
+            return (result, used)
 
         cache = index.getRequestCache()
         cache.clear()
@@ -179,8 +186,6 @@ class DateRangeIndexTests(unittest.TestCase):
         self.assertTrue(1 in index._always.keys())
 
     def test_datetime(self):
-        from datetime import datetime
-        from DateTime.DateTime import DateTime
         from Products.PluginIndexes.DateIndex.tests import _getEastern
         before = datetime(2009, 7, 11, 0, 0, tzinfo=_getEastern())
         start = datetime(2009, 7, 13, 5, 15, tzinfo=_getEastern())
@@ -208,8 +213,6 @@ class DateRangeIndexTests(unittest.TestCase):
         self._checkApply(index, {'work': after}, [])
 
     def test_datetime_naive_timezone(self):
-        from datetime import datetime
-        from DateTime.DateTime import DateTime
         from Products.PluginIndexes.DateIndex.DateIndex import Local
         before = datetime(2009, 7, 11, 0, 0)
         start = datetime(2009, 7, 13, 5, 15)
@@ -297,3 +300,26 @@ class DateRangeIndexTests(unittest.TestCase):
         # clear is a change
         index.clear()
         self.assertEqual(index.getCounter(), 3)
+
+    def test_precision(self):
+        precision = 5
+        index = self._makeOne('work', 'start', 'stop',
+                              precision_value=precision)
+
+        for i, dummy in dummies:
+            index.index_object(i, dummy)
+
+        for i, dummy in dummies:
+            datum = map(lambda d: datetime_to_minutes(d, precision),
+                        dummy.datum())
+            self.assertEqual(index.getEntryForObject(i), tuple(datum))
+
+        for value in range(-1, 15):
+            matches = matchingDummiesByTimeValue(value, precision)
+            results, used = self._checkApply(index, {'work': value}, matches)
+            matches = sorted(matches, key=lambda d: d[1].name())
+            for result, match in zip(results, matches):
+                datum = map(lambda d: datetime_to_minutes(d, precision),
+                            match[1].datum())
+                self.assertEqual(index.getEntryForObject(result),
+                                 tuple(datum))

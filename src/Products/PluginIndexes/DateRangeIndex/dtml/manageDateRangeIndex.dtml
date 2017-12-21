@@ -51,6 +51,15 @@ Distinct values: <dtml-var indexSize>
   </td>
 </tr>
 <tr>
+  <td align="left" valign="top">
+  <div class="form-label">
+  Precision value (in minutes)
+  </td>
+  <td align="left" valign="top">
+   <input name="precision_value" value="&dtml-getPrecisionValue;" />
+  </td>
+</tr>
+<tr>
   <td></td>
   <td align="left" valign="top">
   <div class="form-element">

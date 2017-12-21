@@ -108,7 +108,7 @@ class DateIndexTests(unittest.TestCase):
         from Products.PluginIndexes.DateIndex.DateIndex import DateIndex
         return DateIndex
 
-    def _makeOne(self, id='date'):
+    def _makeOne(self, id='date', precision=1):
         index = self._getTargetClass()(id)
 
         class DummyZCatalog(SimpleItem):
@@ -120,6 +120,9 @@ class DateIndexTests(unittest.TestCase):
 
         indexes = indexes.__of__(catalog)
         index = index.__of__(indexes)
+
+        if precision > 1:
+            index.manage_changeProperties(precision=precision)
 
         return index
 
@@ -155,7 +158,7 @@ class DateIndexTests(unittest.TestCase):
                 result = result.keys()
             self.assertEqual(used, ('date',))
             self.assertEqual(len(result), len(expectedValues),
-                             '%s | %s' % (result, expectedValues))
+                             '%s: %s | %s' % (req, result, expectedValues))
             for k, v in expectedValues:
                 self.assertTrue(k in result)
 
@@ -172,7 +175,7 @@ class DateIndexTests(unittest.TestCase):
         checkApply()
         self.assertEqual(cache._hits, 1)
 
-    def _convert(self, dt):
+    def _convert(self, dt, precision=1):
         from time import gmtime
         from datetime import date
         from datetime import datetime
@@ -187,7 +190,10 @@ class DateIndexTests(unittest.TestCase):
             yr, mo, dy, hr, mn = dt.utctimetuple()[:5]
         else:
             yr, mo, dy, hr, mn = dt.toZone('UTC').parts()[:5]
-        return (((yr * 12 + mo) * 31 + dy) * 24 + hr) * 60 + mn
+        value = (((yr * 12 + mo) * 31 + dy) * 24 + hr) * 60 + mn
+        if precision > 1:
+            value = value - (value % precision)
+        return int(value)
 
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import IDateIndex
@@ -281,6 +287,7 @@ class DateIndexTests(unittest.TestCase):
                                     DateTime('2062-05-08 15:16:17')),
                                    'range': 'min:max'}},
                          values[2:])
+
         self._checkApply(index,
                          {'date': 1072742620.0}, [values[6]])
         self._checkApply(index,
@@ -345,3 +352,29 @@ class DateIndexTests(unittest.TestCase):
         # clear is a change
         index.clear()
         self.assertEqual(index.getCounter(), 3)
+
+    def test_precision(self):
+        from DateTime import DateTime
+        precision = 5
+        index = self._makeOne(precision=precision)
+        self._populateIndex(index)
+        values = self._getValues()
+        for k, v in values:
+            if v.date():
+                self.assertEqual(index.getEntryForObject(k),
+                                 self._convert(v.date(), precision))
+        self._checkApply(index,
+                         {'date': DateTime(0)}, values[1:2])
+        self._checkApply(index,
+                         {'date': {'query': DateTime('2032-05-08 15:16:17'),
+                                   'range': 'min'}},
+                         values[3:6] + values[8:])
+        self._checkApply(index,
+                         {'date': {'query': DateTime('2032-05-08 15:16:17'),
+                                   'range': 'max'}},
+                         values[1:4] + values[6:8])
+
+        self._checkApply(index,
+                         {'date': 1072742620.0}, [values[6]])
+        self._checkApply(index,
+                         {'date': 1072742900}, [values[7]])
