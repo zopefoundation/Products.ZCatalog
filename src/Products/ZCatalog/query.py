@@ -26,10 +26,10 @@ class IndexQuery(object):
     The class understands the following type of parameters:
 
     - old-style parameters where the query for an index as value inside
-      the query directory where the index name is the name of the key.
+      the request dictionary where the index name is the name of the key.
 
     - dictionary-style parameters specify a query for an index as
-      an entry in the query dictionary where the key corresponds to the
+      an entry in the request dictionary where the key corresponds to the
       name of the index and the key is a dictionary with the parameters
       passed to the index.
 
@@ -37,7 +37,7 @@ class IndexQuery(object):
 
       'query'  - contains the query (either string, list or tuple) (required)
 
-      other parameters depend on the the index
+      other parameters depend on the the index.
     """
     operators = ('or', 'and')
 
