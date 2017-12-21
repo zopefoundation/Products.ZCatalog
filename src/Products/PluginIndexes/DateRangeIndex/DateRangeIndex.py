@@ -12,7 +12,6 @@
 ##############################################################################
 
 import os
-from datetime import datetime
 
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_zcatalog_indexes
@@ -26,11 +25,11 @@ from BTrees.IIBTree import intersection
 from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
-from DateTime.DateTime import DateTime
 from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 from Products.PluginIndexes.unindex import UnIndex
+from Products.PluginIndexes.util import datetime_to_minutes
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
 
@@ -75,19 +74,23 @@ class DateRangeIndex(UnIndex):
     floor_value = -510162480
     # int(DateTime('2499/12/31 0:00 GMT+12').millis() / 1000 / 60)
     ceiling_value = 278751600
+    # precision of indexed time interval in minutes
+    precision_value = 1
 
     def __init__(self, id, since_field=None, until_field=None,
-                 caller=None, extra=None,
-                 floor_value=None, ceiling_value=None):
+                 caller=None, extra=None, floor_value=None,
+                 ceiling_value=None, precision_value=None):
 
         if extra:
             since_field = extra.since_field
             until_field = extra.until_field
             floor_value = getattr(extra, 'floor_value', None)
             ceiling_value = getattr(extra, 'ceiling_value', None)
+            precision_value = getattr(extra, 'precision_value', None)
 
         self._setId(id)
-        self._edit(since_field, until_field, floor_value, ceiling_value)
+        self._edit(since_field, until_field, floor_value,
+                   ceiling_value, precision_value)
         self.clear()
 
     security.declareProtected(view, 'getSinceField')
@@ -112,28 +115,36 @@ class DateRangeIndex(UnIndex):
         """ """
         return self.ceiling_value
 
+    security.declareProtected(view, 'getPrecisionValue')
+    def getPrecisionValue(self):
+        """ """
+        return self.precision_value
+
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
 
     security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
     def manage_edit(self, since_field, until_field, floor_value,
-                    ceiling_value, REQUEST):
+                    ceiling_value, precision_value, REQUEST):
         """ """
-        self._edit(since_field, until_field, floor_value, ceiling_value)
+        self._edit(since_field, until_field, floor_value, ceiling_value,
+                   precision_value)
         REQUEST['RESPONSE'].redirect('%s/manage_main'
                                      '?manage_tabs_message=Updated'
                                      % REQUEST.get('URL2'))
 
     security.declarePrivate('_edit')
     def _edit(self, since_field, until_field, floor_value=None,
-              ceiling_value=None):
+              ceiling_value=None, precision_value=None):
         """Update the fields used to compute the range.
         """
         self._since_field = since_field
         self._until_field = until_field
-        if floor_value is not None:
+        if floor_value not in (None, ''):
             self.floor_value = int(floor_value)
-        if ceiling_value is not None:
+        if ceiling_value not in (None, ''):
             self.ceiling_value = int(ceiling_value)
+        if precision_value not in (None, ''):
+            self.precision_value = int(precision_value)
 
     security.declareProtected(manage_zcatalog_indexes, 'clear')
     def clear(self):
@@ -346,23 +357,15 @@ class DateRangeIndex(UnIndex):
             self._remove_delete(self._until, until, documentId)
 
     def _convertDateTime(self, value):
+        value = datetime_to_minutes(value, self.precision_value)
+
         if value is None:
-            return value
-        if isinstance(value, (str, datetime)):
-            dt_obj = DateTime(value)
-            value = dt_obj.millis() / 1000 / 60  # flatten to minutes
-        elif isinstance(value, DateTime):
-            value = value.millis() / 1000 / 60  # flatten to minutes
-        if value > MAX32 or value < -MAX32:
-            # t_val must be integer fitting in the 32bit range
-            raise OverflowError('%s is not within the range of dates allowed'
-                                'by a DateRangeIndex' % value)
-        value = int(value)
-        # handle values outside our specified range
-        if value > self.ceiling_value:
             return None
-        elif value < self.floor_value:
+
+        if (value > self.ceiling_value or value < self.floor_value):
+            # handle values outside our specified range
             return None
+
         return value
 
 

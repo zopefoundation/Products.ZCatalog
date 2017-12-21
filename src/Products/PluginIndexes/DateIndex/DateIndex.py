@@ -86,8 +86,12 @@ class DateIndex(UnIndex, PropertyManager):
     query_options = ('query', 'range', 'not')
 
     index_naive_time_as_local = True  # False means index as UTC
+    precision = 1  # precision of indexed time in minutes
     _properties = ({'id': 'index_naive_time_as_local',
                     'type': 'boolean',
+                    'mode': 'w'},
+                   {'id': 'precision',
+                    'type': 'int',
                     'mode': 'w'},)
 
     manage = manage_main = DTMLFile('dtml/manageDateIndex', globals())
@@ -179,6 +183,12 @@ class DateIndex(UnIndex, PropertyManager):
         mn = t_tup[4]
 
         t_val = ((((yr * 12 + mo) * 31 + dy) * 24 + hr) * 60 + mn)
+
+        # flatten to precision
+        if self.precision > 1:
+            t_val = t_val - (t_val % self.precision)
+
+        t_val = int(t_val)
 
         if t_val > MAX32:
             # t_val must be integer fitting in the 32bit range

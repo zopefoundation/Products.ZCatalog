@@ -4,6 +4,10 @@ Changelog
 4.1 (unreleased)
 ----------------
 
+- Add new precision property to date and date range indexes.
+  This lets you index more coarse grained time values instead of the
+  default one minute based time resolution.
+
 - Add new `getAllBrains` method to the ZCatalog, returning a generator
   of brains for all cataloged objects. You can use this if you relied
   on `searchResults` returning all brains for empty queries before
