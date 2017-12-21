@@ -1,8 +1,8 @@
 Changelog
 =========
 
-4.0.2 (unreleased)
-------------------
+4.1 (unreleased)
+----------------
 
 - Add new `getAllBrains` method to the ZCatalog, returning a generator
   of brains for all cataloged objects. You can use this if you relied
