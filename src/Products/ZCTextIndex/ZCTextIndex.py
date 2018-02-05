@@ -322,6 +322,7 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
     """
 
     meta_type = 'ZCTextIndex Lexicon'
+    zmi_icon = 'icon-book'
 
     manage_options = ({'label': 'Overview', 'action': 'manage_main'},
                       {'label': 'Query', 'action': 'queryLexicon'},
