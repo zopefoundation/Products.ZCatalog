@@ -56,6 +56,7 @@ class PathIndex(Persistent, SimpleItem):
     """
 
     meta_type = "PathIndex"
+    zmi_icon = 'icon-info'
 
     operators = ('or', 'and')
     useOperator = 'or'
