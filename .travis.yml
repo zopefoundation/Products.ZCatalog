@@ -9,12 +9,15 @@ install:
     - pip install six==1.10.0 # force here to avoid conflit with zc.recipe.testrunner
     - pip install -U setuptools==33.1.1
     - pip install zc.buildout
+    - pip install coveralls coverage
     - buildout bootstrap
-    - buildout
+    - buildout install test
 script:
-    - bin/test -v1
+    - coverage run bin/test -v1
 notifications:
     email: false
+after_success:
+    - coveralls
 cache:
   pip: true
   directories:
