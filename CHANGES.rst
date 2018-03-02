@@ -13,6 +13,8 @@ Changelog
   on `searchResults` returning all brains for empty queries before
   version 4.0a2.
 
+- Fix logging issue in KeywordIndex.
+
 4.0.1 (2017-10-10)
 ------------------
 
