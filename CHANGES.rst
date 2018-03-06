@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.1 (unreleased)
+4.1 (2018-03-06)
 ----------------
 
 - Add new precision property to date and date range indexes.
