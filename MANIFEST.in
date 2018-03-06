@@ -2,6 +2,7 @@ include *.txt
 include *.rst
 include *.cfg
 exclude .*.cfg
+include tox.ini
 
 recursive-include src *
 
