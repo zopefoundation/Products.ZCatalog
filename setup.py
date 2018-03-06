@@ -17,9 +17,9 @@ from setuptools import setup, find_packages
 setup(
     name='Products.ZCatalog',
     version='4.1.dev0',
-    url='https://pypi.python.org/pypi/Products.ZCatalog',
+    url='https://github.com/zopefoundation/Products.ZCatalog',
     license='ZPL 2.1',
-    description="Zope 2's indexing and search solution.",
+    description="Zope's indexing and search solution.",
     author='Zope Foundation and Contributors',
     author_email='zope-dev@zope.org',
     long_description=(open('README.rst').read() + '\n' +
@@ -30,7 +30,7 @@ setup(
     classifiers=[
         "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
-        "Framework :: Zope2",
+        "Framework :: Zope :: 4",
         "License :: OSI Approved :: Zope Public License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
