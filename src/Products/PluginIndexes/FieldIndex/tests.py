@@ -210,7 +210,7 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._not_4, values[:7])
         self._checkApply(self._not_5, values[1:])
         self._checkApply(self._not_6, values[0:1])
-        self._checkApply(self._not_7, values[:7])
+        self._checkApply(self._not_7, values[0:])
 
     def testNone(self):
         # Make sure None is ignored.

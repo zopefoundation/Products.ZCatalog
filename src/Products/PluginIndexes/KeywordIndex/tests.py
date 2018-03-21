@@ -185,7 +185,7 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._not_4, values[:5])
         self._checkApply(self._not_5, values[:7])
         self._checkApply(self._not_6, values[2:7])
-        self._checkApply(self._not_7, values[:7])
+        self._checkApply(self._not_7, values[0:])
 
     def testReindexChange(self):
         self._populateIndex()
