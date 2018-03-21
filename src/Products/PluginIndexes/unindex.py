@@ -452,14 +452,14 @@ class UnIndex(SimpleItem):
                     if isinstance(cached, int):
                         cached = IISet((cached, ))
 
-                    if not_parm:
+                    if not_parm is not None:
                         not_parm = list(map(self._convert, not_parm))
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
                     return cached
 
-        if not record.keys and not_parm:
+        if not record.keys and not_parm is not None:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
             # we have only a 'not' query
@@ -509,7 +509,7 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not None:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
                 return result
@@ -587,7 +587,7 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not None:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
                 return result
@@ -634,7 +634,7 @@ class UnIndex(SimpleItem):
             r = IISet((r, ))
         if r is None:
             return IISet()
-        if not_parm:
+        if not_parm is not None:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
         return r

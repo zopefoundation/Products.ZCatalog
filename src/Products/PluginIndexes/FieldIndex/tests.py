@@ -101,6 +101,7 @@ class FieldIndexTests(unittest.TestCase):
         self._not_4 = {'foo': {'not': ['0']}}
         self._not_5 = {'foo': {'not': ['a', 'b']}}
         self._not_6 = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
+        self._not_7 = {'foo': {'not': []}}
 
     def _populateIndex(self):
         for k, v in self._values:
@@ -209,6 +210,7 @@ class FieldIndexTests(unittest.TestCase):
         self._checkApply(self._not_4, values[:7])
         self._checkApply(self._not_5, values[1:])
         self._checkApply(self._not_6, values[0:1])
+        self._checkApply(self._not_7, values[:7])
 
     def testNone(self):
         # Make sure None is ignored.

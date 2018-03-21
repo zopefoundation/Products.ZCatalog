@@ -305,6 +305,7 @@ class DateIndexTests(unittest.TestCase):
                                  {'not': [DateTime(0),
                                           DateTime('2002-05-08 15:16:17')]}},
                          values[3:])
+        self._checkApply(index, {'date': {'not': []}}, values[0:])
 
     def test_naive_convert_to_utc(self):
         index = self._makeOne()

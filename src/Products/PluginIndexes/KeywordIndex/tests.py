@@ -81,6 +81,7 @@ class TestKeywordIndex(unittest.TestCase):
         self._not_4 = {'foo': {'not': ['0', 'e']}}
         self._not_5 = {'foo': {'not': ['0', 'no-value']}}
         self._not_6 = {'foo': 'c', 'bar': {'query': 123, 'not': 1}}
+        self._not_7 = {'foo': {'not': []}}
 
     def _populateIndex(self):
         for k, v in self._values:
@@ -184,6 +185,7 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._not_4, values[:5])
         self._checkApply(self._not_5, values[:7])
         self._checkApply(self._not_6, values[2:7])
+        self._checkApply(self._not_7, values[:7])
 
     def testReindexChange(self):
         self._populateIndex()
