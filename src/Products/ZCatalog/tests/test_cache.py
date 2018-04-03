@@ -106,8 +106,8 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(stats[0]['misses'], misses)
 
         # compare result
-        rset1 = map(lambda x: x.getRID(), res1)
-        rset2 = map(lambda x: x.getRID(), res2)
+        rset1 = list(map(lambda x: x.getRID(), res1))
+        rset2 = list(map(lambda x: x.getRID(), res2))
         self.assertEqual(rset1, rset2)
 
     def _get_cache_key(self, query=None):
@@ -176,6 +176,6 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(stats[0]['misses'], misses + 1)
 
         # compare result
-        rset1 = map(lambda x: x.getRID(), res1)
-        rset2 = map(lambda x: x.getRID(), res2)
+        rset1 = list(map(lambda x: x.getRID(), res1))
+        rset2 = list(map(lambda x: x.getRID(), res2))
         self.assertEqual(rset1, rset2)
