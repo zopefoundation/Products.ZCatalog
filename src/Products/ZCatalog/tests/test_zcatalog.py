@@ -34,7 +34,7 @@ class ZDummy(ExtensionClass.Base):
         self.num = num
 
     def title(self):
-        return '%d' % self.num
+        return '{0:d}'.format(self.num)
 
 
 class ZDummyFalse(ZDummy):
@@ -50,7 +50,7 @@ class DummyLenFail(ZDummy):
         self.fail = fail
 
     def __len__(self):
-        self.fail("__len__() was called")
+        self.fail('__len__() was called')
 
 
 class DummyNonzeroFail(ZDummy):
@@ -60,7 +60,7 @@ class DummyNonzeroFail(ZDummy):
         self.fail = fail
 
     def __nonzero__(self):
-        self.fail("__nonzero__() was called")
+        self.fail('__nonzero__() was called')
 
 
 class FakeTraversalError(KeyError):
@@ -146,7 +146,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         verifyClass(IZCatalog, ZCatalog)
 
     def test_len(self):
-        self.assertEquals(len(self._catalog), self.upper)
+        self.assertEqual(len(self._catalog), self.upper)
 
     # manage_edit
     # manage_subbingToggle
@@ -206,7 +206,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         ob.num = 9999
         self._catalog.reindexIndex('title', {})
         result = self._catalog(title='9999')
-        self.assertEquals(1, len(result))
+        self.assertEqual(1, len(result))
 
     # manage_reindexIndex
     # catalog_object
@@ -223,7 +223,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
         def resolve_url(path, REQUEST):
             # make resolve_url fail if ZCatalog falls back on it
-            self.fail(".resolve_url() should not be called by .getobject()")
+            self.fail('.resolve_url() should not be called by .getobject()')
 
         catalog.resolve_url = resolve_url
 
@@ -236,7 +236,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         # and if there is a None at the traversal point, that's where it
         # should return
         self.d['0'] = None
-        self.assertEquals(catalog.getobject(rid0), None)
+        self.assertEqual(catalog.getobject(rid0), None)
 
     def testGetMetadataForUID(self):
         testNum = str(self.upper - 3)  # as good as any..
@@ -312,13 +312,13 @@ class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
 
     def testAddIndex(self):
         self._catalog.addIndex('id', self._makeOneIndex('id'))
-        self.assert_('id' in self._catalog.indexes())
+        self.assertTrue('id' in self._catalog.indexes())
 
     def testDelIndex(self):
         self._catalog.addIndex('title', self._makeOneIndex('title'))
-        self.assert_('title' in self._catalog.indexes())
+        self.assertTrue('title' in self._catalog.indexes())
         self._catalog.delIndex('title')
-        self.assert_('title' not in self._catalog.indexes())
+        self.assertTrue('title' not in self._catalog.indexes())
 
     def testClearIndex(self):
         self._catalog.addIndex('title', self._makeOneIndex('title'))
@@ -326,18 +326,18 @@ class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
         for x in range(10):
             ob = ZDummy(x)
             self._catalog.catalog_object(ob, str(x))
-        self.assertEquals(len(idx), 10)
+        self.assertEqual(len(idx), 10)
         self._catalog.clearIndex('title')
-        self.assertEquals(len(idx), 0)
+        self.assertEqual(len(idx), 0)
 
     def testAddColumn(self):
         self._catalog.addColumn('num', default_value=0)
-        self.assert_('num' in self._catalog.schema())
+        self.assertTrue('num' in self._catalog.schema())
 
     def testDelColumn(self):
         self._catalog.addColumn('title')
         self._catalog.delColumn('title')
-        self.assert_('title' not in self._catalog.schema())
+        self.assertTrue('title' not in self._catalog.schema())
 
 
 class TestZCatalogGetObject(ZCatalogBase, unittest.TestCase):

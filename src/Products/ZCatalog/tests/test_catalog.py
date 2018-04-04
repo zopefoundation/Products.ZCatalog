@@ -30,7 +30,7 @@ class ZDummy(ExtensionClass.Base):
         self.num = num
 
     def title(self):
-        return '%d' % self.num
+        return '{0:d}'.format(self.num)
 
 
 class Dummy(ExtensionClass.Base):
@@ -99,7 +99,7 @@ class TestAddDelColumn(unittest.TestCase):
             catalog.catalogObject(Dummy(3), repr(i))
         self.assertTrue('col2' not in catalog.data.values()[0])
         catalog.addColumn('col2', default_value='new')
-        self.assert_('col2' in catalog.schema, 'add column failed')
+        self.assertTrue('col2' in catalog.schema, 'add column failed')
         self.assertTrue('new' in catalog.data.values()[0])
 
     def test_add_threshold(self):
@@ -113,7 +113,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._make_one()
         catalog.addColumn('id')
         catalog.delColumn('id')
-        self.assert_('id' not in catalog.schema, 'del column failed')
+        self.assertTrue('id' not in catalog.schema, 'del column failed')
 
     def test_del_brains(self):
         catalog = self._make_one()
@@ -124,7 +124,7 @@ class TestAddDelColumn(unittest.TestCase):
             catalog.catalogObject(Dummy(3), repr(i))
         self.assertTrue('col2' in catalog.data.values()[0])
         catalog.delColumn('col2')
-        self.assert_('col2' not in catalog.schema, 'del column failed')
+        self.assertTrue('col2' not in catalog.schema, 'del column failed')
         self.assertTrue('col2' not in catalog.data.values()[0])
 
     def test_del_threshold(self):
@@ -145,7 +145,7 @@ class TestAddDelIndexes(unittest.TestCase):
         catalog = self._make_one()
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
-        self.assert_(isinstance(catalog.indexes['id'], FieldIndex))
+        self.assertTrue(isinstance(catalog.indexes['id'], FieldIndex))
 
     def test_add_text_index(self):
         catalog = self._make_one()
@@ -154,14 +154,14 @@ class TestAddDelIndexes(unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
-        self.assert_(isinstance(i, ZCTextIndex))
+        self.assertTrue(isinstance(i, ZCTextIndex))
 
     def test_add_keyword_index(self):
         catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
-        self.assert_(isinstance(i, KeywordIndex))
+        self.assertTrue(isinstance(i, KeywordIndex))
 
     def test_add_with_space(self):
         catalog = self._make_one()
@@ -173,14 +173,14 @@ class TestAddDelIndexes(unittest.TestCase):
                          'stripping space in add index failed')
         i = catalog.indexes['space']
         # Note: i.id still has spaces in it.
-        self.assert_(isinstance(i, KeywordIndex))
+        self.assertTrue(isinstance(i, KeywordIndex))
 
     def test_del_field_index(self):
         catalog = self._make_one()
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assert_('id' not in catalog.indexes)
+        self.assertTrue('id' not in catalog.indexes)
 
     def test_del_text_index(self):
         catalog = self._make_one()
@@ -189,14 +189,14 @@ class TestAddDelIndexes(unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assert_('id' not in catalog.indexes)
+        self.assertTrue('id' not in catalog.indexes)
 
     def test_del_keyword_index(self):
         catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assert_('id' not in catalog.indexes)
+        self.assertTrue('id' not in catalog.indexes)
 
 
 class TestCatalog(unittest.TestCase):
@@ -292,12 +292,15 @@ class TestCatalog(unittest.TestCase):
     def testUniqueValuesForLength(self):
         catalog = self._make_one()
         a = catalog.uniqueValuesFor('att1')
-        self.assertEqual(len(a), 1, 'bad number of unique values %s' % a)
+        self.assertEqual(
+            len(a), 1,
+            'bad number of unique values {0}'.format(a)
+        )
 
     def testUniqueValuesForContent(self):
         catalog = self._make_one()
         a = catalog.uniqueValuesFor('att1')
-        self.assertEqual(a[0], 'att1', 'bad content %s' % a[0])
+        self.assertEqual(a[0], 'att1', 'bad content {0}'.format(a[0]))
 
     # hasuid
     # recordify
@@ -325,7 +328,7 @@ class TestCatalog(unittest.TestCase):
         # checkKeywordIndex with min/max range wrong syntax.
         catalog = self._make_one()
         a = catalog(att3={'query': ['att'], 'range': 'min:max'})
-        self.assert_(len(a) != self.upper)
+        self.assertTrue(len(a) != self.upper)
 
     def testCombinedTextandKeywordQuery(self):
         catalog = self._make_one()
@@ -337,8 +340,10 @@ class TestCatalog(unittest.TestCase):
     def testResultLength(self):
         catalog = self._make_one()
         a = catalog(att1='att1')
-        self.assertEqual(len(a), self.upper,
-                         'length should be %s, its %s' % (self.upper, len(a)))
+        self.assertEqual(
+            len(a), self.upper,
+            'length should be {0}, its {1}'.format(self.upper, len(a))
+        )
 
     def test_query_empty(self):
         # Queries with empty mappings used to return all.
@@ -357,7 +362,10 @@ class TestCatalog(unittest.TestCase):
             catalog.addIndex('col1', col1)
         catalog = self._make_one(extra=extra)
         a = catalog({'col1': ''})
-        self.assertEqual(len(a), 0, 'length should be 0, its %s' % len(a))
+        self.assertEqual(
+            len(a), 0,
+            'length should be 0, its {0}'.format(len(a))
+        )
 
     def test_field_index_length(self):
         catalog = self._make_one()
@@ -419,37 +427,37 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sorted_search_indexes_empty(self):
         catalog = self._make_one()
         result = catalog._sorted_search_indexes({})
-        self.assertEquals(len(result), 0)
+        self.assertEqual(len(result), 0)
 
     def test_sorted_search_indexes_one(self):
         catalog = self._make_one()
         result = catalog._sorted_search_indexes({'att1': 'a'})
-        self.assertEquals(result, ['att1'])
+        self.assertEqual(result, ['att1'])
 
     def test_sorted_search_indexes_many(self):
         catalog = self._make_one()
         query = {'att1': 'a', 'att2': 'b', 'num': 1}
         result = catalog._sorted_search_indexes(query)
-        self.assertEquals(set(result), set(['att1', 'att2', 'num']))
+        self.assertEqual(set(result), set(['att1', 'att2', 'num']))
 
     def test_sorted_search_indexes_priority(self):
         # att2 and col2 don't support ILimitedResultIndex, att1 does
         catalog = self._make_one()
         query = {'att1': 'a', 'att2': 'b', 'col2': 'c'}
         result = catalog._sorted_search_indexes(query)
-        self.assertEquals(result.index('att2'), 0)
-        self.assertEquals(result.index('att1'), 1)
+        self.assertEqual(result.index('att2'), 0)
+        self.assertEqual(result.index('att1'), 1)
 
     def test_sorted_search_indexes_match_alternate_attr(self):
         catalog = self._make_one()
         query = {'bar': 'b'}
         result = catalog._sorted_search_indexes(query)
-        self.assertEquals(result, ['foo'])
+        self.assertEqual(result, ['foo'])
 
     def test_sorted_search_indexes_no_match(self):
         catalog = self._make_one()
         result = catalog._sorted_search_indexes({'baz': 'a'})
-        self.assertEquals(result, [])
+        self.assertEqual(result, [])
 
     def test_sortResults(self):
         catalog = self._make_one()
@@ -890,19 +898,19 @@ class TestUnCatalog(unittest.TestCase):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att1='att1')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
 
     def test_uncatalog_text_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att2='att2')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
 
     def test_uncatalog_keyword_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att3='att3')
-        self.assertEqual(len(a), 0, 'len: %s' % len(a))
+        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
 
     def test_bad_uncatalog(self):
         catalog = self._make_one()
@@ -946,8 +954,10 @@ class TestRangeSearch(unittest.TestCase):
             n = m + 10
             for r in catalog(number={'query': (m, n), 'range': 'min:max'}):
                 size = r.number
-                self.assert_(m <= size and size <= n,
-                             "%d vs [%d,%d]" % (r.number, m, n))
+                self.assertTrue(
+                    m <= size and size <= n,
+                    '{0:d} vs [{1:d},{2:d}]'.format(r.number, m, n)
+                )
 
 
 class TestMergeResults(unittest.TestCase):
