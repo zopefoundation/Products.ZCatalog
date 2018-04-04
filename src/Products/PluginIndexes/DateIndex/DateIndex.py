@@ -142,9 +142,9 @@ class DateIndex(UnIndex, PropertyManager):
                     except ConflictError:
                         raise
                     except Exception:
-                        LOG.error("Should not happen: ConvertedDate was there,"
-                                  " now it's not, for document with id %s" %
-                                  documentId)
+                        LOG.error('Should not happen: ConvertedDate was there,'
+                                  ' now it\'s not, for document'
+                                  ' with id {0}'.format(documentId))
 
             if ConvertedDate is not _marker:
                 self.insertForwardIndexEntry(ConvertedDate, documentId)
@@ -186,15 +186,16 @@ class DateIndex(UnIndex, PropertyManager):
 
         # flatten to precision
         if self.precision > 1:
-            t_val = t_val - (t_val % self.precision)
+            t_val = t_val - (t_val % self.precision)  # noqa: S001
 
         t_val = int(t_val)
 
         if t_val > MAX32:
             # t_val must be integer fitting in the 32bit range
             raise OverflowError(
-                "%s is not within the range of indexable dates (index: %s)"
-                % (value, self.id))
+                ('{0} is not within the range of'
+                 ' indexable dates (index: {1})'.format(
+                     value, self.id)))
         return t_val
 
 

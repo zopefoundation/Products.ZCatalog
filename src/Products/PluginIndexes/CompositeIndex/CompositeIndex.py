@@ -142,8 +142,8 @@ class Component(object):
         return self._attributes
 
     def __repr__(self):
-        return "<id: %s; metatype: %s; attributes: %s>" % \
-            (self.id, self.meta_type, self.attributes)
+        return '<id: {0}; metatype: {1}; attributes: {2}>'.format(
+            self.id, self.meta_type, self.attributes)
 
 
 @implementer(ITransposeQuery)
@@ -153,7 +153,7 @@ class CompositeIndex(KeywordIndex):
        or sequences of items
     """
 
-    meta_type = "CompositeIndex"
+    meta_type = 'CompositeIndex'
 
     manage_options = (
         {'label': 'Settings',
@@ -162,7 +162,7 @@ class CompositeIndex(KeywordIndex):
          'action': 'manage_browse'},
     )
 
-    query_options = ("query", "operator")
+    query_options = ('query', 'operator')
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -304,8 +304,8 @@ class CompositeIndex(KeywordIndex):
             zc = aq_parent(aq_parent(self))
             skip = zc.getProperty('skip_compositeindex', False)
             if skip:
-                LOG.debug('%s: skip composite query build %r' %
-                          (self.__class__.__name__, zc))
+                LOG.debug('{0}: skip composite query build {1}'.format(
+                    self.__class__.__name__, repr(zc)))
                 return query
         except AttributeError:
             pass
@@ -377,7 +377,7 @@ class CompositeIndex(KeywordIndex):
         # Add a component object by 'c_id'.
         if c_id in self._components:
             raise KeyError('A component with this '
-                           'name already exists: %s' % c_id)
+                           'name already exists: {0}'.format(c_id))
 
         self._components[c_id] = Component(c_id,
                                            c_meta_type,
@@ -387,7 +387,7 @@ class CompositeIndex(KeywordIndex):
     def delComponent(self, c_id):
         # Delete the component object specified by 'c_id'.
         if c_id not in self._components:
-            raise KeyError('no such Component:  %s' % c_id)
+            raise KeyError('no such Component:  {0}'.format(c_id))
 
         del self._components[c_id]
 
@@ -488,8 +488,8 @@ class CompositeIndex(KeywordIndex):
         if RESPONSE:
             RESPONSE.redirect(URL1 + '/manage_main?'
                               'manage_tabs_message=ComponentIndex%%20fast%%20'
-                              'reindexed%%20in%%20%.3f%%20'
-                              'seconds%%20(%.3f%%20cpu)' % (tt, ct))
+                              'reindexed%%20in%%20{0:.3f}%%20'
+                              'seconds%%20({1:.3f}%%20cpu)'.format(tt, ct))
 
     manage = manage_main = DTMLFile('dtml/manageCompositeIndex', globals())
     manage_main._setName('manage_main')

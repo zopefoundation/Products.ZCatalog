@@ -46,7 +46,7 @@ class BooleanIndex(UnIndex):
        has a roughly equal 50/50 split.
     """
 
-    meta_type = "BooleanIndex"
+    meta_type = 'BooleanIndex'
 
     manage_options = (
         {'label': 'Settings',
@@ -55,7 +55,7 @@ class BooleanIndex(UnIndex):
          'action': 'manage_browse'},
     )
 
-    query_options = ["query"]
+    query_options = ['query']
 
     manage = manage_main = DTMLFile('dtml/manageBooleanIndex', globals())
     manage_main._setName('manage_main')
@@ -137,8 +137,8 @@ class BooleanIndex(UnIndex):
                 raise
             except Exception:
                 LOG.exception(
-                    '%s: unindex_object could not remove documentId %s '
-                    'from index %s. This should not happen.' % (
+                    '{0}: unindex_object could not remove documentId {1} '
+                    'from index {2}. This should not happen.'.format(
                         self.__class__.__name__,
                         str(documentId),
                         str(self.id)))
@@ -174,8 +174,8 @@ class BooleanIndex(UnIndex):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, now '
-                                  'its not, for document with id %s' %
-                                  documentId)
+                                  'its not, for document with id {0}'.format(
+                                      documentId))
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -203,7 +203,7 @@ class BooleanIndex(UnIndex):
             raise
         except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s' % documentId, exc_info=True)
+                      ' with id {0}'.format(documentId), exc_info=True)
 
     def query_index(self, record, resultset=None):
         index = self._index

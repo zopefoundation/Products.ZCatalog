@@ -58,5 +58,5 @@ class RequestCache(dict):
         return stats
 
     def __str__(self):
-        return "<RequestCache %s items (hits: %s, misses: %s, sets: %s)>" % \
-            (len(self), self._hits, self._misses, self._sets)
+        return '<RequestCache {0} items (hits: {1}, misses: {2}, \
+        sets: {3})>'.format(len(self), self._hits, self._misses, self._sets)

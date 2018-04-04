@@ -65,7 +65,10 @@ class FilteredSetBase(Persistent):
         self.expr = expr
 
     def __repr__(self):
-        return '%s: (%s) %s' % (self.id, self.expr, list(map(None, self.ids)))
+        return '{0}: ({1}) {2}'.format(
+            self.id, self.expr,
+            list(map(None, self.ids))
+        )
 
     __str__ = __repr__
 
@@ -86,8 +89,8 @@ class PythonFilteredSet(FilteredSetBase):
         except ConflictError:
             raise
         except Exception:
-            LOG.warn('eval() failed Object: %s, expr: %s' %
-                     (o.getId(), self.expr), exc_info=sys.exc_info())
+            LOG.warn('eval() failed Object: {0}, expr: {1}'.format(
+                     o.getId(), self.expr), exc_info=sys.exc_info())
 
 
 def factory(f_id, f_type, expr):
@@ -95,4 +98,4 @@ def factory(f_id, f_type, expr):
     if f_type == 'PythonFilteredSet':
         return PythonFilteredSet(f_id, expr)
     else:
-        raise TypeError('unknown type for FilteredSets: %s' % f_type)
+        raise TypeError('unknown type for FilteredSets: {0}'.format(f_type))
