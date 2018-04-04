@@ -224,7 +224,7 @@ class DateRangeIndex(UnIndex):
         the form '(value, length)'.
         """
         if name not in (self._since_field, self._until_field):
-            raise StopIteration
+            return
 
         if name == self._since_field:
             sets = (self._since, self._since_only)

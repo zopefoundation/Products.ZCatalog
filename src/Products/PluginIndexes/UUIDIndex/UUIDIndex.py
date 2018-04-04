@@ -73,7 +73,7 @@ class UUIDIndex(UnIndex):
         if name is None:
             name = self.id
         elif name != self.id:
-            raise StopIteration
+            return
 
         if not withLengths:
             for key in self._index.keys():
