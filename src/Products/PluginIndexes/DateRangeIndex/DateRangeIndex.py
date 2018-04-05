@@ -93,36 +93,36 @@ class DateRangeIndex(UnIndex):
                    ceiling_value, precision_value)
         self.clear()
 
-    security.protected(view, 'getSinceField')
+    @security.protected(view)
     def getSinceField(self):
         """Get the name of the attribute indexed as start date.
         """
         return self._since_field
 
-    security.protected(view, 'getUntilField')
+    @security.protected(view)
     def getUntilField(self):
         """Get the name of the attribute indexed as end date.
         """
         return self._until_field
 
-    security.protected(view, 'getFloorValue')
+    @security.protected(view)
     def getFloorValue(self):
         """ """
         return self.floor_value
 
-    security.protected(view, 'getCeilingValue')
+    @security.protected(view)
     def getCeilingValue(self):
         """ """
         return self.ceiling_value
 
-    security.protected(view, 'getPrecisionValue')
+    @security.protected(view)
     def getPrecisionValue(self):
         """ """
         return self.precision_value
 
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
 
-    security.protected(manage_zcatalog_indexes, 'manage_edit')
+    @security.protected(manage_zcatalog_indexes)
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, precision_value, REQUEST):
         """ """
@@ -132,7 +132,7 @@ class DateRangeIndex(UnIndex):
                                      '?manage_tabs_message=Updated'.format(
                                          REQUEST.get('URL2')))
 
-    security.private('_edit')
+    @security.private
     def _edit(self, since_field, until_field, floor_value=None,
               ceiling_value=None, precision_value=None):
         """Update the fields used to compute the range.
@@ -146,7 +146,7 @@ class DateRangeIndex(UnIndex):
         if precision_value not in (None, ''):
             self.precision_value = int(precision_value)
 
-    security.protected(manage_zcatalog_indexes, 'clear')
+    @security.protected(manage_zcatalog_indexes)
     def clear(self):
         """Start over fresh."""
         self._always = IITreeSet()
