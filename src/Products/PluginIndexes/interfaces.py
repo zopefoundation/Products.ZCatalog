@@ -290,3 +290,6 @@ class IIndexCounter(Interface):
 
     def getCounter():
         """Return a counter which is increased on index changes"""
+
+    def getCounterKey():
+        """Returns an unique key indicating an uniqe state of the index"""

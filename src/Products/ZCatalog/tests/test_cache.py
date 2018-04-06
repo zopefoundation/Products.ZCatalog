@@ -118,19 +118,35 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
     def test_make_key(self):
         query = {'big': True}
         expect = (('catalog',),
-                  frozenset([('big', (True,), self.length)]))
+                  frozenset([('big', (True,),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00'))])
+                  )
+
         self.assertEquals(self._get_cache_key(query), expect)
 
         query = {'start': '2013-07-01'}
         expect = (('catalog',),
-                  frozenset([('start', ('2013-07-01',), self.length)]))
+                  frozenset([('start', ('2013-07-01',),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00'))])
+
+                  )
+        
         self.assertEquals(self._get_cache_key(query), expect)
 
         query = {'path': '/1', 'date': '2013-07-05', 'numbers': [1, 3]}
         expect = (('catalog',),
-                  frozenset([('date', ('2013-07-05',), self.length),
-                             ('numbers', (1, 3), self.length),
-                             ('path', ('/1',), self.length)]))
+                  frozenset([('date', ('2013-07-05',),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00')),
+                             ('numbers', (1, 3),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00')),
+                             ('path', ('/1',),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00'))]))
+        
         self.assertEquals(self._get_cache_key(query), expect)
 
         queries = [{'big': True, 'b_start': 0},
@@ -140,7 +156,10 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
                    {'big': True, 'sort_on': 'big', 'sort_order': 'descending'},
                    ]
         expect = (('catalog',),
-                  frozenset([('big', (True,), self.length)]))
+                  frozenset([('big', (True,),
+                              (self.length,
+                               b'\x00\x00\x00\x00\x00\x00\x00\x00'))]))
+
         for query in queries:
             self.assertEquals(self._get_cache_key(query), expect)
 

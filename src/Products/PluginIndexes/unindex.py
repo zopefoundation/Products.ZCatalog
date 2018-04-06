@@ -31,6 +31,7 @@ from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from ZODB.POSException import ConflictError
+from ZODB.utils import newTid
 from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
@@ -310,6 +311,17 @@ class UnIndex(SimpleItem):
         """Return a counter which is increased on index changes"""
         return self._counter is not None and self._counter() or 0
 
+    def getCounterKey(self):
+        """Returns an unique key indicating an uniqe state of the index"""
+        if self._counter is not None:
+            key = (self.getCounter(), self._counter._p_serial)
+        else:
+            # generate new serial for backward compatibility
+            # if counter is not set
+            key = (self.getCounter(), newTid(None))
+
+        return key
+
     def numObjects(self):
         """Return the number of indexed objects."""
         return len(self._unindex)
@@ -405,6 +417,7 @@ class UnIndex(SimpleItem):
         # unique index identifier
         iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
                                     self.id, self.getCounter())
+
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):

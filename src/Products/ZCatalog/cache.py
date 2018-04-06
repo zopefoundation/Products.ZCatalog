@@ -63,7 +63,7 @@ class CatalogCacheKey(object):
             if name in catalog.indexes:
                 index = catalog.getIndex(name)
                 if IIndexCounter.providedBy(index):
-                    counter = index.getCounter()
+                    ck = index.getCounterKey()
                 else:
                     # cache key invalidation cannot be supported if
                     # any index of query cannot be tested for changes
@@ -86,7 +86,7 @@ class CatalogCacheKey(object):
             else:
                 value = self._convert_datum(index, value)
 
-            keys.append((name, value, counter))
+            keys.append((name, value, ck))
 
         key = frozenset(keys)
         cache_key = (self.cid, key)
