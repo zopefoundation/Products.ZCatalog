@@ -16,9 +16,6 @@ import unittest
 from BTrees.IIBTree import difference
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
-from Acquisition import aq_base
-import ZODB
-import transaction
 
 from Products.ZCatalog.query import IndexQuery
 

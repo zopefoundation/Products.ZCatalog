@@ -24,9 +24,7 @@ from BTrees.IOBTree import IOBTree
 from BTrees.OOBTree import OOBTree
 from BTrees.Length import Length
 from Persistence import Persistent
-from ZODB.utils import newTid
 from zope.interface import implementer
-
 
 from Products.PluginIndexes.interfaces import (
     IPathIndex,
@@ -203,17 +201,6 @@ class PathIndex(Persistent, SimpleItem):
     def getCounter(self):
         """Return a counter which is increased on index changes"""
         return self._counter is not None and self._counter() or 0
-
-    def getCounterKey(self):
-        """Returns an unique key indicating an uniqe state of the index"""
-        if self._counter is not None:
-            key = (self.getCounter(), self._counter._p_serial)
-        else:
-            # generate new serial for backward compatibility
-            # if counter is not set
-            key = (self.getCounter(), newTid(None))
-
-        return key
 
     def numObjects(self):
         """ See IPluggableIndex.
