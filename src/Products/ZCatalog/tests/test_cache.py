@@ -12,8 +12,12 @@
 ##############################################################################
 
 import unittest
+import transaction
 
 from zope.testing import cleanup
+from ZODB.tests.test_storage import MinimalMemoryStorage
+from ZODB import DB
+from ZODB.POSException import ConflictError
 
 from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
 from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import DateRangeIndex
@@ -31,6 +35,7 @@ from Products.ZCatalog.cache import _get_cache
 class Dummy(object):
 
     def __init__(self, num):
+        self.id = str(num)
         self.num = num
 
     def big(self):
@@ -74,7 +79,12 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
 
     def setUp(self):
         cleanup.CleanUp.setUp(self)
+        self.zcat = self._build_zcatalog()
+        
+    def _build_zcatalog(self):
+        
         zcat = ZCatalog('catalog')
+        zcat.addColumn('id')
         zcat._catalog.addIndex('big', BooleanIndex('big'))
         zcat._catalog.addIndex('start', DateIndex('start'))
         zcat._catalog.addIndex('date', DateRangeIndex('date', 'start', 'end'))
@@ -87,8 +97,8 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
             obj = Dummy(i)
             zcat.catalog_object(obj, str(i))
 
-        self.zcat = zcat
-
+        return zcat
+    
     def _apply_query(self, query):
         cache = _get_cache()
 
@@ -110,28 +120,28 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
         rset2 = list(map(lambda x: x.getRID(), res2))
         self.assertEqual(rset1, rset2)
 
-    def _get_cache_key(self, query=None):
-        catalog = self.zcat._catalog
-        query = catalog.make_query(query)
-        return CatalogCacheKey(catalog, query=query).key
+    def _get_cache_key(self, zcatalog, query):
+        catalog = zcatalog._catalog
+        q = catalog.make_query(query)
+        return CatalogCacheKey(catalog, query=q).key
 
     def test_make_key(self):
         query = {'big': True}
         expect = (('catalog',),
                   frozenset([('big', (True,), self.length)]))
-        self.assertEquals(self._get_cache_key(query), expect)
+        self.assertEquals(self._get_cache_key(self.zcat, query), expect)
 
         query = {'start': '2013-07-01'}
         expect = (('catalog',),
                   frozenset([('start', ('2013-07-01',), self.length)]))
-        self.assertEquals(self._get_cache_key(query), expect)
+        self.assertEquals(self._get_cache_key(self.zcat, query), expect)
 
         query = {'path': '/1', 'date': '2013-07-05', 'numbers': [1, 3]}
         expect = (('catalog',),
                   frozenset([('date', ('2013-07-05',), self.length),
                              ('numbers', (1, 3), self.length),
                              ('path', ('/1',), self.length)]))
-        self.assertEquals(self._get_cache_key(query), expect)
+        self.assertEquals(self._get_cache_key(self.zcat, query), expect)
 
         queries = [{'big': True, 'b_start': 0},
                    {'big': True, 'b_start': 0, 'b_size': 5},
@@ -142,7 +152,7 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
         expect = (('catalog',),
                   frozenset([('big', (True,), self.length)]))
         for query in queries:
-            self.assertEquals(self._get_cache_key(query), expect)
+            self.assertEquals(self._get_cache_key(self.zcat, query), expect)
 
     def test_cache(self):
         query = {'big': True}
@@ -179,3 +189,91 @@ class TestCatalogQueryKey(cleanup.CleanUp, unittest.TestCase):
         rset1 = list(map(lambda x: x.getRID(), res1))
         rset2 = list(map(lambda x: x.getRID(), res2))
         self.assertEqual(rset1, rset2)
+
+    def test_cache_mvcc_aware(self):
+        st = MinimalMemoryStorage()
+        db = DB(st)
+
+        query = {'big': True}
+        cache = _get_cache()
+        cache.invalidateAll()
+        
+        # init catalog
+        cn = db.open()
+        r = cn.root()
+        r['zcat'] = self._build_zcatalog()
+        obj = Dummy(20)
+        r['zcat'].catalog_object(obj, obj.id)
+        transaction.get().commit()
+
+        # 1st thread
+        tm1 = transaction.TransactionManager()
+        cn1 = db.open(transaction_manager=tm1)
+
+        # 2nd thread
+        tm2 = transaction.TransactionManager()
+        cn2 = db.open(transaction_manager=tm2)
+        
+        r1 = cn1.root()
+        # catalog new object
+        obj = Dummy(21)
+        r1['zcat'].catalog_object(obj, obj.id)
+
+        # dont cache if catalog has changed
+        self.assertEqual(self._get_cache_key(r1['zcat'], query), None)
+        tm1.get().commit()
+        
+        r2 = cn2.root()
+        # catalog new object
+        obj = Dummy(22)
+        r2['zcat'].catalog_object(obj, obj.id)
+
+        # dont cache if catalog has changed
+        self.assertEqual(self._get_cache_key(r2['zcat'], query), None)
+
+        res2 = r2['zcat'].search(query)
+        indexed_ids = {rec.id for rec in res2}
+        self.assertTrue(obj.id in indexed_ids)
+        
+        # raise conflict error because catalog was changed in tm1
+        self.assertRaises(ConflictError, tm2.get().commit)
+
+        tm2.get().abort()
+
+        # try it again
+        r2 = cn2.root()
+        obj = Dummy(22)
+        r2['zcat'].catalog_object(obj, obj.id)
+        
+        res2 = r2['zcat'].search(query)
+        indexed_ids = {rec.id for rec in res2}
+        self.assertTrue(obj.id in indexed_ids)
+        
+        tm2.get().commit()
+
+        cn1.sync()
+        # query without changing catalog
+        r1 = cn1.root()
+        qkey = self._get_cache_key(r1['zcat'], query)
+
+        # query key is not None, results will be cached
+        self.assertEqual(qkey, (('catalog',),
+                                frozenset({('big', (True,), 12)})))
+
+        res1 = r1['zcat'].search(query)
+        tm1.get().commit()
+
+        r2 = cn2.root()
+        res2 = r2['zcat'].search(query)
+        tm2.get().commit()
+
+        # compare result
+        rset1 = list(map(lambda x: x.getRID(), res1))
+        rset2 = list(map(lambda x: x.getRID(), res2))
+        self.assertEqual(rset1, rset2)
+
+        stats = cache.getStatistics()
+        hits = stats[0]['hits']
+        misses = stats[0]['misses']
+        self.assertEqual((hits, misses), (1, 1))
+

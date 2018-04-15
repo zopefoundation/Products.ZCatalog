@@ -97,18 +97,18 @@ class TestTopicIndex(TestBase):
         index = self.TI
         index._counter.set(0)
 
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), (0, False))
 
         index.index_object(1, Obj(1, 'doc1'))
-        self.assertEqual(index.getCounter(), 1)
+        self.assertEqual(index.getCounter(), (1, False))
 
         index.unindex_object(1)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # unknown id
         index.unindex_object(1)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # clear changes the index
         index.clear()
-        self.assertEqual(index.getCounter(), 3)
+        self.assertEqual(index.getCounter(), (3, False))

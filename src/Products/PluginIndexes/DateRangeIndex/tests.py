@@ -299,22 +299,22 @@ class DateRangeIndexTests(unittest.TestCase):
 
     def test_getCounter(self):
         index = self._makeOne('work', 'start', 'stop')
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), (0, False))
 
         k, obj = dummies[0]
         index.index_object(k, obj)
-        self.assertEqual(index.getCounter(), 1)
+        self.assertEqual(index.getCounter(), (1, False))
 
         index.unindex_object(k)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # unknown id
         index.unindex_object(1234)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # clear is a change
         index.clear()
-        self.assertEqual(index.getCounter(), 3)
+        self.assertEqual(index.getCounter(), (3, False))
 
     def test_precision(self):
         precision = 5

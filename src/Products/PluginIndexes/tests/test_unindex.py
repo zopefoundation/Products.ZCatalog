@@ -27,6 +27,7 @@ class TestUnIndex(unittest.TestCase):
         return UnIndex
 
     def _makeOne(self, *args, **kw):
+
         index = self._getTargetClass()(*args, **kw)
 
         class DummyZCatalog(SimpleItem):
@@ -144,9 +145,10 @@ class TestUnIndex(unittest.TestCase):
         testQuery(record)
 
     def test_getCounter(self):
+
         index = self._makeOne('counter')
 
-        self.assertEqual(index.getCounter(), 0)
+        self.assertEqual(index.getCounter(), (0, False))
 
         class Dummy(object):
             id = 1
@@ -154,18 +156,18 @@ class TestUnIndex(unittest.TestCase):
 
         obj = Dummy()
         index.index_object(obj.id, obj)
-        self.assertEqual(index.getCounter(), 1)
+        self.assertEqual(index.getCounter(), (1, False))
 
         index.unindex_object(obj.id)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # unknown id
         index.unindex_object(1234)
-        self.assertEqual(index.getCounter(), 2)
+        self.assertEqual(index.getCounter(), (2, False))
 
         # clear changes the index
         index.clear()
-        self.assertEqual(index.getCounter(), 3)
+        self.assertEqual(index.getCounter(), (3, False))
 
     def test_no_type_error(self):
         ''' Check that on Python 3.6 we do not get a TypeError when trying

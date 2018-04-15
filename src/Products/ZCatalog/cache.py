@@ -63,7 +63,11 @@ class CatalogCacheKey(object):
             if name in catalog.indexes:
                 index = catalog.getIndex(name)
                 if IIndexCounter.providedBy(index):
-                    counter = index.getCounter()
+                    counter, changed = index.getCounter()
+
+                    # cannot cache if index was updated
+                    if changed:
+                        return None
                 else:
                     # cache key invalidation cannot be supported if
                     # any index of query cannot be tested for changes

@@ -200,7 +200,11 @@ class PathIndex(Persistent, SimpleItem):
 
     def getCounter(self):
         """Return a counter which is increased on index changes"""
-        return self._counter is not None and self._counter() or 0
+        counter = self._counter is not None and self._counter() or 0
+        changed = (self._counter is not None and
+                   self._counter._p_changed or False)
+
+        return (counter, changed)
 
     def numObjects(self):
         """ See IPluggableIndex.
