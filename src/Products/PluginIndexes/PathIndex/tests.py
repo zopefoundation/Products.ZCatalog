@@ -537,19 +537,19 @@ class PathIndexTests(unittest.TestCase):
     def test_getCounter(self):
         index = self._makeOne()
 
-        self.assertEqual(index.getCounter(), (0, False))
+        self.assertEqual(index.getCounter(), 0)
 
         doc = Dummy('/aa/bb')
         index.index_object(1, doc)
-        self.assertEqual(index.getCounter(), (1, False))
+        self.assertEqual(index.getCounter(), 1)
 
         index.unindex_object(1)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # unknown id
         index.unindex_object(1)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # clear changes the index
         index.clear()
-        self.assertEqual(index.getCounter(), (3, False))
+        self.assertEqual(index.getCounter(), 3)

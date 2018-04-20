@@ -337,21 +337,21 @@ class DateIndexTests(unittest.TestCase):
         from DateTime import DateTime
 
         index = self._makeOne()
-        self.assertEqual(index.getCounter(), (0, False))
+        self.assertEqual(index.getCounter(), 0)
 
         index.index_object(1, Dummy('b', DateTime(0)))
-        self.assertEqual(index.getCounter(), (1, False))
+        self.assertEqual(index.getCounter(), 1)
 
         index.unindex_object(1)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # unknown id
         index.unindex_object(1234)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # clear is a change
         index.clear()
-        self.assertEqual(index.getCounter(), (3, False))
+        self.assertEqual(index.getCounter(), 3)
 
     def test_precision(self):
         from DateTime import DateTime

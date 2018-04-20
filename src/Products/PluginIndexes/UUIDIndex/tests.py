@@ -179,19 +179,19 @@ class UUIDIndexTests(unittest.TestCase):
     def test_getCounter(self):
         index = self._makeOne('foo')
 
-        self.assertEqual(index.getCounter(), (0, False))
+        self.assertEqual(index.getCounter(), 0)
 
         obj = Dummy('a')
         index.index_object(10, obj)
-        self.assertEqual(index.getCounter(), (1, False))
+        self.assertEqual(index.getCounter(), 1)
 
         index.unindex_object(10)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # unknown id
         index.unindex_object(1234)
-        self.assertEqual(index.getCounter(), (2, False))
+        self.assertEqual(index.getCounter(), 2)
 
         # clear is a change
         index.clear()
-        self.assertEqual(index.getCounter(), (3, False))
+        self.assertEqual(index.getCounter(), 3)
