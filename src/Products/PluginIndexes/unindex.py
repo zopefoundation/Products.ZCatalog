@@ -559,7 +559,11 @@ class UnIndex(SimpleItem):
                     # other object. BTrees 4.0+ will throw a TypeError
                     # "object has default comparison".
                     continue
-                s = index.get(k, None)
+                try:
+                    s = index.get(k, None)
+                except TypeError:
+                    # key is not valid for this Btree so the value is None
+                    s = None
                 # If None, try to bail early
                 if s is None:
                     if operator == 'or':
