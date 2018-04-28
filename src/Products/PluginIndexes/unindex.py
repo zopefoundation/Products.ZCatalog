@@ -563,6 +563,15 @@ class UnIndex(SimpleItem):
                     s = index.get(k, None)
                 except TypeError:
                     # key is not valid for this Btree so the value is None
+                    LOG.error(
+                        '{context!s}: query_index tried '
+                        'to look up key {key!r} from index {index!r} '
+                        'but key was of the wrong type.'.format(
+                            context=self.__class__.__name__,
+                            key=k,
+                            index=self.id,
+                        )
+                    )
                     s = None
                 # If None, try to bail early
                 if s is None:
