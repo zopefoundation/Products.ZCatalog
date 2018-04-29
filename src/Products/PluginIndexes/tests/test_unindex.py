@@ -17,6 +17,8 @@ from BTrees.IIBTree import difference
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
+from Products.ZCatalog.query import IndexQuery
+
 
 class TestUnIndex(unittest.TestCase):
 
@@ -164,3 +166,30 @@ class TestUnIndex(unittest.TestCase):
         # clear changes the index
         index.clear()
         self.assertEqual(index.getCounter(), 3)
+
+    def test_no_type_error(self):
+        ''' Check that on Python 3.6 we do not get a TypeError when trying
+        to query an index with a key that has an invalid type
+        '''
+        index = self._makeOne('counter')
+
+        class Dummy(object):
+            id = 1
+            counter = 'test'
+
+        obj = Dummy()
+        index.index_object(obj.id, obj)
+
+        # With the right query we can find the object
+        query = IndexQuery({'counter': 'test'}, 'counter')
+        res = index.query_index(query)
+        self.assertListEqual(list(res), [1])
+
+        # If the type is not the expected one we cannot
+        query = IndexQuery({'counter': None}, 'counter')
+        res = index.query_index(query)
+        self.assertListEqual(list(res), [])
+
+        query = IndexQuery({'counter': 42}, 'counter')
+        res = index.query_index(query)
+        self.assertListEqual(list(res), [])

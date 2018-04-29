@@ -4,7 +4,8 @@ Changelog
 4.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix a TypeError on Python 3 when trying to lookup in an OOBTree
+  a value for a key that has an invalid type
 
 
 4.1 (2018-03-06)
