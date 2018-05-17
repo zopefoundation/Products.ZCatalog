@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-_marker = []
-
 
 class RequestCache(dict):
 
@@ -22,13 +20,11 @@ class RequestCache(dict):
     _sets = 0
 
     def get(self, key, default=None):
-        value = super(RequestCache, self).get(key, _marker)
-
-        if value is _marker:
-            self._misses += 1
+        try:
+            value = self[key]
+        except KeyError:
             return default
 
-        self._hits += 1
         return value
 
     def __getitem__(self, key):
@@ -58,5 +54,6 @@ class RequestCache(dict):
         return stats
 
     def __str__(self):
-        return '<RequestCache {0} items (hits: {1}, misses: {2}, \
-        sets: {3})>'.format(len(self), self._hits, self._misses, self._sets)
+        return ('<RequestCache {0} items (hits: {1}, misses: {2},',
+                ' sets: {3})>').format(len(self), self._hits,
+                                       self._misses, self._sets)
