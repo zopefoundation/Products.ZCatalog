@@ -42,7 +42,7 @@ class TopicIndex(Persistent, SimpleItem):
     """
 
     meta_type = "TopicIndex"
-    zmi_icon = 'icon-info'
+    zmi_icon = 'zmi-icon-info'
     query_options = ('query', 'operator')
 
     manage_options = (

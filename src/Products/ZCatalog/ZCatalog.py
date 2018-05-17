@@ -99,7 +99,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(search_zcatalog, 'all_meta_types')
 
     meta_type = 'ZCatalog'
-    zmi_icon = 'icon-search'
+    zmi_icon = 'zmi-icon-search'
 
     manage_options = (
         {'label': 'Contents', 'action': 'manage_main'},

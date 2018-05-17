@@ -54,7 +54,7 @@ class UnIndex(SimpleItem):
     """Simple forward and reverse index.
     """
 
-    zmi_icon = 'icon-info'
+    zmi_icon = 'zmi-icon-info'
     _counter = None
     operators = ('or', 'and')
     useOperator = 'or'
