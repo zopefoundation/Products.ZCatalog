@@ -192,7 +192,7 @@ class UnIndex(SimpleItem):
                 self._length.change(-1)
             except Exception:
                 LOG.error('{0}: unindex_object could not remove '
-                          'documentId %{1} from index {2}.  This '
+                          'documentId {1} from index {2}.  This '
                           'should not happen.'.format(
                               self.__class__.__name__,
                               str(documentId), str(self.id)),
