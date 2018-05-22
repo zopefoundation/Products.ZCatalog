@@ -62,7 +62,7 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
     """
 
     meta_type = 'ZCTextIndex'
-    zmi_icon = 'zmi-icon-info'
+    zmi_icon = 'fas fa-info-circle'
     operators = ('and', 'or')
     useOperator = 'or'
     query_options = ('query', )
@@ -323,7 +323,7 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
     """
 
     meta_type = 'ZCTextIndex Lexicon'
-    zmi_icon = 'zmi-icon-book'
+    zmi_icon = 'fas fa-book'
 
     manage_options = ({'label': 'Overview', 'action': 'manage_main'},
                       {'label': 'Query', 'action': 'queryLexicon'},
