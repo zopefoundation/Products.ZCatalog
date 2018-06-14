@@ -155,7 +155,7 @@ Changelog
 ------------------
 
 - Fix BooleanIndex when index inversion occurs as a result of reindexing
-  and existing document with the opposite value. Fixes LPÂ #1236354.
+  and existing document with the opposite value. Fixes LP #1236354.
 
 3.0 (2013-02-24)
 ----------------
