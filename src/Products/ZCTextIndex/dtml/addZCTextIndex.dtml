@@ -1,91 +1,68 @@
 <dtml-var manage_page_header>
 
-<dtml-var "manage_form_title(this(), _,
-           form_title='Add ZCTextIndex'
-	   )">
+<main class="container-fluid">
+
+	<dtml-var "manage_form_title(this(), _, form_title='Add ZCTextIndex')">
+	
+	<p class="form-help">
+		<em>Text Indexes</em> break text up into individual words, and 
+		are often referred to as full-text indexes. Text indexes 
+		sort results by score, meaning they return hits in order 
+		from the most relevant to the least relevant.
+	</p>
+
+	<form action="manage_addZCTextIndex" method="post" enctype="multipart/form-data">
+
+		<div class="form-group row">
+			<label for="id" class="form-label col-sm-3 col-md-2">Id</label>
+			<div class="col-sm-9 col-md-10">
+				<input id="id" class="form-control" type="text" name="id" value="" />
+			</div>
+		</div>
+
+		<div class="form-group row">
+			<label for="doc_attr" class="form-label col-sm-3 col-md-2">Indexed attributes</label>
+			<div class="col-sm-9 col-md-10">
+				<input id="doc_attr" class="form-control" type="text" name="extra.doc_attr:record" value="" />
+				<small class="form-help"><em>attribute1,attribute2,...</em> or leave empty</small>
+			</div>
+		</div>
+
+		<div class="form-group row">
+			<label for="index_type" class="form-label col-sm-3 col-md-2">Ranking Strategy</label>
+			<div class="col-sm-9 col-md-10">
+				<select id="index_type" class="form-control" name="extra.index_type:record">
+					<dtml-in name="getIndexTypes">
+						<option value="&dtml-sequence-item;">&dtml-sequence-item;</option>
+					</dtml-in>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group row">
+			<label for="lexicon" class="form-label col-sm-3 col-md-2">Lexicon</label>
+			<div class="col-sm-9 col-md-10">
+				<dtml-in expr="superValues('ZCTextIndex Lexicon')">
+					<dtml-if sequence-start>
+						<select id="lexicon" class="form-control" name="extra.lexicon_id:record">
+					</dtml-if>
+							<option value="&dtml-id;">&dtml-id; <dtml-var name="title" fmt="(%s)" null html_quote></option>
+					<dtml-if sequence-end>
+						</select>
+					</dtml-if>
+					<dtml-else>
+						<em>You must create a ZCTextIndex Lexicon first.</em>
+				</dtml-in>
+			</div>
+		</div>
+
+		<div class="zmi-controls">
+			<input class="btn btn-primary" type="submit" name="submit" value="Add" /> 
+		</div>
 
 
-<p class="form-help">
-<strong>Text Indexes</strong> break text up into individual words, and 
-are often referred to as full-text indexes. Text indexes 
-sort results by score, meaning they return hits in order 
-from the most relevant to the least relevant.
-</p>
+	</form>
 
-
-<form action="manage_addZCTextIndex" method="post"
-      enctype="multipart/form-data">
-<table cellspacing="0" cellpadding="2" border="0">
-  <tr>
-    <td align="left" valign="top">
-    <div class="form-label">
-    Id
-    </div>
-    </td>
-    <td align="left" valign="top">
-    <input type="text" name="id" size="40" />
-    </td>
-  </tr>
-
-  <tr>
-    <td align="left" valign="top">
-    <div class="form-label">
-    Indexed attributes
-    </div></td>
-    <td align="left" valign="top">
-    <input type="text" name="extra.doc_attr:record" size="40" />
-    <em>attribute1,attribute2,...</em> or leave empty
-    </td>
-  </tr>
-
-  <tr>
-    <td align="left" valign="top">
-    <div class="form-label">
-    Ranking Strategy
-    </div>
-    </td>
-    <td align="left" valign="top">
-      <select name="extra.index_type:record">
-        <dtml-in name="getIndexTypes">
-          <option value="&dtml-sequence-item;">&dtml-sequence-item;</option>
-        </dtml-in>
-      </select>        
-    </td>
-  </tr>
-
-  <tr>
-    <td align="left" valign"top">
-    <div class="form-label">
-    Lexicon
-    </div></td>
-    <td>
-    <dtml-in expr="superValues('ZCTextIndex Lexicon')">
-      <dtml-if sequence-start>
-        <select name="extra.lexicon_id:record">
-      </dtml-if>
-      <option value="&dtml-id;">
-        &dtml-id; <dtml-var name="title" fmt="(%s)" null html_quote>
-      </option>
-      <dtml-if sequence-end>
-        </select>
-      </dtml-if>
-    <dtml-else>
-      <em>You must create a ZCTextIndex Lexicon first.</em>
-    </dtml-in>
-    </td> 
-  </tr>
-
-  <tr>
-    <td align="left" valign="top">
-    </td>
-    <td align="left" valign="top">
-    <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
-    </div>
-    </td>
-  </tr>
-</table>
-</form>
+</main>
 
 <dtml-var manage_page_footer>
