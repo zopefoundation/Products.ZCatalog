@@ -2,7 +2,9 @@
 
 <dtml-var manage_tabs>
 
-<main class="container-fluid">
+<dtml-comment>
+<main class="container-fluid"> @WORK </main>
+</dtml-comment>
 
 	<p class="form-help">
 		This list defines what indexes the Catalog will contain.  When objects
@@ -143,6 +145,5 @@
 
 </dtml-with>
 
-</main>
 
 <dtml-var manage_page_footer>
