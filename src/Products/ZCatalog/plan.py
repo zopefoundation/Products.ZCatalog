@@ -25,6 +25,9 @@ from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from zope.dottedname.resolve import resolve
 
 MAX_DISTINCT_VALUES = 10
+EXCLUDED_INDEXES = ['id', 'UID', 'getId', 'Title', 'sortable_title', 'path',
+                    'Date', 'modified', 'expires', 'created', 'effective', 'start', 'end',
+                    'targetUID', 'sourceUID', 'targetId', 'relationship']
 REFRESH_RATE = 100
 VALUE_INDEX_KEY = 'VALUE_INDEXES'
 
@@ -199,20 +202,22 @@ class CatalogPlan(object):
 
         value_indexes = set()
         for name, index in indexes.items():
-            if IUniqueValueIndex.providedBy(index):
-                values = index.uniqueValues()
-                i = 0
-                for value in values:
-                    # the total number of unique values might be large and
-                    # expensive to load, so we only check if we can get
-                    # more than MAX_DISTINCT_VALUES
-                    if i >= MAX_DISTINCT_VALUES:
-                        break
-                    i += 1
-                if i > 0 and i < MAX_DISTINCT_VALUES:
-                    # Only consider indexes which actually return a number
-                    # greater than zero
-                    value_indexes.add(name)
+            if index.id in EXCLUDED_INDEXES or not IUniqueValueIndex.providedBy(index):
+                continue
+
+            values = index.uniqueValues()
+            i = 0
+            for value in values:
+                # the total number of unique values might be large and
+                # expensive to load, so we only check if we can get
+                # more than MAX_DISTINCT_VALUES
+                if i >= MAX_DISTINCT_VALUES:
+                    break
+                i += 1
+            if i > 0 and i < MAX_DISTINCT_VALUES:
+                # Only consider indexes which actually return a number
+                # greater than zero
+                value_indexes.add(name)
 
         value_indexes = frozenset(value_indexes)
         PriorityMap.set_entry(self.cid, VALUE_INDEX_KEY, value_indexes)
