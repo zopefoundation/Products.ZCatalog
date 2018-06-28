@@ -2,148 +2,100 @@
 
 <dtml-var manage_tabs>
 
-<dtml-comment>
-<main class="container-fluid"> @WORK </main>
-</dtml-comment>
+<main class="container-fluid">
 
 	<p class="form-help">
-		This list defines what indexes the Catalog will contain.  When objects
+		This list defines what indexes the Catalog will contain. When objects
 		get cataloged, the values of any attributes which match
-		an index in this list will get indexed.
-		<br />
-		If you add indexes to a Catalog which contains indexed objects, you MUST
-		at the least re-index your newly added index. You may want to update the
-		whole Catalog.
+		an index in this list will get indexed. If you add indexes to a Catalog
+		which contains indexed objects, you MUST at the least re-index your newly
+		added index. You may want to update the whole Catalog.
 	</p>
 
-<dtml-with Indexes>
+	<dtml-with Indexes>
+		<!-- Add object widget -->
+		<dtml-if filtered_meta_types>
+			<form action="&dtml-absolute_url;" method="get">
 
-<!-- Add object widget -->
-<br />
-<dtml-if filtered_meta_types>
-  <table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr>
-  <td align="left" valign="top">&nbsp;</td>
-  <td align="right" valign="top">
-  <div class="form-element">
-  <form action="&dtml-absolute_url;" method="get">
-  <dtml-if "_.len(filtered_meta_types) > 1">
-    <select class="form-element" name=":action"
-     onChange="location.href='&dtml-URL1;/'+this.options[this.selectedIndex].value">
-    <option value="manage_workspace" disabled>Select type to add...</option>
-    <dtml-in filtered_meta_types mapping sort=name>
-    <option value="&dtml.url_quote-action;">&dtml-name;</option>
-    </dtml-in>
-    </select>
-    <input class="form-element" type="submit" name="submit" value=" Add " />
-  <dtml-else>
-    <dtml-in filtered_meta_types mapping sort=name>
-    <input type="hidden" name=":method" value="&dtml.url_quote-action;" />
-    <input class="form-element" type="submit" name="submit" value=" Add &dtml-name;" />
-    </dtml-in>
-  </dtml-if>
-  </form>
-  </div>
-  </td>
-  </tr>
-  </table>
-</dtml-if>
+				<div class="form-group mt-4 mb-4">
+					<div class="input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Add <span class="d-sm-block d-none">&nbsp;new&nbsp;</span> Index:</span>
+						</div>
+							<dtml-if "_.len(filtered_meta_types) > 1">
+								<select id="addindex" class="form-control" name=":action"
+									onChange="location.href='&dtml-URL1;/'+this.options[this.selectedIndex].value">
+									<option value="manage_workspace" disabled>Select type to add...</option>
+									<dtml-in filtered_meta_types mapping sort=name>
+										<option value="&dtml.url_quote-action;">&dtml-name;</option>
+									</dtml-in>
+								</select>
+							<dtml-else>
+								<dtml-in filtered_meta_types mapping sort=name>
+									<input id="addindex" class="form-control" type="text" value="&dtml-name;" disabled="disabled" />
+									<input type="hidden" name=":method" value="&dtml.url_quote-action;" />
+								</dtml-in>
+							</dtml-if>
+							<div class="input-group-append">
+								<input class="btn btn-primary" type="submit" name="submit" value="Add" />
+						</div>
+					</div>
+				</div>
 
-<form action="&dtml-URL1;/" name="objectItems" method="post">
-<dtml-if objectItems>
-<table width="100%" cellspacing="0" cellpadding="2" border="0">
-<tr class="list-header">
-  <td>&nbsp;
-  </td>
-  <td width="30%" align="left">
-    <div class="list-item"><strong>Name</strong></div>
-  </td>
-  <td width="30%" align="left">
-    <div class="list-item">Index type</div>
-  </td>
-  <td width="20%" align="left">
-    <div class="list-item"># distinct values</div>
-  </td>
+			</form>
+		</dtml-if>
 
-</tr>
+		<form action="&dtml-URL1;/" name="objectItems" method="post">
 
-<dtml-in objectItems>
-<dtml-if sequence-odd>
-<tr class="row-normal">
-<dtml-else>
-<tr class="row-hilite">
-</dtml-if>
-  <td align="left" valign="top" width="16">
-  <input type="checkbox" name="ids:list" value="&dtml-sequence-key;" />
-  </td>
-  <td align="left" valign="top">
-  <div class="list-item">
-  <a href="Indexes/&dtml.url_quote-sequence-key;/manage_workspace">
-  &dtml-sequence-key;
-  <dtml-try>
-   <dtml-let source_names="_['sequence-item'].getIndexSourceNames()">
-    <dtml-if expr="_.len(source_names) != 1
-                   or source_names[0] != _['sequence-key']">
-     (indexed attributes: <dtml-var "', '.join(source_names)">)
-    </dtml-if>
-   </dtml-let>
-  <dtml-except>
-    <dtml-if title> (&dtml-title;) </dtml-if>
-  </dtml-try>
-  </a>
-  </div>
+			<dtml-if objectItems>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="blank">&nbsp;</th>
+							<th>Name</th>
+							<th>Index type</th>
+							<th># distinct values</th>
+						</tr>
+					</thead>
+					<tbody>
+						<dtml-in objectItems>
+							<tr>
+								<td class="text-right"><input type="checkbox" name="ids:list" value="&dtml-sequence-key;" /></td>
+								<td><a href="Indexes/&dtml.url_quote-sequence-key;/manage_workspace">&dtml-sequence-key;
+									<dtml-try>
+										<dtml-let source_names="_['sequence-item'].getIndexSourceNames()">
+											<dtml-if expr="_.len(source_names) != 1 or source_names[0] != _['sequence-key']">
+												(indexed attributes: <dtml-var "', '.join(source_names)">)
+											</dtml-if>
+										</dtml-let>
+									<dtml-except>
+										<dtml-if title> (&dtml-title;) </dtml-if>
+									</dtml-try>
+									</a>
+								</td>
+								<dtml-with sequence-key>
+									<td><dtml-var meta_type></td>
+									<td><dtml-var indexSize missing="n/a"></td>
+								</dtml-with>
+							</tr>
+						</dtml-in>
+					</tbody>
+				</table>
 
-   </td>
+				<div class="zmi-controls">
+					<input class="btn btn-primary" type="submit" name="manage_delIndex:method" value="Remove index" />
+					<input class="btn btn-primary" type="submit" name="manage_reindexIndex:method" value="Reindex" />
+					<input class="btn btn-primary" type="submit" name="manage_clearIndex:method" value="Clear index" />
+				</div>
 
-  <dtml-with sequence-key>
+			<dtml-else>
+				<div class="alert alert-info">There are currently no indexes</div>
+			</dtml-if>
 
-    <td>
-    <div class="list-item">
-      <dtml-var meta_type>
-    </div>
-    </td>
+		</form>
 
-    <td>
-      <div class="list-item">
-        <dtml-var indexSize missing="n/a">
-      </div>
-    </td>
+	</dtml-with>
 
-  </dtml-with>
-
-</tr>
-</dtml-in>
-
-</table>
-
-<table cellspacing="0" cellpadding="2" border="0">
-<tr>
-  <td align="left" valign="top" width="16"></td>
-  <td align="left" valign="top">
-  <div class="form-element">
-    <input class="form-element" type="submit" name="manage_delIndex:method" value="Remove index">
-    <input class="form-element" type="submit" name="manage_reindexIndex:method" value="Reindex">
-    <input class="form-element" type="submit" name="manage_clearIndex:method" value="Clear index">
-  </div>
-  </td>
-</tr>
-</table>
-
-<dtml-else>
-<table cellspacing="0" cellpadding="2" border="0">
-<tr>
-<td>
-<div class="std-text">
-<em>There are currently no indexes</em>
-<br /><br />
-</div>
-</td>
-</tr>
-</table>
-</dtml-if>
-</form>
-
-</dtml-with>
-
+</main>
 
 <dtml-var manage_page_footer>
