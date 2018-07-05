@@ -1,8 +1,8 @@
 Changelog
 =========
 
-4.2 (unreleased)
-----------------
+4.1.1 (2018-07-05)
+------------------
 
 - Fix a TypeError on Python 3 when trying to lookup in an OOBTree
   a value for a key that has an invalid type.
