@@ -25,8 +25,8 @@ from plone.memoize import ram
 
 from ZODB.utils import p64, z64
 from ZODB.POSException import ReadConflictError
+from functools import wraps
 from six.moves._thread import allocate_lock
-from six.moves._thread import _local
 
 LOG = logging.getLogger('Zope.ZCatalog.cache')
 _marker = (z64, z64)
@@ -67,6 +67,13 @@ class CatalogQueryKey(object):
 
         catalog = self.catalog
 
+        # check high-water mark of catalog's zodb connection
+        try:
+            zodb_storage = catalog._p_jar._storage
+            zodb_storage._start
+        except AttributeError:
+            raise DontCache
+
         def skip(name, value):
             if name in ['b_start', 'b_size']:
                 return True
@@ -84,7 +91,7 @@ class CatalogQueryKey(object):
                 index = catalog.getIndex(name)
                 if IIndexCounter.providedBy(index):
                     if (
-                        not index._p_jar or catalog._p_jar._storage is not
+                        not index._p_jar or zodb_storage is not
                         index._p_jar._storage
                     ):
                         # paranoid check; if the catalog and the indexes
@@ -160,17 +167,11 @@ class QueryCacheManager(object):
 
     def __call__(self, func):
 
+        @wraps(func)
         def decorated(catalog, plan, query):
             try:
                 query_key = CatalogQueryKey(catalog, query).key
             except DontCache:
-                return func(catalog, plan, query)
-
-            try:
-                # check high-water mark of catalog's zodb connection
-                zodb_storage = catalog._p_jar._storage
-                zodb_storage._start
-            except AttributeError:
                 return func(catalog, plan, query)
 
             key = '{0}.{1}:{2}'.format(func.__module__,
@@ -179,7 +180,7 @@ class QueryCacheManager(object):
             # convert key to 64 bit hash (not really required)
             oid = p64(hash(key) & ((1 << 64) - 1))
 
-            tca = TransactionalCacheAdapter(zodb_storage, self.cache)
+            tca = TransactionalCacheAdapter(catalog, self.cache)
 
             try:
                 value = tca[oid]
@@ -199,25 +200,24 @@ class QueryCacheManager(object):
 class TransactionalCacheAdapter(object):
     """ """
     lock = allocate_lock()
-    thread_local = _local()
 
-    def __init__(self, ref_storage, cache):
+    def __init__(self, instance, cache):
 
         self.cache_adapter = cache
 
         # get thread isolated local buffer/cache
         buffer_id = '_v_{0}_buffer'.format(self.__class__.__name__)
         try:
-            self._cache = getattr(self.thread_local, buffer_id)
+            self._cache = getattr(instance, buffer_id)
         except AttributeError:
-            setattr(self.thread_local, buffer_id, {})
-            self._cache = getattr(self.thread_local, buffer_id)
+            setattr(instance, buffer_id, {})
+            self._cache = getattr(instance, buffer_id)
 
         # commit buffer
         self._uncommitted = {}
 
-        self._ref_storage = ref_storage
-        self._start = ref_storage._start
+        self._zodb_storage = instance._p_jar._storage
+        self._start = self._zodb_storage._start
         self._tid = z64
         self._registered = False
 
@@ -291,7 +291,7 @@ class TransactionalCacheAdapter(object):
                 raise ReadConflictError
 
         # get lastTransaction of catalog's zodb connection
-        self._tid = self._ref_storage.lastTransaction()
+        self._tid = self._zodb_storage.lastTransaction()
 
     def _commit(self):
         """

@@ -215,7 +215,7 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         transaction.get().commit()
 
         stats = cache.getStatistics()
- 
+
         hits = stats[0]['hits']
         misses = stats[0]['misses']
 
@@ -227,7 +227,7 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         transaction.get().commit()
 
         stats = cache.getStatistics()
- 
+
         # check if cache misses (__getitem__ + commit)
         self.assertEqual(stats[0]['hits'], hits)
         self.assertEqual(stats[0]['misses'], misses + 2)
@@ -238,6 +238,9 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(rset1, rset2)
 
     def test_cache_mvcc_concurrent_writes(self):
+        # remember: a search result corresponds to two key
+        # value pairs in the cache
+
         st = MinimalMemoryStorage()
         db = DB(st)
 
@@ -278,10 +281,12 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         r2['zcat'].catalog_object(obj, obj.id)
 
         res2 = r2['zcat'].search(query)
+        # cache miss
         indexed_ids = {rec.id for rec in res2}
         self.assertTrue(obj.id in indexed_ids)
 
         # raise conflict error because catalog was changed in tm1
+        # don't prepare set for after commit
         self.assertRaises(ConflictError, tm2.get().commit)
 
         tm2.get().abort()
@@ -291,7 +296,9 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         obj = Dummy(22)
         r2['zcat'].catalog_object(obj, obj.id)
 
+        # cache miss and prepare set for after commit
         res2 = r2['zcat'].search(query)
+
         indexed_ids = {rec.id for rec in res2}
         self.assertTrue(obj.id in indexed_ids)
 
@@ -307,25 +314,49 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
             {('big', (True,), 12)})))
         self.assertEqual(qkey, expect)
 
-        # cache store
-
+        # cache miss and prepare set for after commit
         res1 = r1['zcat'].search(query)
-        transaction.get().commit()
-        
-        r2 = cn2.root()
-        # cache hit
 
+        # cache store
+        transaction.get().commit()
+
+        stats = cache.getStatistics()
+        hits = stats[0]['hits']
+        misses = stats[0]['misses']
+        self.assertEqual((hits, misses), (0, 5))
+
+        r2 = cn2.root()
+
+        # cache hit
         res2 = r2['zcat'].search(query)
         transaction.get().commit()
-        
+
         # compare result
         rset1 = list(map(lambda x: x.getRID(), res1))
         rset2 = list(map(lambda x: x.getRID(), res2))
         self.assertEqual(rset1, rset2)
-        cache = _get_cache()
 
         stats = cache.getStatistics()
 
         hits = stats[0]['hits']
         misses = stats[0]['misses']
-        self.assertEqual((hits, misses), (2, 4))
+        self.assertEqual((hits, misses), (2, 5))
+
+        # check usage instance cache
+        r2 = cn2.root()
+        # cache hit
+        res21 = r2['zcat'].search(query)
+        # instance cache hit
+        res22 = r2['zcat'].search(query)
+
+        # compare result
+        rset21 = list(map(lambda x: x.getRID(), res21))
+        rset22 = list(map(lambda x: x.getRID(), res22))
+        self.assertEqual(rset21, rset22)
+
+        stats = cache.getStatistics()
+        hits = stats[0]['hits']
+        misses = stats[0]['misses']
+        self.assertEqual((hits, misses), (4, 5))
+
+        transaction.get().commit()
