@@ -86,7 +86,7 @@ class TestAddDelColumn(unittest.TestCase):
     def test_add_with_space(self):
         catalog = self._make_one()
         catalog.addColumn(' space ')
-        self.assertEqual(' space ' not in catalog.schema, True,
+        self.assertNotIn(' space ', catalog.schema,
                          'space not stripped in add column')
         self.assertEqual('space' in catalog.schema, True,
                          'stripping space in add column failed')
@@ -97,7 +97,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.addColumn('col3')
         for i in range(3):
             catalog.catalogObject(Dummy(3), repr(i))
-        self.assertTrue('col2' not in catalog.data.values()[0])
+        self.assertNotIn('col2', catalog.data.values()[0])
         catalog.addColumn('col2', default_value='new')
         self.assertTrue('col2' in catalog.schema, 'add column failed')
         self.assertTrue('new' in catalog.data.values()[0])
@@ -113,7 +113,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog = self._make_one()
         catalog.addColumn('id')
         catalog.delColumn('id')
-        self.assertTrue('id' not in catalog.schema, 'del column failed')
+        self.assertNotIn('id', catalog.schema, 'del column failed')
 
     def test_del_brains(self):
         catalog = self._make_one()
@@ -124,8 +124,8 @@ class TestAddDelColumn(unittest.TestCase):
             catalog.catalogObject(Dummy(3), repr(i))
         self.assertTrue('col2' in catalog.data.values()[0])
         catalog.delColumn('col2')
-        self.assertTrue('col2' not in catalog.schema, 'del column failed')
-        self.assertTrue('col2' not in catalog.data.values()[0])
+        self.assertNotIn('col2', catalog.schema, 'del column failed')
+        self.assertNotIn('col2', catalog.data.values()[0])
 
     def test_del_threshold(self):
         catalog = self._make_one()
@@ -180,7 +180,7 @@ class TestAddDelIndexes(unittest.TestCase):
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assertTrue('id' not in catalog.indexes)
+        self.assertNotIn('id', catalog.indexes)
 
     def test_del_text_index(self):
         catalog = self._make_one()
@@ -189,14 +189,14 @@ class TestAddDelIndexes(unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assertTrue('id' not in catalog.indexes)
+        self.assertNotIn('id', catalog.indexes)
 
     def test_del_keyword_index(self):
         catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         catalog.delIndex('id')
-        self.assertTrue('id' not in catalog.indexes)
+        self.assertNotIn('id', catalog.indexes)
 
 
 class TestCatalog(unittest.TestCase):

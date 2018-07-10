@@ -253,7 +253,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         self.assertTrue('sort_on' in plan.interim)
         so = plan.interim['sort_on']
         self.assertTrue(so.start <= so.end)
-        self.assertTrue('sort_on' not in plan.benchmark)
+        self.assertNotIn('sort_on', plan.benchmark)
 
     def test_stop(self):
         plan = self._makeOne(query={'index1': 1, 'index2': 2})
