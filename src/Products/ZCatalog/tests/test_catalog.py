@@ -167,7 +167,7 @@ class TestAddDelIndexes(unittest.TestCase):
         catalog = self._make_one()
         idx = KeywordIndex(' space ')
         catalog.addIndex(' space ', idx)
-        self.assertEqual(' space ' not in catalog.indexes, True,
+        self.assertNotIn(' space ', catalog.indexes,
                          'space not stripped in add index')
         self.assertIn('space', catalog.indexes,
                       'stripping space in add index failed')
