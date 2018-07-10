@@ -76,7 +76,7 @@ class TestAddDelColumn(unittest.TestCase):
     def test_add(self):
         catalog = self._make_one()
         catalog.addColumn('id')
-        self.assertEqual('id' in catalog.schema, True, 'add column failed')
+        self.assertIn('id', catalog.schema, 'add column failed')
 
     def test_add_bad(self):
         from Products.ZCatalog.Catalog import CatalogError
@@ -88,8 +88,8 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.addColumn(' space ')
         self.assertNotIn(' space ', catalog.schema,
                          'space not stripped in add column')
-        self.assertEqual('space' in catalog.schema, True,
-                         'stripping space in add column failed')
+        self.assertIn('space', catalog.schema,
+                      'stripping space in add column failed')
 
     def test_add_brains(self):
         catalog = self._make_one()
@@ -99,8 +99,8 @@ class TestAddDelColumn(unittest.TestCase):
             catalog.catalogObject(Dummy(3), repr(i))
         self.assertNotIn('col2', catalog.data.values()[0])
         catalog.addColumn('col2', default_value='new')
-        self.assertTrue('col2' in catalog.schema, 'add column failed')
-        self.assertTrue('new' in catalog.data.values()[0])
+        self.assertIn('col2', catalog.schema, 'add column failed')
+        self.assertIn('new', catalog.data.values()[0])
 
     def test_add_threshold(self):
         catalog = self._make_one()
@@ -122,7 +122,7 @@ class TestAddDelColumn(unittest.TestCase):
         catalog.addColumn('col3')
         for i in range(3):
             catalog.catalogObject(Dummy(3), repr(i))
-        self.assertTrue('col2' in catalog.data.values()[0])
+        self.assertIn('col2', catalog.data.values()[0])
         catalog.delColumn('col2')
         self.assertNotIn('col2', catalog.schema, 'del column failed')
         self.assertNotIn('col2', catalog.data.values()[0])
@@ -169,8 +169,8 @@ class TestAddDelIndexes(unittest.TestCase):
         catalog.addIndex(' space ', idx)
         self.assertEqual(' space ' not in catalog.indexes, True,
                          'space not stripped in add index')
-        self.assertEqual('space' in catalog.indexes, True,
-                         'stripping space in add index failed')
+        self.assertIn('space', catalog.indexes,
+                      'stripping space in add index failed')
         i = catalog.indexes['space']
         # Note: i.id still has spaces in it.
         self.assertTrue(isinstance(i, KeywordIndex))

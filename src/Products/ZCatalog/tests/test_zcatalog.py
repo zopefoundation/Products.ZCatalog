@@ -312,11 +312,11 @@ class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
 
     def testAddIndex(self):
         self._catalog.addIndex('id', self._makeOneIndex('id'))
-        self.assertTrue('id' in self._catalog.indexes())
+        self.assertIn('id', self._catalog.indexes())
 
     def testDelIndex(self):
         self._catalog.addIndex('title', self._makeOneIndex('title'))
-        self.assertTrue('title' in self._catalog.indexes())
+        self.assertTrue('title', self._catalog.indexes())
         self._catalog.delIndex('title')
         self.assertNotIn('title', self._catalog.indexes())
 
@@ -332,7 +332,7 @@ class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
 
     def testAddColumn(self):
         self._catalog.addColumn('num', default_value=0)
-        self.assertTrue('num' in self._catalog.schema())
+        self.assertIn('num', self._catalog.schema())
 
     def testDelColumn(self):
         self._catalog.addColumn('title')

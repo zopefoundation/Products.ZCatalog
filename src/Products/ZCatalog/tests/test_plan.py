@@ -206,7 +206,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         zcat = ZCatalog('catalog')
         self._makeOne(zcat._catalog)
         plan_str = zcat.getCatalogPlan()
-        self.assertTrue('queryplan = {' in plan_str)
+        self.assertIn('queryplan = {', plan_str)
 
     def test_getCatalogPlan_full(self):
         zcat = ZCatalog('catalog')
@@ -220,8 +220,8 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop_split('index2')
         plan.stop()
         plan_str = zcat.getCatalogPlan()
-        self.assertTrue('queryplan = {' in plan_str)
-        self.assertTrue('index1' in plan_str)
+        self.assertIn('queryplan = {', plan_str)
+        self.assertIn('index1', plan_str)
 
     def test_plan_empty(self):
         plan = self._makeOne()
@@ -235,22 +235,22 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
     def test_start_split(self):
         plan = self._makeOne()
         plan.start_split('index1')
-        self.assertTrue('index1' in plan.interim)
+        self.assertIn('index1', plan.interim)
 
     def test_stop_split(self):
         plan = self._makeOne()
         plan.start_split('index1')
         plan.stop_split('index1')
-        self.assertTrue('index1' in plan.interim)
+        self.assertIn('index1', plan.interim)
         i1 = plan.interim['index1']
         self.assertTrue(i1.start <= i1.end)
-        self.assertTrue('index1' in plan.benchmark)
+        self.assertIn('index1', plan.benchmark)
 
     def test_stop_split_sort_on(self):
         plan = self._makeOne()
         plan.start_split('sort_on')
         plan.stop_split('sort_on')
-        self.assertTrue('sort_on' in plan.interim)
+        self.assertIn('sort_on', plan.interim)
         so = plan.interim['sort_on']
         self.assertTrue(so.start <= so.end)
         self.assertNotIn('sort_on', plan.benchmark)
@@ -268,9 +268,9 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop()
 
         self.assertTrue(plan.duration > 0)
-        self.assertTrue('index1' in plan.benchmark)
+        self.assertIn('index1', plan.benchmark)
         self.assertEqual(plan.benchmark['index1'].hits, 2)
-        self.assertTrue('index2' in plan.benchmark)
+        self.assertIn('index2', plan.benchmark)
         self.assertEqual(plan.benchmark['index2'].hits, 0)
         self.assertEqual(set(plan.plan()), set(('index1', 'index2')))
 

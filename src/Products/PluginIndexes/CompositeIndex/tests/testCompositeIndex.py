@@ -148,7 +148,7 @@ class CompositeIndexTestMixin(object):
         query = comp_index.make_query(req)
 
         # catch successful?
-        self.assertTrue('comp01' in query)
+        self.assertIn('comp01', query)
 
         return self.defaultSearch(query,
                                   expectedValues=expectedValues,
