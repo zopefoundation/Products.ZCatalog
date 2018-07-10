@@ -122,7 +122,7 @@ class TestBrains(unittest.TestCase):
         b = self._makeBrain(1)
         self.assertIn('test_field', b)
         self.assertIn('data_record_id_', b)
-        self.assertFalse('godel' in b)
+        self.assertNotIn('godel', b)
 
     def testGetPath(self):
         b = [self._makeBrain(rid) for rid in range(3)]
