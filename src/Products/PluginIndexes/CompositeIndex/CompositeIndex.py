@@ -142,8 +142,8 @@ class Component(object):
         return self._attributes
 
     def __repr__(self):
-        return '<id: {0}; metatype: {1}; attributes: {2}>'.format(
-            self.id, self.meta_type, self.attributes)
+        return ('<id: {0.id}; metatype: {0.meta_type}; '
+                'attributes: {0.attributes}>').format(self)
 
 
 @implementer(ITransposeQuery)
