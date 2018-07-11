@@ -191,18 +191,20 @@ class UnIndex(SimpleItem):
                     del self.__len__
                 self._length.change(-1)
             except Exception:
-                LOG.error('{0}: unindex_object could not remove '
-                          'documentId {1} from index {2}.  This '
-                          'should not happen.'.format(
-                              self.__class__.__name__,
-                              str(documentId), str(self.id)),
+                LOG.error('%(context)s: unindex_object could not remove '
+                          'documentId %(doc_id)s from index %(index)r.  This '
+                          'should not happen.', dict(
+                              context=self.__class__.__name__,
+                              doc_id=documentId,
+                              index=self.id),
                           exc_info=sys.exc_info())
         else:
-            LOG.error('{0}: unindex_object tried to retrieve set {1} '
-                      'from index {2} but couldn\'t.  This '
-                      'should not happen.'.format(
-                          self.__class__.__name__,
-                          repr(entry), str(self.id)))
+            LOG.error('%(context)s: unindex_object tried to '
+                      'retrieve set %(entry)r from index %(index)r '
+                      'but couldn\'t.  This should not happen.', dict(
+                          context=self.__class__.__name__,
+                          entry=entry,
+                          index=self.id))
 
     def insertForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and put it in the correct place
@@ -267,8 +269,7 @@ class UnIndex(SimpleItem):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, '
-                                  'now its not, for document: {0}'.format(
-                                      documentId))
+                                  'now its not, for document: %s', documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -324,7 +325,7 @@ class UnIndex(SimpleItem):
             raise
         except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id {0}'.format(documentId), exc_info=True)
+                      ' with id %s', documentId, exc_info=True)
 
     def _apply_not(self, not_parm, resultset=None):
         index = self._index
@@ -566,9 +567,9 @@ class UnIndex(SimpleItem):
                 except TypeError:
                     # key is not valid for this Btree so the value is None
                     LOG.error(
-                        '{context!s}: query_index tried '
-                        'to look up key {key!r} from index {index!r} '
-                        'but key was of the wrong type.'.format(
+                        '%(context)s: query_index tried '
+                        'to look up key %(key)r from index %(index)r '
+                        'but key was of the wrong type.', dict(
                             context=self.__class__.__name__,
                             key=k,
                             index=self.id,

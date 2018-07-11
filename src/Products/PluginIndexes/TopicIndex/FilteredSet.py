@@ -89,8 +89,8 @@ class PythonFilteredSet(FilteredSetBase):
         except ConflictError:
             raise
         except Exception:
-            LOG.warn('eval() failed Object: {0}, expr: {1}'.format(
-                     o.getId(), self.expr), exc_info=sys.exc_info())
+            LOG.warn('eval() failed Object: %s, expr: %s',
+                     o.getId(), self.expr, exc_info=sys.exc_info())
 
 
 def factory(f_id, f_type, expr):

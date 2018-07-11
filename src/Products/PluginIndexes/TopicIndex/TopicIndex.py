@@ -74,7 +74,7 @@ class TopicIndex(Persistent, SimpleItem):
                 fs.unindex_object(docid)
             except KeyError:
                 LOG.debug('Attempt to unindex document'
-                          ' with id {0} failed'.format(docid))
+                          ' with id %s failed', docid)
         return 1
 
     def numObjects(self):

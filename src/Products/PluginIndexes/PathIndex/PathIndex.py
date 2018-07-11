@@ -135,8 +135,7 @@ class PathIndex(Persistent, SimpleItem):
         """
         if docid not in self._unindex:
             LOG.debug('Attempt to unindex nonexistent '
-                      'document with id {0}'.format(
-                          docid))
+                      'document with id %s', docid)
 
             return
 
@@ -153,8 +152,7 @@ class PathIndex(Persistent, SimpleItem):
                     del self._index[comp]
             except KeyError:
                 LOG.debug('Attempt to unindex document '
-                          'with id {0} failed'.format(
-                              docid))
+                          'with id %s failed', docid)
 
         self._length.change(-1)
         del self._unindex[docid]

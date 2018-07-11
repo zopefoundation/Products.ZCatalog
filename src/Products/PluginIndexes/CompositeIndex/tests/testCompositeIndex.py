@@ -132,8 +132,8 @@ class CompositeIndexTestMixin(object):
                     break
 
             if verbose and (index.id in req):
-                logger.info("index %s: %s hits in %3.2fms" %
-                            (index.id, r and len(r) or 0, duration))
+                logger.info('index %s: %s hits in %3.2fms',
+                            index.id, r and len(r) or 0, duration)
 
         if not rs:
             return set()
@@ -168,8 +168,8 @@ class CompositeIndexTestMixin(object):
             n_obj = index.numObjects()
             ratio = float(size) / float(n_obj)
             logger.info('<id: %15s unique keys: '
-                        '%3s  length: %5s  ratio: %6.3f pm>' %
-                        (index.id, size, n_obj, ratio * 1000))
+                        '%3s  length: %5s  ratio: %6.3f pm>',
+                        index.id, size, n_obj, ratio * 1000)
             return ratio
 
         for index in self._indexes:
@@ -256,20 +256,20 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
             duration1 = (time() - st) * 1000
 
             if verbose:
-                logger.info("atomic:    %s hits in %3.2fms" %
-                            (len(res1), duration1))
+                logger.info('atomic:    %s hits in %3.2fms',
+                            len(res1), duration1)
 
             st = time()
             res2 = self.compositeSearch(query, verbose=False)
             duration2 = (time() - st) * 1000
 
             if verbose:
-                logger.info("composite: %s hits in %3.2fms" %
-                            (len(res2), duration2))
+                logger.info('composite: %s hits in %3.2fms',
+                            len(res2), duration2)
 
             if verbose:
-                logger.info('[composite/atomic] factor %3.2f' %
-                            (duration1 / duration2,))
+                logger.info('[composite/atomic] factor %3.2f',
+                            duration1 / duration2,)
 
             if not warmup:
                 # if length of result is greater than zero composite
@@ -285,7 +285,7 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
         for l in lengths:
             self.clearIndexes()
             logger.info('************************************\n'
-                        'indexing %s objects' % l)
+                        'indexing %s objects', l)
 
             for i in range(l):
                 name = '%s' % i
@@ -299,14 +299,14 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
             logger.info('\nstart queries')
 
             # warming up indexes
-            logger.info("warming up indexes")
+            logger.info('warming up indexes')
             for name, query in queries:
                 profileSearch(query, warmup=True)
 
             # in memory measure
-            logger.info("in memory measure")
+            logger.info('in memory measure')
             for name, query in queries:
-                logger.info("\nquery: %s" % name)
+                logger.info('\nquery: %s', name)
                 profileSearch(query, verbose=True)
 
             logger.info('\nqueries finished')

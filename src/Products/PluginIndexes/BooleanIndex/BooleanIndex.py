@@ -136,12 +136,13 @@ class BooleanIndex(UnIndex):
             except ConflictError:
                 raise
             except Exception:
-                LOG.exception(
-                    '{0}: unindex_object could not remove documentId {1} '
-                    'from index {2}. This should not happen.'.format(
-                        self.__class__.__name__,
-                        str(documentId),
-                        str(self.id)))
+                LOG.exception('%(context)s: unindex_object could not '
+                              'remove documentId %(doc_id)s from '
+                              'index %(index)r. This should not '
+                              'happen.', dict(
+                                  context=self.__class__.__name__,
+                                  doc_id=documentId,
+                                  index=self.id))
         elif check:
             # is the index (after removing the current entry) larger than
             # 60% of the total length? than switch the indexed value
@@ -174,8 +175,8 @@ class BooleanIndex(UnIndex):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, now '
-                                  'its not, for document with id {0}'.format(
-                                      documentId))
+                                  'its not, for document with id %s',
+                                      documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -203,7 +204,7 @@ class BooleanIndex(UnIndex):
             raise
         except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id {0}'.format(documentId), exc_info=True)
+                      ' with id %s', documentId, exc_info=True)
 
     def query_index(self, record, resultset=None):
         index = self._index

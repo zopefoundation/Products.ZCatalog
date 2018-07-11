@@ -304,8 +304,10 @@ class CompositeIndex(KeywordIndex):
             zc = aq_parent(aq_parent(self))
             skip = zc.getProperty('skip_compositeindex', False)
             if skip:
-                LOG.debug('{0}: skip composite query build {1}'.format(
-                    self.__class__.__name__, repr(zc)))
+                LOG.debug('%(context)s: skip composite query build '
+                          'for %(zcatalog)r', dict(
+                              context=self.__class__.__name__,
+                              zcatalog=zc))
                 return query
         except AttributeError:
             pass
