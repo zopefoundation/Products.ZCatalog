@@ -14,6 +14,7 @@
 import logging
 from itertools import product
 from itertools import combinations
+from six.moves import urllib
 import time
 import transaction
 
@@ -488,10 +489,11 @@ class CompositeIndex(KeywordIndex):
         ct = time.clock() - ct
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_main?'
-                              'manage_tabs_message=ComponentIndex%%20fast%%20'
-                              'reindexed%%20in%%20{0:.3f}%%20'
-                              'seconds%%20({1:.3f}%%20cpu)'.format(tt, ct))
+            msg = ('ComponentIndex fast reindexed '
+                   'in {0:.3f}s ({1:.3f}s cpu time)').format(tt, ct)
+            param = urllib.parse.urlencode({'manage_tabs_message': msg})
+
+            RESPONSE.redirect(URL1 + '/manage_main?' + param)
 
     manage = manage_main = DTMLFile('dtml/manageCompositeIndex', globals())
     manage_main._setName('manage_main')
