@@ -6,6 +6,7 @@ Changelog
 
 - Revert depending directly on ZODB 4+. This feature version still works with
   ZODB 3.
+  (`#40 <https://github.com/zopefoundation/Products.ZCatalog/issues/40>`_)
 
 3.1.2 (2016-07-17)
 ------------------
