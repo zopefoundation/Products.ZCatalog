@@ -4,8 +4,8 @@ Changelog
 3.1.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Revert depending directly on ZODB 4+. This feature version still works with
+  ZODB 3.
 
 3.1.2 (2016-07-17)
 ------------------
@@ -13,6 +13,9 @@ Changelog
 - #6, #7, #11: Run ZODB cache garbage collection during queries.
 
 - #13: Deal with threshold value of None in add/delColum.
+
+- Update to ZODB 4.0 as direct dependency.
+
 
 3.1.1 (2016-07-17)
 ------------------
