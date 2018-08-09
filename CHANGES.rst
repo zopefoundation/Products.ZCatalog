@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.1.3 (unreleased)
+3.1.3 (2018-08-09)
 ------------------
 
 - Revert depending directly on ZODB 4+. This feature version still works with
