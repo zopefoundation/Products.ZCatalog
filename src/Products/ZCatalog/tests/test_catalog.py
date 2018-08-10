@@ -145,7 +145,7 @@ class TestAddDelIndexes(unittest.TestCase):
         catalog = self._make_one()
         idx = FieldIndex('id')
         catalog.addIndex('id', idx)
-        self.assertTrue(isinstance(catalog.indexes['id'], FieldIndex))
+        self.assertIsInstance(catalog.indexes['id'], FieldIndex)
 
     def test_add_text_index(self):
         catalog = self._make_one()
@@ -154,14 +154,14 @@ class TestAddDelIndexes(unittest.TestCase):
                           index_factory=OkapiIndex, lexicon_id='lexicon')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
-        self.assertTrue(isinstance(i, ZCTextIndex))
+        self.assertIsInstance(i, ZCTextIndex)
 
     def test_add_keyword_index(self):
         catalog = self._make_one()
         idx = KeywordIndex('id')
         catalog.addIndex('id', idx)
         i = catalog.indexes['id']
-        self.assertTrue(isinstance(i, KeywordIndex))
+        self.assertIsInstance(i, KeywordIndex)
 
     def test_add_with_space(self):
         catalog = self._make_one()
@@ -173,7 +173,7 @@ class TestAddDelIndexes(unittest.TestCase):
                       'stripping space in add index failed')
         i = catalog.indexes['space']
         # Note: i.id still has spaces in it.
-        self.assertTrue(isinstance(i, KeywordIndex))
+        self.assertIsInstance(i, KeywordIndex)
 
     def test_del_field_index(self):
         catalog = self._make_one()
@@ -328,7 +328,7 @@ class TestCatalog(unittest.TestCase):
         # checkKeywordIndex with min/max range wrong syntax.
         catalog = self._make_one()
         a = catalog(att3={'query': ['att'], 'range': 'min:max'})
-        self.assertTrue(len(a) != self.upper)
+        self.assertNotEqual(len(a), self.upper)
 
     def testCombinedTextandKeywordQuery(self):
         catalog = self._make_one()

@@ -110,7 +110,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('dogs')
         self.assertEqual(len(wids), 1)
-        self.assertTrue(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testMissingTermToWordIds(self):
         from Products.ZCTextIndex.Lexicon import Splitter

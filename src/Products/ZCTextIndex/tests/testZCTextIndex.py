@@ -254,8 +254,8 @@ class ZCIndexTestsBase(object):
                 unique.setdefault(versionlist[0], []).append(w)
             elif len(versionlist) == N:
                 common.append(w)
-        self.assertTrue(len(common) > 0)
-        self.assertTrue(len(unique) > 0)
+        self.assertGreater(len(common), 0)
+        self.assertGreater(len(unique), 0)
 
         for version, i in zip(text, range(N)):
             doc = Indexable(version)
@@ -305,7 +305,7 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
 
         # A digression to exercise re-indexing.
         docs = self.docs
-        for variant in 'hot cold porridge python', 'pease hot pithy':
+        for variant in ('hot cold porridge python', 'pease hot pithy'):
             self.zc_index.index_object(len(docs), Indexable(variant))
             try:
                 self._ranking_tf()
@@ -406,7 +406,7 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self._checkAbsoluteScores()
 
         # Exercise re-indexing.
-        for variant in 'one xyz', 'xyz two three', 'abc def':
+        for variant in ('one xyz', 'xyz two three', 'abc def'):
             self.zc_index.index_object(len(docs), Indexable(variant))
             try:
                 self._checkAbsoluteScores()

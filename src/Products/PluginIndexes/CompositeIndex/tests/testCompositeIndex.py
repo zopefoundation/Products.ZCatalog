@@ -275,7 +275,8 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                 # if length of result is greater than zero composite
                 # search must be roughly faster than default search
                 if res1 and res2:
-                    assert 0.5 * duration2 < duration1, (duration2, duration1)
+                    self.assertLess(
+                        0.5 * duration2, duration1, (duration2, duration1))
 
             # is result identical?
             self.assertEqual(len(res1), len(res2), '%s != %s for %s' %

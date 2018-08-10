@@ -36,7 +36,7 @@ class IndexTest(object):
 
     def test_index_document(self, docid=1):
         doc = 'simple document contains five words'
-        self.assertTrue(not self.index.has_doc(docid))
+        self.assertFalse(self.index.has_doc(docid))
         self.index.index_doc(docid, doc)
         self.assertTrue(self.index.has_doc(docid))
         self.assertTrue(self.index._docweight[docid])
@@ -50,7 +50,7 @@ class IndexTest(object):
                          self.index.length())
         for map in self.index._wordinfo.values():
             self.assertEqual(len(map), 1)
-            self.assertTrue(docid in map)
+            self.assertIn(docid, map)
 
     def test_unindex_document(self):
         docid = 1
@@ -84,8 +84,8 @@ class IndexTest(object):
         for wid, map in self.index._wordinfo.items():
             if wid == document_wid:
                 self.assertEqual(len(map), 2)
-                self.assertTrue(1 in map)
-                self.assertTrue(docid in map)
+                self.assertIn(1, map)
+                self.assertIn(docid, map)
             else:
                 self.assertEqual(len(map), 1)
 
@@ -105,7 +105,7 @@ class IndexTest(object):
                          self.index.length())
         for map in self.index._wordinfo.values():
             self.assertEqual(len(map), 1)
-            self.assertTrue(docid in map)
+            self.assertIn(docid, map)
 
     def test_index_duplicated_words(self, docid=1):
         doc = 'very simple repeat repeat repeat document test'
@@ -122,7 +122,7 @@ class IndexTest(object):
         self.assertEqual(len(wids), 1)
         for wid, map in self.index._wordinfo.items():
             self.assertEqual(len(map), 1)
-            self.assertTrue(docid in map)
+            self.assertIn(docid, map)
 
     def test_simple_query_oneresult(self):
         self.index.index_doc(1, 'not the same document')
@@ -271,12 +271,12 @@ class TestUpgrade(TestCase):
         del self.index1.document_count
         self.index1.index_doc(1, 'gazes upon my shadow')
         self.index2.index_doc(1, 'gazes upon my shadow')
-        self.assertTrue(self.index1.document_count.__class__ is Length)
+        self.assertIs(self.index1.document_count.__class__, Length)
         self.assertEqual(
             self.index1.document_count(), self.index2.document_count())
         del self.index1.document_count
         self.index1.unindex_doc(0)
         self.index2.unindex_doc(0)
-        self.assertTrue(self.index1.document_count.__class__ is Length)
+        self.assertIs(self.index1.document_count.__class__, Length)
         self.assertEqual(
             self.index1.document_count(), self.index2.document_count())

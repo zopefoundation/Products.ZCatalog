@@ -230,7 +230,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
     def test_start(self):
         plan = self._makeOne()
         plan.start()
-        self.assertTrue(plan.start_time <= time.time())
+        self.assertLessEqual(plan.start_time, time.time())
 
     def test_start_split(self):
         plan = self._makeOne()
@@ -243,7 +243,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop_split('index1')
         self.assertIn('index1', plan.interim)
         i1 = plan.interim['index1']
-        self.assertTrue(i1.start <= i1.end)
+        self.assertLessEqual(i1.start, i1.end)
         self.assertIn('index1', plan.benchmark)
 
     def test_stop_split_sort_on(self):
@@ -252,7 +252,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop_split('sort_on')
         self.assertIn('sort_on', plan.interim)
         so = plan.interim['sort_on']
-        self.assertTrue(so.start <= so.end)
+        self.assertLessEqual(so.start, so.end)
         self.assertNotIn('sort_on', plan.benchmark)
 
     def test_stop(self):
@@ -267,7 +267,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         time.sleep(0.02)  # wait at least one Windows clock tick
         plan.stop()
 
-        self.assertTrue(plan.duration > 0)
+        self.assertGreater(plan.duration, 0)
         self.assertIn('index1', plan.benchmark)
         self.assertEqual(plan.benchmark['index1'].hits, 2)
         self.assertIn('index2', plan.benchmark)
