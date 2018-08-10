@@ -70,7 +70,7 @@ def dummyUnrestrictedTraverse(self, path):
 
 def eq(scaled1, scaled2, epsilon=scaled_int(0.01)):
     if abs(scaled1 - scaled2) > epsilon:
-        raise AssertionError("%s != %s" % (scaled1, scaled2))
+        raise AssertionError('{0} != {1}'.format(scaled1, scaled2))
 
 
 # A series of text chunks to use for the re-index tests (testDocUpdate).
@@ -203,12 +203,12 @@ class ZCIndexTestsBase(object):
 
     def testStopWords(self):
         # the only non-stopword is question
-        text = ("to be or not to be "
-                "that is the question")
+        text = ('to be or not to be '
+                'that is the question')
         doc = Indexable(text)
         self.zc_index.index_object(1, doc)
         for word in text.split():
-            if word != "question":
+            if word != 'question':
                 wids = self.lexicon.termToWordIds(word)
                 self.assertEqual(wids, [])
         self.assertEqual(len(self.index.get_words(1)), 1)
@@ -239,7 +239,7 @@ class ZCIndexTestsBase(object):
         d = {}  # word -> list of version numbers containing that word
         for version, i in zip(text, range(N)):
             # use a simple splitter rather than an official one
-            words = [w for w in re.split("\W+", version.lower())
+            words = [w for w in re.split('\W+', version.lower())
                      if len(w) > 1 and w not in stop]
             word_seen = {}
             for w in words:
@@ -254,21 +254,24 @@ class ZCIndexTestsBase(object):
                 unique.setdefault(versionlist[0], []).append(w)
             elif len(versionlist) == N:
                 common.append(w)
-        self.assert_(len(common) > 0)
-        self.assert_(len(unique) > 0)
+        self.assertGreater(len(common), 0)
+        self.assertGreater(len(unique), 0)
 
         for version, i in zip(text, range(N)):
             doc = Indexable(version)
             self.zc_index.index_object(docid, doc)
             for w in common:
                 nbest, total = self.zc_index.query(w)
-                self.assertEqual(total, 1, "did not find %s" % w)
+                self.assertEqual(total, 1, 'did not find {0}'.format(w))
             for k, v in unique.items():
                 if k == i:
                     continue
                 for w in v:
                     nbest, total = self.zc_index.query(w)
-                    self.assertEqual(total, 0, "did not expect to find %s" % w)
+                    self.assertEqual(
+                        total, 0,
+                        'did not expect to find {0}'.format(w)
+                    )
 
 
 class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
@@ -287,14 +290,14 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
         verifyClass(IZCTextIndex, ZCTextIndex)
 
     def testRanking(self):
-        self.words = ["cold", "days", "eat", "hot", "lot", "nine", "old",
-                      "pease", "porridge", "pot"]
-        self.docs = ["Pease porridge hot, pease porridge cold,",
-                     "Pease porridge in the pot,",
-                     "Nine days old.",
-                     "In the pot cold, in the pot hot,",
-                     "Pease porridge, pease porridge,",
-                     "Eat the lot."]
+        self.words = ['cold', 'days', 'eat', 'hot', 'lot', 'nine', 'old',
+                      'pease', 'porridge', 'pot']
+        self.docs = ['Pease porridge hot, pease porridge cold,',
+                     'Pease porridge in the pot,',
+                     'Nine days old.',
+                     'In the pot cold, in the pot hot,',
+                     'Pease porridge, pease porridge,',
+                     'Eat the lot.']
         self._ranking_index()
         self._ranking_tf()
         self._ranking_idf()
@@ -302,28 +305,28 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
 
         # A digression to exercise re-indexing.
         docs = self.docs
-        for variant in "hot cold porridge python", "pease hot pithy":
+        for variant in ('hot cold porridge python', 'pease hot pithy'):
             self.zc_index.index_object(len(docs), Indexable(variant))
             try:
                 self._ranking_tf()
             except (AssertionError, KeyError):
                 pass
             else:
-                self.fail("expected _ranking_tf() to fail -- reindex")
+                self.fail('expected _ranking_tf() to fail -- reindex')
 
             try:
                 self._ranking_idf()
             except (AssertionError, KeyError):
                 pass
             else:
-                self.fail("expected _ranking_idf() to fail -- reindex")
+                self.fail('expected _ranking_idf() to fail -- reindex')
 
             try:
                 self._ranking_queries()
             except AssertionError:
                 pass
             else:
-                self.fail("expected _ranking_queries() to fail -- reindex")
+                self.fail('expected _ranking_queries() to fail -- reindex')
 
         # This should leave things exactly as they were.
         self.zc_index.index_object(len(docs), Indexable(docs[-1]))
@@ -365,8 +368,8 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
             eq(scaled_int(idfs[i]), self.index._get_wt(word))
 
     def _ranking_queries(self):
-        queries = ["eat", "porridge", "hot OR porridge",
-                   "eat OR nine OR day OR old OR porridge"]
+        queries = ['eat', 'porridge', 'hot OR porridge',
+                   'eat OR nine OR day OR old OR porridge']
         wqs = [1.95, 1.10, 1.77, 3.55]
         results = [[(6, 0.71)],
                    [(1, 0.61), (2, 0.58), (5, 0.71)],
@@ -385,7 +388,7 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
                 d[doc] = scaled_int(score)
             for doc, score in r:
                 score = scaled_int(float(score / SCALE_FACTOR) / wq)
-                self.assert_(0 <= score <= SCALE_FACTOR)
+                self.assertTrue(0 <= score <= SCALE_FACTOR)
                 eq(d[doc], score)
 
 
@@ -393,9 +396,9 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
 
     # A white-box test.
     def testAbsoluteScores(self):
-        docs = ["one",
-                "one two",
-                "one two three"]
+        docs = ['one',
+                'one two',
+                'one two three']
 
         for i in range(len(docs)):
             self.zc_index.index_object(i + 1, Indexable(docs[i]))
@@ -403,14 +406,14 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self._checkAbsoluteScores()
 
         # Exercise re-indexing.
-        for variant in "one xyz", "xyz two three", "abc def":
+        for variant in ('one xyz', 'xyz two three', 'abc def'):
             self.zc_index.index_object(len(docs), Indexable(variant))
             try:
                 self._checkAbsoluteScores()
             except AssertionError:
                 pass
             else:
-                self.fail("expected _checkAbsoluteScores() to fail -- reindex")
+                self.fail('expected _checkAbsoluteScores() to fail -- reindex')
         # This should leave things exactly as they were.
         self.zc_index.index_object(len(docs), Indexable(docs[-1]))
         self._checkAbsoluteScores()
@@ -419,31 +422,31 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self.assertEqual(self.index._totaldoclen(), 6)
         # So the mean doc length is 2.  We use that later.
 
-        r, num = self.zc_index.query("one")
+        r, num = self.zc_index.query('one')
         self.assertEqual(num, 3)
         self.assertEqual(len(r), 3)
 
-        # Because our Okapi's B parameter is > 0, and "one" only appears
+        # Because our Okapi's B parameter is > 0, and 'one' only appears
         # once in each doc, the verbosity hypothesis favors shorter docs.
         self.assertEqual([doc for doc, score in r], [1, 2, 3])
 
         # The way the Okapi math works, a word that appears exactly once in
         # an average (length) doc gets tf score 1.  Our second doc has
         # an average length, so its score should by 1 (tf) times the
-        # inverse doc frequency of "one".  But "one" appears in every
+        # inverse doc frequency of 'one'.  But 'one' appears in every
         # doc, so its IDF is log(1 + 3/3) = log(2).
         self.assertEqual(r[1][1], scaled_int(inverse_doc_frequency(3, 3)))
 
-        # Similarly for "two".
-        r, num = self.zc_index.query("two")
+        # Similarly for 'two'.
+        r, num = self.zc_index.query('two')
         self.assertEqual(num, 2)
         self.assertEqual(len(r), 2)
         self.assertEqual([doc for doc, score in r], [2, 3])
         self.assertEqual(r[0][1], scaled_int(inverse_doc_frequency(2, 3)))
 
-        # And "three", except that doesn't appear in an average-size doc, so
+        # And 'three', except that doesn't appear in an average-size doc, so
         # the math is much more involved.
-        r, num = self.zc_index.query("three")
+        r, num = self.zc_index.query('three')
         self.assertEqual(num, 1)
         self.assertEqual(len(r), 1)
         self.assertEqual([doc for doc, score in r], [3])
@@ -457,48 +460,48 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
     # to think.
     def testRelativeScores(self):
         # Create 9 10-word docs.
-        # All contain one instance of "one".
-        # Doc #i contains i instances of "two" and 9-i of "xyz".
+        # All contain one instance of 'one'.
+        # Doc #i contains i instances of 'two' and 9-i of 'xyz'.
         for i in range(1, 10):
-            doc = "one " + "two " * i + "xyz " * (9 - i)
+            doc = 'one ' + 'two ' * i + 'xyz ' * (9 - i)
             self.zc_index.index_object(i, Indexable(doc))
         self._checkRelativeScores()
 
         # Exercise re-indexing.
-        self.zc_index.index_object(9, Indexable("two xyz"))
+        self.zc_index.index_object(9, Indexable('two xyz'))
         try:
             self._checkRelativeScores()
         except AssertionError:
             pass
         else:
-            self.fail("expected _checkRelativeScores() to fail after reindex")
+            self.fail('expected _checkRelativeScores() to fail after reindex')
         # This should leave things exactly as they were.
         self.zc_index.index_object(9, Indexable(doc))
         self._checkRelativeScores()
 
     def _checkRelativeScores(self):
-        r, num = self.zc_index.query("one two")
+        r, num = self.zc_index.query('one two')
         self.assertEqual(num, 9)
         self.assertEqual(len(r), 9)
         # The more twos in a doc, the better the score should be.
         self.assertEqual([doc for doc, score in r], list(range(9, 0, -1)))
 
-        # Search for "two" alone shouldn't make any difference to relative
+        # Search for 'two' alone shouldn't make any difference to relative
         # results.
-        r, num = self.zc_index.query("two")
+        r, num = self.zc_index.query('two')
         self.assertEqual(num, 9)
         self.assertEqual(len(r), 9)
         self.assertEqual([doc for doc, score in r], list(range(9, 0, -1)))
 
         # Searching for xyz should skip doc 9, and favor the lower-numbered
         # docs (they have more instances of xyz).
-        r, num = self.zc_index.query("xyz")
+        r, num = self.zc_index.query('xyz')
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
         self.assertEqual([doc for doc, score in r], list(range(1, 9)))
 
-        # And relative results shouldn't change if we add "one".
-        r, num = self.zc_index.query("xyz one")
+        # And relative results shouldn't change if we add 'one'.
+        r, num = self.zc_index.query('xyz one')
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
         self.assertEqual([doc for doc, score in r], list(range(1, 9)))
@@ -514,7 +517,7 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         # The loser will be the most unbalanced, but is that doc 1 (1 two 8
         # xyz) or doc 8 (8 two 1 xyz)?  Again xyz has a higher idf, so doc 1
         # is more valuable, and doc 8 is the loser.
-        r, num = self.zc_index.query("xyz one two")
+        r, num = self.zc_index.query('xyz one two')
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
         self.assertEqual(r[0][0], 4)    # winner
@@ -523,9 +526,9 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self.assertEqual(r[-2][0], 1)   # penultimate loser
 
         # And nothing about the relative results in the last test should
-        # change if we leave "one" out of the search (it appears in all
+        # change if we leave 'one' out of the search (it appears in all
         # docs, so it's a wash).
-        r, num = self.zc_index.query("two xyz")
+        r, num = self.zc_index.query('two xyz')
         self.assertEqual(num, 8)
         self.assertEqual(len(r), 8)
         self.assertEqual(r[0][0], 4)    # winner
@@ -546,7 +549,7 @@ class QueryTestsBase(object):
     # docid 3: foo, ham
     # docid 4: ham
 
-    docs = ["foo bar ham", "bar ham", "foo ham", "ham"]
+    docs = ['foo bar ham', 'bar ham', 'foo ham', 'ham']
 
     def setUp(self):
         self.lexicon = PLexicon('lexicon', '',

@@ -44,13 +44,13 @@ class Dummy(object):
         return (self.num, self.num + 1)
 
     def getPhysicalPath(self):
-        return '/%s' % self.num
+        return '/{0}'.format(self.num)
 
     def start(self):
-        return '2013-07-%.2d' % (self.num + 1)
+        return '2013-07-{0:02d}'.format(self.num + 1)
 
     def end(self):
-        return '2013-07-%.2d' % (self.num + 2)
+        return '2013-07-{0:02d}'.format(self.num + 2)
 
 
 class TestNestedDict(unittest.TestCase):
@@ -63,10 +63,10 @@ class TestNestedDict(unittest.TestCase):
         return NestedDict
 
     def test_novalue(self):
-        self.assertEquals(getattr(self.nest, 'value', None), None)
+        self.assertEqual(getattr(self.nest, 'value', None), None)
 
     def test_nolock(self):
-        self.assertEquals(getattr(self.nest, 'lock', None), None)
+        self.assertEqual(getattr(self.nest, 'lock', None), None)
 
 
 class TestPriorityMap(unittest.TestCase):
@@ -82,31 +82,31 @@ class TestPriorityMap(unittest.TestCase):
         return PriorityMap
 
     def test_get_value(self):
-        self.assertEquals(self.pmap.get_value(), {})
+        self.assertEqual(self.pmap.get_value(), {})
 
     def test_get(self):
-        self.assertEquals(self.pmap.get('foo'), {})
+        self.assertEqual(self.pmap.get('foo'), {})
 
     def test_set(self):
         self.pmap.set('foo', {'bar': 1})
-        self.assertEquals(self.pmap.get('foo'), {'bar': 1})
+        self.assertEqual(self.pmap.get('foo'), {'bar': 1})
 
     def test_clear(self):
         self.pmap.set('foo', {'bar': 1})
         self.pmap.clear()
-        self.assertEquals(self.pmap.value, {})
+        self.assertEqual(self.pmap.value, {})
 
     def test_get_entry(self):
-        self.assertEquals(self.pmap.get_entry('foo', 'bar'), {})
+        self.assertEqual(self.pmap.get_entry('foo', 'bar'), {})
 
     def test_set_entry(self):
         self.pmap.set_entry('foo', 'bar', {'baz': 1})
-        self.assertEquals(self.pmap.get_entry('foo', 'bar'), {'baz': 1})
+        self.assertEqual(self.pmap.get_entry('foo', 'bar'), {'baz': 1})
 
     def test_clear_entry(self):
         self.pmap.set('foo', {'bar': 1})
         self.pmap.clear_entry('foo')
-        self.assertEquals(self.pmap.get('foo'), {})
+        self.assertEqual(self.pmap.get('foo'), {})
 
 
 class TestPriorityMapDefault(unittest.TestCase):
@@ -123,13 +123,13 @@ class TestPriorityMapDefault(unittest.TestCase):
 
     def test_empty(self):
         self.pmap.load_default()
-        self.assertEquals(self.pmap.get_value(), {})
+        self.assertEqual(self.pmap.get_value(), {})
 
     def test_load_failure(self):
         try:
             os.environ['ZCATALOGQUERYPLAN'] = 'Products.ZCatalog.invalid'
             self.pmap.load_default()
-            self.assertEquals(self.pmap.get_value(), {})
+            self.assertEqual(self.pmap.get_value(), {})
         finally:
             del os.environ['ZCATALOGQUERYPLAN']
 
@@ -145,7 +145,7 @@ class TestPriorityMapDefault(unittest.TestCase):
                     'index1': Benchmark(duration=2.0, hits=3, limit=True),
                     'index2': Benchmark(duration=1.5, hits=2, limit=False),
                 }}}
-            self.assertEquals(self.pmap.get_value(), expected)
+            self.assertEqual(self.pmap.get_value(), expected)
         finally:
             del os.environ['ZCATALOGQUERYPLAN']
 
@@ -159,7 +159,7 @@ class TestPriorityMapDefault(unittest.TestCase):
                 'index1': Benchmark(duration=2.0, hits=3, limit=True),
                 'index2': Benchmark(duration=1.5, hits=2, limit=False),
             }}}
-        self.assertEquals(self.pmap.get_value(), expected)
+        self.assertEqual(self.pmap.get_value(), expected)
 
 
 class TestReports(unittest.TestCase):
@@ -175,10 +175,10 @@ class TestReports(unittest.TestCase):
         return Reports
 
     def test_value(self):
-        self.assertEquals(self.reports.value, {})
+        self.assertEqual(self.reports.value, {})
 
     def test_lock(self):
-        self.assertEquals(type(self.reports.lock), LockType)
+        self.assertEqual(type(self.reports.lock), LockType)
 
 
 class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
@@ -195,18 +195,18 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
     def test_get_id(self):
         plan = self._makeOne()
-        self.assertEquals(plan.get_id(), ('', 'NonPersistentCatalog'))
+        self.assertEqual(plan.get_id(), ('', 'NonPersistentCatalog'))
 
     def test_get_id_persistent(self):
         zcat = ZCatalog('catalog')
         plan = self._makeOne(zcat._catalog)
-        self.assertEquals(plan.get_id(), ('catalog', ))
+        self.assertEqual(plan.get_id(), ('catalog', ))
 
     def test_getCatalogPlan_empty(self):
         zcat = ZCatalog('catalog')
         self._makeOne(zcat._catalog)
         plan_str = zcat.getCatalogPlan()
-        self.assertTrue('queryplan = {' in plan_str)
+        self.assertIn('queryplan = {', plan_str)
 
     def test_getCatalogPlan_full(self):
         zcat = ZCatalog('catalog')
@@ -220,40 +220,40 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop_split('index2')
         plan.stop()
         plan_str = zcat.getCatalogPlan()
-        self.assertTrue('queryplan = {' in plan_str)
-        self.assertTrue('index1' in plan_str)
+        self.assertIn('queryplan = {', plan_str)
+        self.assertIn('index1', plan_str)
 
     def test_plan_empty(self):
         plan = self._makeOne()
-        self.assertEquals(plan.plan(), None)
+        self.assertEqual(plan.plan(), None)
 
     def test_start(self):
         plan = self._makeOne()
         plan.start()
-        self.assert_(plan.start_time <= time.time())
+        self.assertLessEqual(plan.start_time, time.time())
 
     def test_start_split(self):
         plan = self._makeOne()
         plan.start_split('index1')
-        self.assert_('index1' in plan.interim)
+        self.assertIn('index1', plan.interim)
 
     def test_stop_split(self):
         plan = self._makeOne()
         plan.start_split('index1')
         plan.stop_split('index1')
-        self.assert_('index1' in plan.interim)
+        self.assertIn('index1', plan.interim)
         i1 = plan.interim['index1']
-        self.assert_(i1.start <= i1.end)
-        self.assert_('index1' in plan.benchmark)
+        self.assertLessEqual(i1.start, i1.end)
+        self.assertIn('index1', plan.benchmark)
 
     def test_stop_split_sort_on(self):
         plan = self._makeOne()
         plan.start_split('sort_on')
         plan.stop_split('sort_on')
-        self.assert_('sort_on' in plan.interim)
+        self.assertIn('sort_on', plan.interim)
         so = plan.interim['sort_on']
-        self.assert_(so.start <= so.end)
-        self.assert_('sort_on' not in plan.benchmark)
+        self.assertLessEqual(so.start, so.end)
+        self.assertNotIn('sort_on', plan.benchmark)
 
     def test_stop(self):
         plan = self._makeOne(query={'index1': 1, 'index2': 2})
@@ -267,12 +267,12 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         time.sleep(0.02)  # wait at least one Windows clock tick
         plan.stop()
 
-        self.assert_(plan.duration > 0)
-        self.assert_('index1' in plan.benchmark)
-        self.assertEquals(plan.benchmark['index1'].hits, 2)
-        self.assert_('index2' in plan.benchmark)
-        self.assertEquals(plan.benchmark['index2'].hits, 0)
-        self.assertEquals(set(plan.plan()), set(('index1', 'index2')))
+        self.assertGreater(plan.duration, 0)
+        self.assertIn('index1', plan.benchmark)
+        self.assertEqual(plan.benchmark['index1'].hits, 2)
+        self.assertIn('index2', plan.benchmark)
+        self.assertEqual(plan.benchmark['index2'].hits, 0)
+        self.assertEqual(set(plan.plan()), set(('index1', 'index2')))
 
     def test_log(self):
         plan = self._makeOne(query={'index1': 1})
@@ -283,14 +283,14 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan.stop()
         plan.log()
         report = plan.report()
-        self.assertEquals(len(report), 1)
-        self.assertEquals(report[0]['counter'], 2)
+        self.assertEqual(len(report), 1)
+        self.assertEqual(report[0]['counter'], 2)
         plan.reset()
-        self.assertEquals(len(plan.report()), 0)
+        self.assertEqual(len(plan.report()), 0)
 
     def test_valueindexes_get(self):
         plan = self._makeOne()
-        self.assertEquals(plan.valueindexes(), frozenset())
+        self.assertEqual(plan.valueindexes(), frozenset())
 
     def test_valueindexes_set(self):
         from ..plan import PriorityMap
@@ -298,7 +298,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan = self._makeOne()
         indexes = frozenset(['index1', 'index2'])
         PriorityMap.set_entry(plan.cid, VALUE_INDEX_KEY, indexes)
-        self.assertEquals(plan.valueindexes(), frozenset(indexes))
+        self.assertEqual(plan.valueindexes(), frozenset(indexes))
 
     # Test the actual logic for determining value indexes
     # Test make_key

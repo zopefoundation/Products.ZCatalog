@@ -36,14 +36,14 @@ class UUIDIndex(UnIndex):
     For each datum only one documentId can exist.
     """
 
-    meta_type = "UUIDIndex"
+    meta_type = 'UUIDIndex'
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
     )
 
-    query_options = ["query", "range"]
+    query_options = ['query', 'range']
 
     manage = manage_main = DTMLFile('dtml/manageUUIDIndex', globals())
     manage_main._setName('manage_main')
@@ -73,7 +73,7 @@ class UUIDIndex(UnIndex):
         if name is None:
             name = self.id
         elif name != self.id:
-            raise StopIteration
+            return
 
         if not withLengths:
             for key in self._index.keys():
@@ -96,7 +96,7 @@ class UUIDIndex(UnIndex):
             self._length.change(1)
         elif old_docid != documentId:
             logger.error("A different document with value '%s' already "
-                         "exists in the index.'" % entry)
+                         'exists in the index.', entry)
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId

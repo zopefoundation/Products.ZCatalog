@@ -183,7 +183,7 @@ class UnIndex(SimpleItem):
                 try:
                     del self._index[entry]
                 except KeyError:
-                    # XXX swallow KeyError because it was probably
+                    # swallow KeyError because it was probably
                     # removed and then _length AttributeError raised
                     pass
                 if isinstance(self.__len__, Length):
@@ -191,18 +191,20 @@ class UnIndex(SimpleItem):
                     del self.__len__
                 self._length.change(-1)
             except Exception:
-                LOG.error('%s: unindex_object could not remove '
-                          'documentId %s from index %s.  This '
-                          'should not happen.' %
-                          (self.__class__.__name__,
-                           str(documentId), str(self.id)),
+                LOG.error('%(context)s: unindex_object could not remove '
+                          'documentId %(doc_id)s from index %(index)r.  This '
+                          'should not happen.', dict(
+                              context=self.__class__.__name__,
+                              doc_id=documentId,
+                              index=self.id),
                           exc_info=sys.exc_info())
         else:
-            LOG.error('%s: unindex_object tried to retrieve set %s '
-                      'from index %s but couldn\'t.  This '
-                      'should not happen.' %
-                      (self.__class__.__name__,
-                       repr(entry), str(self.id)))
+            LOG.error('%(context)s: unindex_object tried to '
+                      'retrieve set %(entry)r from index %(index)r '
+                      'but couldn\'t.  This should not happen.', dict(
+                          context=self.__class__.__name__,
+                          entry=entry,
+                          index=self.id))
 
     def insertForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and put it in the correct place
@@ -267,7 +269,7 @@ class UnIndex(SimpleItem):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, '
-                                  'now its not, for document: %s' % documentId)
+                                  'now its not, for document: %s', documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -323,7 +325,7 @@ class UnIndex(SimpleItem):
             raise
         except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s' % documentId, exc_info=True)
+                      ' with id %s', documentId, exc_info=True)
 
     def _apply_not(self, not_parm, resultset=None):
         index = self._index
@@ -351,7 +353,8 @@ class UnIndex(SimpleItem):
             catalog = aq_parent(aq_parent(aq_inner(self)))
             if catalog is not None:
                 # unique catalog identifier
-                key = '_catalogcache_%s_%s' % (catalog.getId(), id(catalog))
+                key = '_catalogcache_{0}_{1}'.format(
+                    catalog.getId(), id(catalog))
                 cache = REQUEST.get(key, None)
                 if cache is None:
                     cache = REQUEST[key] = RequestCache()
@@ -385,8 +388,8 @@ class UnIndex(SimpleItem):
         rid = frozenset(params)
 
         # unique index identifier
-        iid = '_%s_%s_%s' % (self.__class__.__name__,
-                             self.id, self.getCounter())
+        iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
+                                    self.id, self.getCounter())
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):
@@ -471,19 +474,19 @@ class UnIndex(SimpleItem):
         # Range parameter
         range_parm = record.get('range', None)
         if range_parm:
-            opr = "range"
+            opr = 'range'
             opr_args = []
-            if range_parm.find("min") > -1:
-                opr_args.append("min")
-            if range_parm.find("max") > -1:
-                opr_args.append("max")
+            if range_parm.find('min') > -1:
+                opr_args.append('min')
+            if range_parm.find('max') > -1:
+                opr_args.append('max')
 
         if record.get('usage', None):
             # see if any usage params are sent to field
             opr = record.usage.lower().split(':')
             opr, opr_args = opr[0], opr[1:]
 
-        if opr == "range":  # range search
+        if opr == 'range':  # range search
             if 'min' in opr_args:
                 lo = min(record.keys)
             else:
@@ -564,9 +567,9 @@ class UnIndex(SimpleItem):
                 except TypeError:
                     # key is not valid for this Btree so the value is None
                     LOG.error(
-                        '{context!s}: query_index tried '
-                        'to look up key {key!r} from index {index!r} '
-                        'but key was of the wrong type.'.format(
+                        '%(context)s: query_index tried '
+                        'to look up key %(key)r from index %(index)r '
+                        'but key was of the wrong type.', dict(
                             context=self.__class__.__name__,
                             key=k,
                             index=self.id,
@@ -675,7 +678,7 @@ class UnIndex(SimpleItem):
         if name is None:
             name = self.id
         elif name != self.id:
-            raise StopIteration
+            return
 
         if not withLengths:
             for key in self._index.keys():

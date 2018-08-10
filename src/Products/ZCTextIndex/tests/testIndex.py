@@ -35,11 +35,11 @@ class IndexTest(object):
         self.index = self.IndexFactory(self.lexicon)
 
     def test_index_document(self, docid=1):
-        doc = "simple document contains five words"
-        self.assert_(not self.index.has_doc(docid))
+        doc = 'simple document contains five words'
+        self.assertFalse(self.index.has_doc(docid))
         self.index.index_doc(docid, doc)
-        self.assert_(self.index.has_doc(docid))
-        self.assert_(self.index._docweight[docid])
+        self.assertTrue(self.index.has_doc(docid))
+        self.assertTrue(self.index._docweight[docid])
         self.assertEqual(len(self.index._docweight), 1)
         self.assertEqual(
             len(self.index._docweight), self.index.document_count())
@@ -50,7 +50,7 @@ class IndexTest(object):
                          self.index.length())
         for map in self.index._wordinfo.values():
             self.assertEqual(len(map), 1)
-            self.assert_(docid in map)
+            self.assertIn(docid, map)
 
     def test_unindex_document(self):
         docid = 1
@@ -66,10 +66,10 @@ class IndexTest(object):
 
     def test_index_two_documents(self):
         self.test_index_document()
-        doc = "another document just four"
+        doc = 'another document just four'
         docid = 2
         self.index.index_doc(docid, doc)
-        self.assert_(self.index._docweight[docid])
+        self.assertTrue(self.index._docweight[docid])
         self.assertEqual(len(self.index._docweight), 2)
         self.assertEqual(
             len(self.index._docweight), self.index.document_count())
@@ -78,14 +78,14 @@ class IndexTest(object):
         self.assertEqual(len(self.index.get_words(docid)), 4)
         self.assertEqual(len(self.index._wordinfo),
                          self.index.length())
-        wids = self.lexicon.termToWordIds("document")
+        wids = self.lexicon.termToWordIds('document')
         self.assertEqual(len(wids), 1)
         document_wid = wids[0]
         for wid, map in self.index._wordinfo.items():
             if wid == document_wid:
                 self.assertEqual(len(map), 2)
-                self.assert_(1 in map)
-                self.assert_(docid in map)
+                self.assertIn(1, map)
+                self.assertIn(docid, map)
             else:
                 self.assertEqual(len(map), 1)
 
@@ -97,7 +97,7 @@ class IndexTest(object):
         self.assertEqual(len(self.index._docweight), 1)
         self.assertEqual(
             len(self.index._docweight), self.index.document_count())
-        self.assert_(self.index._docweight[docid])
+        self.assertTrue(self.index._docweight[docid])
         self.assertEqual(len(self.index._wordinfo), 4)
         self.assertEqual(len(self.index._docwords), 1)
         self.assertEqual(len(self.index.get_words(docid)), 4)
@@ -105,12 +105,12 @@ class IndexTest(object):
                          self.index.length())
         for map in self.index._wordinfo.values():
             self.assertEqual(len(map), 1)
-            self.assert_(docid in map)
+            self.assertIn(docid, map)
 
     def test_index_duplicated_words(self, docid=1):
-        doc = "very simple repeat repeat repeat document test"
+        doc = 'very simple repeat repeat repeat document test'
         self.index.index_doc(docid, doc)
-        self.assert_(self.index._docweight[docid])
+        self.assertTrue(self.index._docweight[docid])
         self.assertEqual(len(self.index._wordinfo), 5)
         self.assertEqual(len(self.index._docwords), 1)
         self.assertEqual(len(self.index.get_words(docid)), 7)
@@ -118,41 +118,41 @@ class IndexTest(object):
                          self.index.length())
         self.assertEqual(
             len(self.index._docweight), self.index.document_count())
-        wids = self.lexicon.termToWordIds("repeat")
+        wids = self.lexicon.termToWordIds('repeat')
         self.assertEqual(len(wids), 1)
         for wid, map in self.index._wordinfo.items():
             self.assertEqual(len(map), 1)
-            self.assert_(docid in map)
+            self.assertIn(docid, map)
 
     def test_simple_query_oneresult(self):
         self.index.index_doc(1, 'not the same document')
-        results = self.index.search("document")
+        results = self.index.search('document')
         self.assertEqual(list(results.keys()), [1])
 
     def test_simple_query_noresults(self):
         self.index.index_doc(1, 'not the same document')
-        results = self.index.search("frobnicate")
+        results = self.index.search('frobnicate')
         self.assertEqual(list(results.keys()), [])
 
     def test_query_oneresult(self):
         self.index.index_doc(1, 'not the same document')
         self.index.index_doc(2, 'something about something else')
-        results = self.index.search("document")
+        results = self.index.search('document')
         self.assertEqual(list(results.keys()), [1])
 
     def test_search_phrase(self):
-        self.index.index_doc(1, "the quick brown fox jumps over the lazy dog")
-        self.index.index_doc(2, "the quick fox jumps lazy over the brown dog")
-        results = self.index.search_phrase("quick brown fox")
+        self.index.index_doc(1, 'the quick brown fox jumps over the lazy dog')
+        self.index.index_doc(2, 'the quick fox jumps lazy over the brown dog')
+        results = self.index.search_phrase('quick brown fox')
         self.assertEqual(list(results.keys()), [1])
 
     def test_search_glob(self):
-        self.index.index_doc(1, "how now brown cow")
-        self.index.index_doc(2, "hough nough browne cough")
-        self.index.index_doc(3, "bar brawl")
-        results = self.index.search_glob("bro*")
+        self.index.index_doc(1, 'how now brown cow')
+        self.index.index_doc(2, 'hough nough browne cough')
+        self.index.index_doc(3, 'bar brawl')
+        results = self.index.search_glob('bro*')
         self.assertEqual(list(results.keys()), [1, 2])
-        results = self.index.search_glob("b*")
+        results = self.index.search_glob('b*')
         self.assertEqual(list(results.keys()), [1, 2, 3])
 
 
@@ -174,7 +174,7 @@ class TestIndexConflict(TestCase):
             self.storage.cleanup()
 
     def openDB(self):
-        n = 'fs_tmp__%s' % os.getpid()
+        n = 'fs_tmp__{0}'.format(os.getpid())
         self.storage = FileStorage(n)
         self.db = DB(self.storage)
 
@@ -271,12 +271,12 @@ class TestUpgrade(TestCase):
         del self.index1.document_count
         self.index1.index_doc(1, 'gazes upon my shadow')
         self.index2.index_doc(1, 'gazes upon my shadow')
-        self.assert_(self.index1.document_count.__class__ is Length)
+        self.assertIs(self.index1.document_count.__class__, Length)
         self.assertEqual(
             self.index1.document_count(), self.index2.document_count())
         del self.index1.document_count
         self.index1.unindex_doc(0)
         self.index2.unindex_doc(0)
-        self.assert_(self.index1.document_count.__class__ is Length)
+        self.assertIs(self.index1.document_count.__class__, Length)
         self.assertEqual(
             self.index1.document_count(), self.index2.document_count())

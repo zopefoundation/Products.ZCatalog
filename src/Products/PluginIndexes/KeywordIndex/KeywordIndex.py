@@ -11,7 +11,6 @@
 #
 ##############################################################################
 
-import sys
 from logging import getLogger
 
 from BTrees.OOBTree import difference
@@ -37,7 +36,7 @@ class KeywordIndex(UnIndex):
 
     This should have an _apply_index that returns a relevance score
     """
-    meta_type = "KeywordIndex"
+    meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
 
     manage_options = (
@@ -135,9 +134,10 @@ class KeywordIndex(UnIndex):
         try:
             del self._unindex[documentId]
         except KeyError:
-            LOG.debug('%s: Attempt to unindex nonexistent '
-                      'document with id %s' %
-                      (self.__class__.__name__, documentId),
+            LOG.debug('%(context)s: Attempt to unindex nonexistent '
+                      'document with id %(doc_id)s', dict(
+                          context=self.__class__.__name__,
+                          doc_id=documentId),
                       exc_info=True)
 
     manage = manage_main = DTMLFile('dtml/manageKeywordIndex', globals())

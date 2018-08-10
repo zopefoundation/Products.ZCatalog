@@ -110,7 +110,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('dogs')
         self.assertEqual(len(wids), 1)
-        self.assert_(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testMissingTermToWordIds(self):
         from Products.ZCTextIndex.Lexicon import Splitter
@@ -132,7 +132,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('dogs')
         self.assertEqual(len(wids), 1)
-        self.assert_(wids[0] > 0)
+        self.assertTrue(wids[0] > 0)
 
     def testMissingTermToWordIdsWithProcess_post_glob(self):
         """This test is for added process_post_glob"""
@@ -155,7 +155,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('fish')
         self.assertEqual(len(wids), 1)
-        self.assert_(wids[0] > 0)
+        self.assertTrue(wids[0] > 0)
 
     def testSplitterAdaptorFold(self):
         from Products.ZCTextIndex.Lexicon import CaseNormalizer
@@ -188,7 +188,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('hsif')
         self.assertEqual(len(wids), 1)
-        self.assert_(wids[0] > 0)
+        self.assertTrue(wids[0] > 0)
 
     def testThreeElementPipeline(self):
         from Products.ZCTextIndex.Lexicon import Splitter
@@ -201,7 +201,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('hsif')
         self.assertEqual(len(wids), 1)
-        self.assert_(wids[0] > 0)
+        self.assertTrue(wids[0] > 0)
 
     def testSplitterLocaleAwareness(self):
         import locale
@@ -219,7 +219,7 @@ class LexiconTests(unittest.TestCase):
             return  # This test doesn't work here :-(
         expected = ['m\xfclltonne', 'waschb\xe4r',
                     'beh\xf6rde', '\xfcberflieger']
-        words = [" ".join(expected)]
+        words = [' '.join(expected)]
         words = Splitter().process(words)
         self.assertEqual(words, expected)
         words = HTMLWordSplitter().process(words)
@@ -247,29 +247,29 @@ class LexiconConflictTests(unittest.TestCase):
         from ZODB.DB import DB
         from ZODB.FileStorage import FileStorage
 
-        n = 'fs_tmp__%s' % os.getpid()
+        n = 'fs_tmp__{0}'.format(os.getpid())
         self.storage = FileStorage(n)
         self.db = DB(self.storage)
 
     def testAddWordConflict(self):
         from Products.ZCTextIndex.Lexicon import Splitter
 
-        self.l = self._makeOne(Splitter())
+        self.lex = self._makeOne(Splitter())
         self.openDB()
         r1 = self.db.open().root()
-        r1['l'] = self.l
+        r1['lex'] = self.lex
         transaction.commit()
 
         r2 = self.db.open().root()
-        copy = r2['l']
+        copy = r2['lex']
         # Make sure the data is loaded
         list(copy._wids.items())
         list(copy._words.items())
         copy.length()
 
-        self.assertEqual(self.l._p_serial, copy._p_serial)
+        self.assertEqual(self.lex._p_serial, copy._p_serial)
 
-        self.l.sourceToWordIds('mary had a little lamb')
+        self.lex.sourceToWordIds('mary had a little lamb')
         transaction.commit()
 
         copy.sourceToWordIds('whose fleece was')

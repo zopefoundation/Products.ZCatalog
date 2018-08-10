@@ -61,7 +61,7 @@ class DateRangeIndex(UnIndex):
 
     security = ClassSecurityInfo()
 
-    meta_type = "DateRangeIndex"
+    meta_type = 'DateRangeIndex'
     query_options = ('query', )
 
     manage_options = ({'label': 'Properties',
@@ -93,46 +93,46 @@ class DateRangeIndex(UnIndex):
                    ceiling_value, precision_value)
         self.clear()
 
-    security.declareProtected(view, 'getSinceField')
+    @security.protected(view)
     def getSinceField(self):
         """Get the name of the attribute indexed as start date.
         """
         return self._since_field
 
-    security.declareProtected(view, 'getUntilField')
+    @security.protected(view)
     def getUntilField(self):
         """Get the name of the attribute indexed as end date.
         """
         return self._until_field
 
-    security.declareProtected(view, 'getFloorValue')
+    @security.protected(view)
     def getFloorValue(self):
         """ """
         return self.floor_value
 
-    security.declareProtected(view, 'getCeilingValue')
+    @security.protected(view)
     def getCeilingValue(self):
         """ """
         return self.ceiling_value
 
-    security.declareProtected(view, 'getPrecisionValue')
+    @security.protected(view)
     def getPrecisionValue(self):
         """ """
         return self.precision_value
 
     manage_indexProperties = DTMLFile('manageDateRangeIndex', _dtmldir)
 
-    security.declareProtected(manage_zcatalog_indexes, 'manage_edit')
+    @security.protected(manage_zcatalog_indexes)
     def manage_edit(self, since_field, until_field, floor_value,
                     ceiling_value, precision_value, REQUEST):
         """ """
         self._edit(since_field, until_field, floor_value, ceiling_value,
                    precision_value)
-        REQUEST['RESPONSE'].redirect('%s/manage_main'
-                                     '?manage_tabs_message=Updated'
-                                     % REQUEST.get('URL2'))
+        REQUEST['RESPONSE'].redirect('{0}/manage_main'
+                                     '?manage_tabs_message=Updated'.format(
+                                         REQUEST.get('URL2')))
 
-    security.declarePrivate('_edit')
+    @security.private
     def _edit(self, since_field, until_field, floor_value=None,
               ceiling_value=None, precision_value=None):
         """Update the fields used to compute the range.
@@ -146,7 +146,7 @@ class DateRangeIndex(UnIndex):
         if precision_value not in (None, ''):
             self.precision_value = int(precision_value)
 
-    security.declareProtected(manage_zcatalog_indexes, 'clear')
+    @security.protected(manage_zcatalog_indexes)
     def clear(self):
         """Start over fresh."""
         self._always = IITreeSet()
@@ -224,7 +224,7 @@ class DateRangeIndex(UnIndex):
         the form '(value, length)'.
         """
         if name not in (self._since_field, self._until_field):
-            raise StopIteration
+            return
 
         if name == self._since_field:
             sets = (self._since, self._since_only)
@@ -248,13 +248,13 @@ class DateRangeIndex(UnIndex):
         tid = str(term)
 
         # unique index identifier
-        iid = '_%s_%s_%s' % (self.__class__.__name__,
-                             self.id, self.getCounter())
+        iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
+                                    self.id, self.getCounter())
         # record identifier
         if resultset is None:
-            rid = '_%s' % (tid, )
+            rid = '_{0}'.format(tid)
         else:
-            rid = '_inverse_%s' % (tid, )
+            rid = '_inverse_{0}'.format(tid)
 
         return (iid, rid)
 

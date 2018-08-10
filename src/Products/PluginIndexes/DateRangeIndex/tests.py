@@ -97,11 +97,14 @@ class DateRangeIndexTests(unittest.TestCase):
 
         def checkApply():
             result, used = index._apply_index(req, resultset=resultset)
-            if hasattr(result, 'keys'):
+            try:
                 result = result.keys()
+            except AttributeError:
+                pass
+
             assert used == (index._since_field, index._until_field)
             assert len(result) == len(expectedValues), \
-                '%s: %s | %s' % (req, list(result), expectedValues)
+                '{0}: {1} | {2}'.format(req, list(result), expectedValues)
             for k, v in expectedValues:
                 assert k in result
             return (result, used)
@@ -148,7 +151,12 @@ class DateRangeIndexTests(unittest.TestCase):
         index = self._makeOne('work', 'start', 'stop')
 
         for i, dummy in dummies:
-            index.index_object(i, dummy)
+            result = index.index_object(i, dummy)
+            self.assertEqual(result, 1)
+
+            # don't index datum twice
+            result = index.index_object(i, dummy)
+            self.assertEqual(result, 0)
 
         for i, dummy in dummies:
             self.assertEqual(index.getEntryForObject(i), dummy.datum())
@@ -161,6 +169,13 @@ class DateRangeIndexTests(unittest.TestCase):
             for result, match in zip(results, matches):
                 self.assertEqual(index.getEntryForObject(result),
                                  match[1].datum())
+
+        # check update
+        i, dummy = dummies[0]
+        start = dummy._start
+        dummy._start = start and start + 1 or 1
+        index.index_object(i, dummy)
+        self.assertEqual(index.getEntryForObject(0), dummy.datum())
 
     def test_longdates(self):
         too_large = 2 ** 31

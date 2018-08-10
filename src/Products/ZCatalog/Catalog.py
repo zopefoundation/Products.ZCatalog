@@ -164,8 +164,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if name != name.strip():
             # Someone could have mistakenly added a space at the end
             # of the input field.
-            LOG.warn("stripped space from new column %r -> %r", name,
-                     name.strip())
+            LOG.warning('stripped space from new column %r -> %r', name,
+                        name.strip())
             name = name.strip()
 
         if name in schema:
@@ -206,7 +206,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         if name not in self.schema:
             LOG.error('delColumn attempted to delete nonexistent '
-                      'column %s.' % str(name))
+                      'column %s.', str(name))
             return
 
         del names[_index]
@@ -254,8 +254,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         if name != name.strip():
             # Someone could have mistakenly added a space at the end
             # of the input field.
-            LOG.warn("stripped space from new index %r -> %r", name,
-                     name.strip())
+            LOG.warning('stripped space from new index %r -> %r', name,
+                        name.strip())
             name = name.strip()
 
         indexes = self.indexes
@@ -370,7 +370,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 total = total + blah
             else:
                 LOG.error('catalogObject was passed bad index '
-                          'object %s.' % str(x))
+                          'object %s.', str(x))
 
         return total
 
@@ -404,7 +404,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         else:
             LOG.error('uncatalogObject unsuccessfully '
                       'attempted to uncatalog an object '
-                      'with a uid of %s. ' % str(uid))
+                      'with a uid of %s. ', str(uid))
 
     def uniqueValuesFor(self, name):
         """ return unique values for FieldIndex name """
