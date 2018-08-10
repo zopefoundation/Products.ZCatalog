@@ -46,7 +46,7 @@ def datetime_to_minutes(value, precision=1,
 
     # flatten to precision
     if precision > 1:
-        value = value - (value % precision)  # noqa: S001
+        value = value - (value % precision)
 
     value = int(value)
 

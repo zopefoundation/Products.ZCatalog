@@ -186,7 +186,7 @@ class DateIndex(UnIndex, PropertyManager):
 
         # flatten to precision
         if self.precision > 1:
-            t_val = t_val - (t_val % self.precision)  # noqa: S001
+            t_val = t_val - (t_val % self.precision)
 
         t_val = int(t_val)
 

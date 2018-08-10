@@ -176,7 +176,7 @@ class BooleanIndex(UnIndex):
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, now '
                                   'its not, for document with id %s',
-                                      documentId)
+                                  documentId)
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
