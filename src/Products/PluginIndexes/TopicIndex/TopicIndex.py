@@ -42,6 +42,7 @@ class TopicIndex(Persistent, SimpleItem):
     """
 
     meta_type = 'TopicIndex'
+    zmi_icon = 'fas fa-info-circle'
     query_options = ('query', 'operator')
 
     manage_options = (

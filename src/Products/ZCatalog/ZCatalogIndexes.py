@@ -37,7 +37,8 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
     # The interfaces we want to show up in our object manager
     _product_interfaces = (IPluggableIndex, )
 
-    meta_type = "ZCatalogIndex"
+    meta_type = 'ZCatalogIndex'
+    zmi_icon = 'far fa-list-alt'
     manage_options = ()
 
     security = ClassSecurityInfo()

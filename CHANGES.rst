@@ -4,7 +4,8 @@ Changelog
 4.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Adapt the ZMI HTML to the new Bootstrap ZMI.
+  (`#41 <https://github.com/zopefoundation/Products.ZCatalog/pull/41>`_)
 
 
 4.1.1 (2018-07-05)
@@ -164,7 +165,7 @@ Changelog
   and existing document with the opposite value. Fixes LP #1236354.
 
 3.0 (2013-02-24)
-----------------
+------------------
 
 - Strip white space from name when adding a column or index.
 
