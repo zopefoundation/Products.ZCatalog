@@ -281,7 +281,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 except ConflictError:
                     raise
                 except Exception:
-                    LOG.error('Recataloging object at %s failed' % p,
+                    LOG.error('Recataloging object at %s failed', p,
                               exc_info=sys.exc_info())
 
         if pghandler:
@@ -430,7 +430,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 obj = self.resolve_url(p, REQUEST)
             if obj is None:
                 LOG.error('reindexIndex could not resolve '
-                          'an object from the uid %r.' % p)
+                          'an object from the uid %r.', p)
             else:
                 # don't update metadata when only reindexing a single
                 # index via the UI

@@ -19,7 +19,7 @@ from Products.PluginIndexes.unindex import UnIndex
 class FieldIndex(UnIndex):
     """Index for simple fields.
     """
-    meta_type = "FieldIndex"
+    meta_type = 'FieldIndex'
     query_options = ('query', 'range', 'not')
 
     manage_options = (

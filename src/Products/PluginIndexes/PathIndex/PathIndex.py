@@ -55,7 +55,7 @@ class PathIndex(Persistent, SimpleItem):
       'all docids with this path component on this level'
     """
 
-    meta_type = "PathIndex"
+    meta_type = 'PathIndex'
     zmi_icon = 'fas fa-info-circle'
 
     operators = ('or', 'and')
@@ -135,8 +135,9 @@ class PathIndex(Persistent, SimpleItem):
         """ See IPluggableIndex.
         """
         if docid not in self._unindex:
-            LOG.debug('Attempt to unindex nonexistent document with id %s'
-                      % docid)
+            LOG.debug('Attempt to unindex nonexistent '
+                      'document with id %s', docid)
+
             return
 
         comps = self._unindex[docid].split('/')
@@ -151,8 +152,8 @@ class PathIndex(Persistent, SimpleItem):
                 if not self._index[comp]:
                     del self._index[comp]
             except KeyError:
-                LOG.debug('Attempt to unindex document with id %s failed'
-                          % docid)
+                LOG.debug('Attempt to unindex document '
+                          'with id %s failed', docid)
 
         self._length.change(-1)
         del self._unindex[docid]
@@ -278,8 +279,8 @@ class PathIndex(Persistent, SimpleItem):
         if level < 0:
             # Search at every level, return the union of all results
             return multiunion(
-                [self._search(path, level)
-                 for level in range(self._depth + 1)])
+                [self._search(path, lvl)
+                 for lvl in range(self._depth + 1)])
 
         comps = list(filter(None, path.split('/')))
 

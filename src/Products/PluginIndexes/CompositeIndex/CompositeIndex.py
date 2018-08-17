@@ -14,6 +14,7 @@
 import logging
 from itertools import product
 from itertools import combinations
+from six.moves import urllib
 import time
 import transaction
 
@@ -142,8 +143,8 @@ class Component(object):
         return self._attributes
 
     def __repr__(self):
-        return "<id: %s; metatype: %s; attributes: %s>" % \
-            (self.id, self.meta_type, self.attributes)
+        return ('<id: {0.id}; metatype: {0.meta_type}; '
+                'attributes: {0.attributes}>').format(self)
 
 
 @implementer(ITransposeQuery)
@@ -153,7 +154,7 @@ class CompositeIndex(KeywordIndex):
        or sequences of items
     """
 
-    meta_type = "CompositeIndex"
+    meta_type = 'CompositeIndex'
 
     manage_options = (
         {'label': 'Settings',
@@ -162,7 +163,7 @@ class CompositeIndex(KeywordIndex):
          'action': 'manage_browse'},
     )
 
-    query_options = ("query", "operator")
+    query_options = ('query', 'operator')
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -304,8 +305,10 @@ class CompositeIndex(KeywordIndex):
             zc = aq_parent(aq_parent(self))
             skip = zc.getProperty('skip_compositeindex', False)
             if skip:
-                LOG.debug('%s: skip composite query build %r' %
-                          (self.__class__.__name__, zc))
+                LOG.debug('%(context)s: skip composite query build '
+                          'for %(zcatalog)r', dict(
+                              context=self.__class__.__name__,
+                              zcatalog=zc))
                 return query
         except AttributeError:
             pass
@@ -377,7 +380,7 @@ class CompositeIndex(KeywordIndex):
         # Add a component object by 'c_id'.
         if c_id in self._components:
             raise KeyError('A component with this '
-                           'name already exists: %s' % c_id)
+                           'name already exists: {0}'.format(c_id))
 
         self._components[c_id] = Component(c_id,
                                            c_meta_type,
@@ -387,7 +390,7 @@ class CompositeIndex(KeywordIndex):
     def delComponent(self, c_id):
         # Delete the component object specified by 'c_id'.
         if c_id not in self._components:
-            raise KeyError('no such Component:  %s' % c_id)
+            raise KeyError('no such Component:  {0}'.format(c_id))
 
         del self._components[c_id]
 
@@ -486,10 +489,11 @@ class CompositeIndex(KeywordIndex):
         ct = time.clock() - ct
 
         if RESPONSE:
-            RESPONSE.redirect(URL1 + '/manage_main?'
-                              'manage_tabs_message=ComponentIndex%%20fast%%20'
-                              'reindexed%%20in%%20%.3f%%20'
-                              'seconds%%20(%.3f%%20cpu)' % (tt, ct))
+            msg = ('ComponentIndex fast reindexed '
+                   'in {0:.3f}s ({1:.3f}s cpu time)').format(tt, ct)
+            param = urllib.parse.urlencode({'manage_tabs_message': msg})
+
+            RESPONSE.redirect(URL1 + '/manage_main?' + param)
 
     manage = manage_main = DTMLFile('dtml/manageCompositeIndex', globals())
     manage_main._setName('manage_main')

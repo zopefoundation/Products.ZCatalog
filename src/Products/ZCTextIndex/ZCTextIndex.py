@@ -249,7 +249,7 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
         """Return sequence of names of indexed attributes"""
         try:
             return self._indexed_attrs
-        except:
+        except Exception:
             return [self._fieldname]
 
     def getIndexQueryNames(self):

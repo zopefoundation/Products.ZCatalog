@@ -41,7 +41,7 @@ class TopicIndex(Persistent, SimpleItem):
     Ids of indexed objects that eval with this expression to 1.
     """
 
-    meta_type = "TopicIndex"
+    meta_type = 'TopicIndex'
     zmi_icon = 'fas fa-info-circle'
     query_options = ('query', 'operator')
 
@@ -75,16 +75,16 @@ class TopicIndex(Persistent, SimpleItem):
                 fs.unindex_object(docid)
             except KeyError:
                 LOG.debug('Attempt to unindex document'
-                          ' with id %s failed' % docid)
+                          ' with id %s failed', docid)
         return 1
 
     def numObjects(self):
         """Return the number of indexed objects."""
-        return "n/a"
+        return 'n/a'
 
     def indexSize(self):
         """Return the size of the index in terms of distinct values."""
-        return "n/a"
+        return 'n/a'
 
     def search(self, filter_id):
         f = self.filteredSets.get(filter_id, None)
@@ -129,8 +129,8 @@ class TopicIndex(Persistent, SimpleItem):
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.
         if filter_id in self.filteredSets:
-            raise KeyError(
-                'A FilteredSet with this name already exists: %s' % filter_id)
+            raise KeyError(('A FilteredSet with this name already '
+                            'exists: {0}'.format(filter_id)))
         self.filteredSets[filter_id] = factory(
             filter_id, typeFilteredSet, expr)
 
@@ -138,14 +138,14 @@ class TopicIndex(Persistent, SimpleItem):
         # Delete the FilteredSet object specified by 'filter_id'.
         if filter_id not in self.filteredSets:
             raise KeyError(
-                'no such FilteredSet:  %s' % filter_id)
+                'no such FilteredSet:  {0}'.format(filter_id))
         del self.filteredSets[filter_id]
 
     def clearFilteredSet(self, filter_id):
         # Clear the FilteredSet object specified by 'filter_id'.
         f = self.filteredSets.get(filter_id, None)
         if f is None:
-            raise KeyError('no such FilteredSet: %s' % filter_id)
+            raise KeyError('no such FilteredSet: {0}'.format(filter_id))
         f.clear()
 
     def manage_addFilteredSet(self, filter_id, typeFilteredSet, expr, URL1,

@@ -122,7 +122,7 @@ class RiceCode(object):
 
     def tolist(self):
         """Return the items as a list."""
-        l = []
+        result = []
         i = 0  # bit offset
         binary_range = range(self.m)
         for j in range(self.len):
@@ -136,8 +136,8 @@ class RiceCode(object):
             for k in binary_range:
                 binary = (binary << 1) | self.bits[i]
                 i += 1
-            l.append((unary << self.m) + (binary + 1))
-        return l
+            result.append((unary << self.m) + (binary + 1))
+        return result
 
     def tostring(self):
         """Return a binary string containing the encoded data.
@@ -175,8 +175,8 @@ def encode_deltas(l):
 
 def decode_deltas(start, enc_deltas):
     deltas = enc_deltas.tolist()
-    l = [start]
+    result = [start]
     for i in range(1, len(deltas)):
-        l.append(l[i - 1] + deltas[i])
-    l.append(l[-1] + deltas[-1])
-    return l
+        result.append(result[i - 1] + deltas[i])
+    result.append(result[-1] + deltas[-1])
+    return result

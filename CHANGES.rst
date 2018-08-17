@@ -4,8 +4,15 @@ Changelog
 4.2 (unreleased)
 ----------------
 
+- Nothing changed yet.
+
+
+4.1.1 (2018-07-05)
+------------------
+
 - Fix a TypeError on Python 3 when trying to lookup in an OOBTree
-  a value for a key that has an invalid type
+  a value for a key that has an invalid type.
+  (`#36 <https://github.com/zopefoundation/Products.ZCatalog/pull/36>`_)
 
 - Add icon for Bootstrap ZMI.
 

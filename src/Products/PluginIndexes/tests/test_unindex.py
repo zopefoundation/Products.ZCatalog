@@ -1,4 +1,4 @@
-##############################################################################
+#############################################################################
 #
 # Copyright (c) 2002 Zope Foundation and Contributors.
 #
@@ -67,17 +67,17 @@ class TestUnIndex(unittest.TestCase):
                           'conflicts', 42)
 
     def test_get_object_datum(self):
-        from Products.PluginIndexes.common.UnIndex import _marker
+        from Products.PluginIndexes.unindex import _marker
         idx = self._makeOne('interesting')
 
         dummy = object()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
 
         class DummyContent2(object):
             interesting = 'GOT IT'
         dummy = DummyContent2()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
-                          'GOT IT')
+        self.assertEqual(idx._get_object_datum(dummy, 'interesting'),
+                         'GOT IT')
 
         class DummyContent3(object):
             exc = None
@@ -87,14 +87,14 @@ class TestUnIndex(unittest.TestCase):
                     raise self.exc
                 return 'GOT IT'
         dummy = DummyContent3()
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'),
-                          'GOT IT')
+        self.assertEqual(idx._get_object_datum(dummy, 'interesting'),
+                         'GOT IT')
 
         dummy.exc = AttributeError
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
 
         dummy.exc = TypeError
-        self.assertEquals(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
 
     def test_cache(self):
         idx = self._makeOne(id='foo')
@@ -124,7 +124,7 @@ class TestUnIndex(unittest.TestCase):
             self.assertEqual(len(result), 0)
 
         # Dummy tests, result is always empty.
-        # TODO: Sophisticated tests have to be placed on tests
+        # NOTE: Sophisticated tests have to be placed on tests
         # of inherited classes (FieldIndex, KeywordIndex etc.)
         #
         # 'or' operator

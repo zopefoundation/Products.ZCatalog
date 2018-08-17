@@ -46,7 +46,7 @@ class BooleanIndex(UnIndex):
        has a roughly equal 50/50 split.
     """
 
-    meta_type = "BooleanIndex"
+    meta_type = 'BooleanIndex'
 
     manage_options = (
         {'label': 'Settings',
@@ -55,7 +55,7 @@ class BooleanIndex(UnIndex):
          'action': 'manage_browse'},
     )
 
-    query_options = ["query"]
+    query_options = ['query']
 
     manage = manage_main = DTMLFile('dtml/manageBooleanIndex', globals())
     manage_main._setName('manage_main')
@@ -136,12 +136,13 @@ class BooleanIndex(UnIndex):
             except ConflictError:
                 raise
             except Exception:
-                LOG.exception(
-                    '%s: unindex_object could not remove documentId %s '
-                    'from index %s. This should not happen.' % (
-                        self.__class__.__name__,
-                        str(documentId),
-                        str(self.id)))
+                LOG.exception('%(context)s: unindex_object could not '
+                              'remove documentId %(doc_id)s from '
+                              'index %(index)r. This should not '
+                              'happen.', dict(
+                                  context=self.__class__.__name__,
+                                  doc_id=documentId,
+                                  index=self.id))
         elif check:
             # is the index (after removing the current entry) larger than
             # 60% of the total length? than switch the indexed value
@@ -174,7 +175,7 @@ class BooleanIndex(UnIndex):
                         raise
                     except Exception:
                         LOG.error('Should not happen: oldDatum was there, now '
-                                  'its not, for document with id %s' %
+                                  'its not, for document with id %s',
                                   documentId)
 
             if datum is not _marker:
@@ -203,7 +204,7 @@ class BooleanIndex(UnIndex):
             raise
         except Exception:
             LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s' % documentId, exc_info=True)
+                      ' with id %s', documentId, exc_info=True)
 
     def query_index(self, record, resultset=None):
         index = self._index

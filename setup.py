@@ -43,6 +43,7 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
+    keywords='Zope catalog index search data',
     install_requires=[
         'setuptools',
         'six',

@@ -21,9 +21,15 @@ MAX32 = int(2 ** 31 - 1)
 
 def safe_callable(ob):
     # Works with ExtensionClasses and Acquisition.
-    if hasattr(ob, '__class__'):
-        return hasattr(ob, '__call__') or isinstance(ob, six.class_types)
-    else:
+    try:
+        ob.__class__
+
+        try:
+            return bool(ob.__call__)
+        except AttributeError:
+            return isinstance(ob, six.class_types)
+
+    except AttributeError:
         return callable(ob)
 
 
@@ -47,6 +53,6 @@ def datetime_to_minutes(value, precision=1,
     if value > max_value or value < min_value:
         # value must be integer fitting in the range (default 32bit)
         raise OverflowError(
-            '%s is not within the range of dates allowed.' % value)
+            '{0} is not within the range of dates allowed.'.format(value))
 
     return value

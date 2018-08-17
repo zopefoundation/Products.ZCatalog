@@ -120,9 +120,9 @@ class TestBrains(unittest.TestCase):
 
     def testHasKey(self):
         b = self._makeBrain(1)
-        self.assertTrue('test_field' in b)
-        self.assertTrue('data_record_id_' in b)
-        self.assertFalse('godel' in b)
+        self.assertIn('test_field', b)
+        self.assertIn('data_record_id_', b)
+        self.assertNotIn('godel', b)
 
     def testGetPath(self):
         b = [self._makeBrain(rid) for rid in range(3)]
