@@ -39,7 +39,6 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
 
     meta_type = 'ZCatalogIndex'
     zmi_icon = 'far fa-list-alt'
-
     manage_options = ()
 
     security = ClassSecurityInfo()

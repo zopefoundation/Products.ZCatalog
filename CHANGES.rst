@@ -4,7 +4,8 @@ Changelog
 4.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Adapt the ZMI HTML to the new Bootstrap ZMI.
+  (`#41 <https://github.com/zopefoundation/Products.ZCatalog/pull/41>`_)
 
 
 4.1.1 (2018-07-05)
@@ -14,7 +15,6 @@ Changelog
   a value for a key that has an invalid type.
   (`#36 <https://github.com/zopefoundation/Products.ZCatalog/pull/36>`_)
 
-- Add icon for Bootstrap ZMI.
 
 4.1 (2018-03-06)
 ----------------

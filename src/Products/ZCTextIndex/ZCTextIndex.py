@@ -63,7 +63,6 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
 
     meta_type = 'ZCTextIndex'
     zmi_icon = 'fas fa-list'
-
     operators = ('and', 'or')
     useOperator = 'or'
     query_options = ('query', )
