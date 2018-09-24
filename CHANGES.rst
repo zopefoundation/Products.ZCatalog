@@ -7,6 +7,8 @@ Changelog
 - Adapt the ZMI HTML to the new Bootstrap ZMI.
   (`#41 <https://github.com/zopefoundation/Products.ZCatalog/pull/41>`_)
 
+- Fix sorting in _sort_iterate_resultset in python 3.
+  (`#42 <https://github.com/zopefoundation/Products.ZCatalog/pull/42>`_)
 
 4.1.1 (2018-07-05)
 ------------------

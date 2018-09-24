@@ -791,7 +791,10 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     # the cost of instantiating a LazyMap per result
                     result.append((key, did, self.__getitem__))
             if merge:
-                result.sort(reverse=reverse)
+                result = sorted(
+                    result,
+                    key=lambda x: (0,) if x[0] is None else x,
+                    reverse=reverse)
         else:
             for did in rs:
                 try:
