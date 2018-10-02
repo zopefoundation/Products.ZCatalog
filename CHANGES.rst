@@ -4,6 +4,8 @@ Changelog
 4.2 (unreleased)
 ----------------
 
+- Replace urllib.quote with six.moves.urllib.parse.quote
+
 - Adapt the ZMI HTML to the new Bootstrap ZMI.
   (`#41 <https://github.com/zopefoundation/Products.ZCatalog/pull/41>`_)
 
