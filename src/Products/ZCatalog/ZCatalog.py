@@ -17,7 +17,8 @@ import logging
 import operator
 import sys
 import time
-import urllib
+
+from six.moves.urllib.parse import quote
 
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permission import getPermissionIdentifier
@@ -248,7 +249,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         RESPONSE.redirect(
             URL1 +
             '/manage_catalogAdvanced?manage_tabs_message=' +
-            urllib.quote('Catalog Updated \n'
+            quote('Catalog Updated \n'
                          'Total time: %r\n'
                          'Total CPU time: %r' % (elapse, c_elapse)))
 
@@ -333,7 +334,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         RESPONSE.redirect(
             URL1 +
             '/manage_catalogView?manage_tabs_message=' +
-            urllib.quote('Catalog Updated\n'
+            quote('Catalog Updated\n'
                          'Total time: %r\n'
                          'Total CPU time: %r'
                          % (elapse, c_elapse)))
