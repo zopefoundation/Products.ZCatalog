@@ -15,6 +15,8 @@ Changelog
 
 - Add support for Python 3.7.
 
+- Drop support for Python 3.4.
+
 
 4.1.1 (2018-07-05)
 ------------------
