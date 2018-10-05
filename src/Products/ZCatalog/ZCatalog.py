@@ -250,8 +250,8 @@ class ZCatalog(Folder, Persistent, Implicit):
             URL1 +
             '/manage_catalogAdvanced?manage_tabs_message=' +
             quote('Catalog Updated \n'
-                         'Total time: %r\n'
-                         'Total CPU time: %r' % (elapse, c_elapse)))
+                  'Total time: %r\n'
+                  'Total CPU time: %r' % (elapse, c_elapse)))
 
     security.declareProtected(manage_zcatalog_entries, 'refreshCatalog')
     def refreshCatalog(self, clear=0, pghandler=None):
@@ -335,9 +335,8 @@ class ZCatalog(Folder, Persistent, Implicit):
             URL1 +
             '/manage_catalogView?manage_tabs_message=' +
             quote('Catalog Updated\n'
-                         'Total time: %r\n'
-                         'Total CPU time: %r'
-                         % (elapse, c_elapse)))
+                  'Total time: %r\n'
+                  'Total CPU time: %r' % (elapse, c_elapse)))
 
     security.declareProtected(manage_zcatalog_entries, 'manage_addColumn')
     def manage_addColumn(self, name, REQUEST=None, RESPONSE=None, URL1=None):
