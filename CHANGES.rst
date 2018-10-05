@@ -4,16 +4,17 @@ Changelog
 4.2 (unreleased)
 ----------------
 
-- Replace urllib.quote with six.moves.urllib.parse.quote.
+- Replace ``urllib.quote`` with ``six.moves.urllib.parse.quote``.
   Fixes an issue on a ZMI redirect after rebuilding the catalog.
 
 - Adapt the ZMI HTML to the new Bootstrap ZMI.
   (`#41 <https://github.com/zopefoundation/Products.ZCatalog/pull/41>`_)
 
-- Fix sorting in _sort_iterate_resultset in python 3.
+- Fix sorting in _sort_iterate_resultset in Python 3.
   (`#42 <https://github.com/zopefoundation/Products.ZCatalog/pull/42>`_)
 
-- Added support for Python 3.7.
+- Add support for Python 3.7.
+
 
 4.1.1 (2018-07-05)
 ------------------
