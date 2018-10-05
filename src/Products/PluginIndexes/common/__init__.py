@@ -11,10 +11,10 @@
 #
 ##############################################################################
 
-from zope.deferredimport import deprecated
+from zope.deferredimport import deprecated  # pragma: nocover
 
 # BBB ZCatalog 5.0
 deprecated(
     'Please import from Products.PluginIndexes.util.',
     safe_callable='Products.PluginIndexes.util:safe_callable',
-)
+)  # pragma: nocover

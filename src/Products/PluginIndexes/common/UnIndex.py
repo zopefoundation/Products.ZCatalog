@@ -11,7 +11,7 @@
 #
 ##############################################################################
 
-from zope.deferredimport import deprecated
+from zope.deferredimport import deprecated  # pragma: nocover
 
 # BBB ZCatalog 5.0
 deprecated(
@@ -19,4 +19,4 @@ deprecated(
     _marker='Products.PluginIndexes.unindex:_marker',
     LOG='Products.PluginIndexes.unindex:LOG',
     UnIndex='Products.PluginIndexes.unindex:UnIndex',
-)
+)  # pragma: nocover

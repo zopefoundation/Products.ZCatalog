@@ -11,7 +11,7 @@
 #
 ##############################################################################
 
-from zope.deferredimport import deprecated
+from zope.deferredimport import deprecated  # pragma: nocover
 
 # BBB ZCatalog 5.0
 deprecated(
@@ -22,4 +22,4 @@ deprecated(
     LazyMap='ZTUtils.Lazy:LazyMap',
     LazyMop='ZTUtils.Lazy:LazyMop',
     LazyValues='ZTUtils.Lazy:LazyValues',
-)
+)  # pragma: nocover

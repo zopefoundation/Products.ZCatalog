@@ -11,17 +11,17 @@
 #
 ##############################################################################
 
-from zope.deferredimport import deprecated
+from zope.deferredimport import deprecated  # pragma: nocover
 
 # BBB ZCatalog 5.0
 deprecated(
     'Please import from Products.ZCatalog.query.',
     IndexRequestParseError='Products.ZCatalog.query:IndexQueryParseError',
     parseIndexRequest='Products.ZCatalog.query:IndexQuery',
-)
+)  # pragma: nocover
 
 # BBB ZCatalog 5.0
 deprecated(
     'Please import from Products.PluginIndexes.cache.',
     RequestCache='Products.PluginIndexes.cache:RequestCache',
-)
+)  # pragma: nocover
