@@ -16,7 +16,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Products.ZCatalog',
-    version='4.2',
+    version='4.3.dev0',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope's indexing and search solution.",
