@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.2 (unreleased)
+4.2 (2018-10-05)
 ----------------
 
 - Replace ``urllib.quote`` with ``six.moves.urllib.parse.quote``.
