@@ -4,7 +4,8 @@ Changelog
 4.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Make sure WidCode decode handles bytes that were improperly
+  converted from Python 2 to Python 3.
 
 
 4.2 (2018-10-05)
