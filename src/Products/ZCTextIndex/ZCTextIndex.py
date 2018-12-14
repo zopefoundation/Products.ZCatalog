@@ -14,7 +14,10 @@
 """Plug in text index for ZCatalog with relevance ranking.
 """
 
-from html import escape
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_vocabulary
