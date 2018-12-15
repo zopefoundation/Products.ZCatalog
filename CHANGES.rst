@@ -4,7 +4,7 @@ Changelog
 4.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Replace deprecated ``cgi.escape`` with ``html.escape`` for Python 3.
 
 
 4.2 (2018-10-05)
