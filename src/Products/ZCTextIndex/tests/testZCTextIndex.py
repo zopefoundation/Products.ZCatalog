@@ -239,7 +239,7 @@ class ZCIndexTestsBase(object):
         d = {}  # word -> list of version numbers containing that word
         for version, i in zip(text, range(N)):
             # use a simple splitter rather than an official one
-            words = [w for w in re.split('\W+', version.lower())
+            words = [w for w in re.split(r'\W+', version.lower())
                      if len(w) > 1 and w not in stop]
             word_seen = {}
             for w in words:

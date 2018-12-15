@@ -5,6 +5,7 @@ Changelog
 ----------------
 
 - Replace deprecated ``cgi.escape`` with ``html.escape`` for Python 3.
+- Fix "invalid escape sequence" warning in Python 3.
 
 
 4.2 (2018-10-05)
