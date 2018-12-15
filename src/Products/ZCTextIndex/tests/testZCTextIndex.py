@@ -273,6 +273,28 @@ class ZCIndexTestsBase(object):
                         'did not expect to find {0}'.format(w)
                     )
 
+    def testLexiconIsNotFoundRaisesLookupError(self):
+        caller = LexiconHolder(self.lexicon)
+        with self.assertRaises(LookupError):
+            ZCTextIndex(
+                'name',
+                extra=None,
+                caller=caller,
+            )
+
+    def testInvalidIndexTypeRaisesValueError(self):
+        caller = LexiconHolder(self.lexicon)
+        class Extra(object):
+            index_type = 'Some invalid index type'
+        with self.assertRaises(ValueError):
+            ZCTextIndex(
+                'name',
+                extra=Extra,
+                caller=caller,
+                index_factory=None,
+                lexicon_id='lexicon'
+            )
+
 
 class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
 
