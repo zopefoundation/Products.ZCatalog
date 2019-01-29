@@ -549,6 +549,12 @@ class ZCatalog(Folder, Persistent, Implicit):
         # return the current index contents for the specific rid
         return self._catalog.getIndexDataForRID(rid)
 
+    security.declareProtected(search_zcatalog, 'getAllBrains')
+    def getAllBrains(self):
+        # return a generator of brains for all cataloged objects
+        for rid in self._catalog.data:
+            yield self._catalog[rid]
+
     security.declareProtected(search_zcatalog, 'schema')
     def schema(self):
         return self._catalog.schema.keys()
