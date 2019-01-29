@@ -4,8 +4,11 @@ Changelog
 2.13.30 (unreleased)
 --------------------
 
-- Nothing changed yet.
-
+- Add new `getAllBrains` method to the ZCatalog, returning a generator
+  of brains for all cataloged objects. You can use this if you relied
+  on `searchResults` returning all brains for empty queries before
+  version 4.0a2. This is a backport of this method in version 4.1 to ease the
+  migration.
 
 2.13.29 (2017-10-13)
 --------------------

@@ -260,6 +260,16 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
     # getMetadataForRID
     # getIndexDataForRID
+
+    def testGetAllBrains(self):
+        brain_class = self._catalog._catalog._v_result_class
+        brains = []
+        for brain in self._catalog.getAllBrains():
+            brains.append(brain)
+            self.assertIsInstance(brain, brain_class)
+            self.assertTrue(hasattr(brain, 'title'))
+        self.assertEqual(len(brains), len(self._catalog))
+
     # schema
     # indexes
     # index_objects
