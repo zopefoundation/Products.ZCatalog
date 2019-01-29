@@ -221,6 +221,28 @@ class TestCatalog(CatalogBase, unittest.TestCase):
             self._catalog.catalogObject(dummy(self.nums[x]), repr(x))
         self._catalog = self._catalog.__of__(dummy('foo'))
 
+    def _make_one(self, extra=None):
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.lexicon = PLexicon('lexicon')
+
+        att1 = FieldIndex('att1')
+        catalog.addIndex('att1', att1)
+
+        att2 = ZCTextIndex('att2', caller=catalog,
+                           index_factory=OkapiIndex, lexicon_id='lexicon')
+        catalog.addIndex('att2', att2)
+
+        att3 = KeywordIndex('att3')
+        catalog.addIndex('att3', att3)
+
+        if extra is not None:
+            extra(catalog)
+
+        for x in range(0, self.upper):
+            catalog.catalogObject(dummy(self.nums[x]), repr(x))
+        return catalog.__of__(dummy('foo'))
+
     def test_clear(self):
         catalog = self._make_one()
         self.assertTrue(len(catalog) > 0)
