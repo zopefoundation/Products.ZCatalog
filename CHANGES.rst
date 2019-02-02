@@ -4,7 +4,11 @@ Changelog
 4.3 (unreleased)
 ----------------
 
+- Adapt remaining ZMI tabs to Bootstrap
+  (`#45 <https://github.com/zopefoundation/Products.ZCatalog/issues/45>`_)
+
 - Replace deprecated ``cgi.escape`` with ``html.escape`` for Python 3.
+
 - Fix "invalid escape sequence" warning in Python 3.
 
 
