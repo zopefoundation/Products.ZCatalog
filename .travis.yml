@@ -9,6 +9,11 @@ matrix:
         - python: "3.7"
           dist: xenial
           sudo: true
+         - python: 3.6
+           name: "Flake8"
+           install:  pip install -U flake8
+           script: flake8 --doctests src setup.py
+           after_success:
 install:
     - pip install six==1.10.0 # force here to avoid conflit with zc.recipe.testrunner
     - pip install zc.buildout

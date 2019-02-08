@@ -176,7 +176,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     def __len__(self):
         return len(self._catalog)
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_edit')
+    @security.protected(manage_zcatalog_entries)
     def manage_edit(self, RESPONSE, URL1, threshold=1000, REQUEST=None):
         """ edit the catalog """
         if not isinstance(threshold, int):
@@ -186,7 +186,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         RESPONSE.redirect(
             URL1 + '/manage_main?manage_tabs_message=Catalog%20Changed')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_subbingToggle')
+    @security.protected(manage_zcatalog_entries)
     def manage_subbingToggle(self, REQUEST, RESPONSE, URL1):
         """ toggle subtransactions """
         if self.threshold:
@@ -195,10 +195,10 @@ class ZCatalog(Folder, Persistent, Implicit):
             self.threshold = 10000
 
         RESPONSE.redirect(
-            URL1 +
-            '/manage_catalogAdvanced?manage_tabs_message=Catalog%20Changed')
+            URL1
+            + '/manage_catalogAdvanced?manage_tabs_message=Catalog%20Changed')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_catalogObject')
+    @security.protected(manage_zcatalog_entries)
     def manage_catalogObject(self, REQUEST, RESPONSE, URL1, urls=None):
         """ index Zope object(s) that 'urls' point to """
         if urls:
@@ -213,11 +213,10 @@ class ZCatalog(Folder, Persistent, Implicit):
                     self.catalog_object(obj, url)
 
         RESPONSE.redirect(
-            URL1 +
-            '/manage_catalogView?manage_tabs_message=Object%20Cataloged')
+            URL1
+            + '/manage_catalogView?manage_tabs_message=Object%20Cataloged')
 
-    security.declareProtected(manage_zcatalog_entries,
-                              'manage_uncatalogObject')
+    @security.protected(manage_zcatalog_entries)
     def manage_uncatalogObject(self, REQUEST, RESPONSE, URL1, urls=None):
         """ removes Zope object(s) 'urls' from catalog """
 
@@ -229,10 +228,10 @@ class ZCatalog(Folder, Persistent, Implicit):
                 self.uncatalog_object(url)
 
         RESPONSE.redirect(
-            URL1 +
-            '/manage_catalogView?manage_tabs_message=Object%20Uncataloged')
+            URL1
+            + '/manage_catalogView?manage_tabs_message=Object%20Uncataloged')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_catalogReindex')
+    @security.protected(manage_zcatalog_entries)
     def manage_catalogReindex(self, REQUEST, RESPONSE, URL1):
         """ clear the catalog, then re-index everything """
 
@@ -247,13 +246,13 @@ class ZCatalog(Folder, Persistent, Implicit):
         c_elapse = time.clock() - c_elapse
 
         RESPONSE.redirect(
-            URL1 +
-            '/manage_catalogAdvanced?manage_tabs_message=' +
-            quote('Catalog Updated \n'
-                  'Total time: %r\n'
-                  'Total CPU time: %r' % (elapse, c_elapse)))
+            URL1
+            + '/manage_catalogAdvanced?manage_tabs_message='
+            + quote('Catalog Updated \n'
+                    'Total time: %r\n'
+                    'Total CPU time: %r' % (elapse, c_elapse)))
 
-    security.declareProtected(manage_zcatalog_entries, 'refreshCatalog')
+    @security.protected(manage_zcatalog_entries)
     def refreshCatalog(self, clear=0, pghandler=None):
         """ re-index everything we can find """
 
@@ -288,7 +287,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         if pghandler:
             pghandler.finish()
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_catalogClear')
+    @security.protected(manage_zcatalog_entries)
     def manage_catalogClear(self, REQUEST=None, RESPONSE=None, URL1=None):
         """ clears the whole enchilada """
         self._catalog.clear()
@@ -298,8 +297,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 '/manage_catalogAdvanced?'
                 'manage_tabs_message=Catalog%20Cleared'))
 
-    security.declareProtected(manage_zcatalog_entries,
-                              'manage_catalogFoundItems')
+    @security.protected(manage_zcatalog_entries)
     def manage_catalogFoundItems(self, REQUEST, RESPONSE, URL2, URL1,
                                  obj_metatypes=None,
                                  obj_ids=None, obj_searchterm=None,
@@ -332,23 +330,23 @@ class ZCatalog(Folder, Persistent, Implicit):
         c_elapse = time.clock() - c_elapse
 
         RESPONSE.redirect(
-            URL1 +
-            '/manage_catalogView?manage_tabs_message=' +
-            quote('Catalog Updated\n'
-                  'Total time: %r\n'
-                  'Total CPU time: %r' % (elapse, c_elapse)))
+            URL1
+            + '/manage_catalogView?manage_tabs_message='
+            + quote('Catalog Updated\n'
+                    'Total time: %r\n'
+                    'Total CPU time: %r' % (elapse, c_elapse)))
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_addColumn')
+    @security.protected(manage_zcatalog_entries)
     def manage_addColumn(self, name, REQUEST=None, RESPONSE=None, URL1=None):
         """ add a column """
         self.addColumn(name)
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogSchema?manage_tabs_message=Column%20Added')
+                URL1
+                + '/manage_catalogSchema?manage_tabs_message=Column%20Added')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_delColumn')
+    @security.protected(manage_zcatalog_entries)
     def manage_delColumn(self, names, REQUEST=None, RESPONSE=None, URL1=None):
         """ delete a column or some columns """
         if isinstance(names, str):
@@ -359,10 +357,10 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogSchema?manage_tabs_message=Column%20Deleted')
+                URL1
+                + '/manage_catalogSchema?manage_tabs_message=Column%20Deleted')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_addIndex')
+    @security.protected(manage_zcatalog_entries)
     def manage_addIndex(self, name, type, extra=None,
                         REQUEST=None, RESPONSE=None, URL1=None):
         """add an index """
@@ -370,10 +368,10 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogIndexes?manage_tabs_message=Index%20Added')
+                URL1
+                + '/manage_catalogIndexes?manage_tabs_message=Index%20Added')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_delIndex')
+    @security.protected(manage_zcatalog_entries)
     def manage_delIndex(self, ids=None,
                         REQUEST=None, RESPONSE=None, URL1=None):
         """ delete an index or some indexes """
@@ -388,10 +386,10 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogIndexes?manage_tabs_message=Index%20Deleted')
+                URL1
+                + '/manage_catalogIndexes?manage_tabs_message=Index%20Deleted')
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_clearIndex')
+    @security.protected(manage_zcatalog_entries)
     def manage_clearIndex(self, ids=None,
                           REQUEST=None, RESPONSE=None, URL1=None):
         """ clear an index or some indexes """
@@ -406,10 +404,10 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogIndexes?manage_tabs_message=Index%20Cleared')
+                URL1
+                + '/manage_catalogIndexes?manage_tabs_message=Index%20Cleared')
 
-    security.declareProtected(manage_zcatalog_entries, 'reindexIndex')
+    @security.protected(manage_zcatalog_entries)
     def reindexIndex(self, name, REQUEST, pghandler=None):
         if isinstance(name, str):
             name = (name, )
@@ -440,7 +438,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         if pghandler:
             pghandler.finish()
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_reindexIndex')
+    @security.protected(manage_zcatalog_entries)
     def manage_reindexIndex(self, ids=None, REQUEST=None, RESPONSE=None,
                             URL1=None):
         """Reindex indexe(s) from a ZCatalog"""
@@ -453,11 +451,11 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         if REQUEST and RESPONSE:
             RESPONSE.redirect(
-                URL1 +
-                '/manage_catalogIndexes'
-                '?manage_tabs_message=Reindexing%20Performed')
+                URL1
+                + '/manage_catalogIndexes'
+                  '?manage_tabs_message=Reindexing%20Performed')
 
-    security.declarePrivate('maintain_zodb_cache')
+    @security.private
     def maintain_zodb_cache(self):
         # self.threshold represents the number of times that catalog_object
         # needs to be called in order for the catalog to commit
@@ -481,7 +479,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                 return True
         return False
 
-    security.declareProtected(manage_zcatalog_entries, 'catalog_object')
+    @security.protected(manage_zcatalog_entries)
     def catalog_object(self, obj, uid=None, idxs=None, update_metadata=1,
                        pghandler=None):
         if uid is None:
@@ -509,73 +507,73 @@ class ZCatalog(Folder, Persistent, Implicit):
             if pghandler:
                 pghandler.info('committing subtransaction')
 
-    security.declareProtected(manage_zcatalog_entries, 'uncatalog_object')
+    @security.protected(manage_zcatalog_entries)
     def uncatalog_object(self, uid):
         self._catalog.uncatalogObject(uid)
 
-    security.declareProtected(search_zcatalog, 'uniqueValuesFor')
+    @security.protected(search_zcatalog)
     def uniqueValuesFor(self, name):
         # Return the unique values for a given FieldIndex
         return self._catalog.uniqueValuesFor(name)
 
-    security.declareProtected(search_zcatalog, 'getpath')
+    @security.protected(search_zcatalog)
     def getpath(self, rid):
         # Return the path to a cataloged object given a 'data_record_id_'
         return self._catalog.paths[rid]
 
-    security.declareProtected(search_zcatalog, 'getrid')
+    @security.protected(search_zcatalog)
     def getrid(self, path, default=None):
         # Return 'data_record_id_' the to a cataloged object given a 'path'
         return self._catalog.uids.get(path, default)
 
-    security.declareProtected(search_zcatalog, 'getobject')
+    @security.protected(search_zcatalog)
     def getobject(self, rid, REQUEST=None):
         # Return a cataloged object given a 'data_record_id_'
         return aq_parent(self).unrestrictedTraverse(self.getpath(rid))
 
-    security.declareProtected(search_zcatalog, 'getMetadataForUID')
+    @security.protected(search_zcatalog)
     def getMetadataForUID(self, uid):
         # return the correct metadata given the uid, usually the path
         rid = self._catalog.uids[uid]
         return self._catalog.getMetadataForRID(rid)
 
-    security.declareProtected(search_zcatalog, 'getIndexDataForUID')
+    @security.protected(search_zcatalog)
     def getIndexDataForUID(self, uid):
         # return the current index contents given the uid, usually the path
         rid = self._catalog.uids[uid]
         return self._catalog.getIndexDataForRID(rid)
 
-    security.declareProtected(search_zcatalog, 'getMetadataForRID')
+    @security.protected(search_zcatalog)
     def getMetadataForRID(self, rid):
         # return the correct metadata for the cataloged record id
         return self._catalog.getMetadataForRID(int(rid))
 
-    security.declareProtected(search_zcatalog, 'getIndexDataForRID')
+    @security.protected(search_zcatalog)
     def getIndexDataForRID(self, rid):
         # return the current index contents for the specific rid
         return self._catalog.getIndexDataForRID(rid)
 
-    security.declareProtected(search_zcatalog, 'getAllBrains')
+    @security.protected(search_zcatalog)
     def getAllBrains(self):
         # return a generator of brains for all cataloged objects
         for rid in self._catalog.data:
             yield self._catalog[rid]
 
-    security.declareProtected(search_zcatalog, 'schema')
+    @security.protected(search_zcatalog)
     def schema(self):
         return self._catalog.schema.keys()
 
-    security.declareProtected(search_zcatalog, 'indexes')
+    @security.protected(search_zcatalog)
     def indexes(self):
         return self._catalog.indexes.keys()
 
-    security.declareProtected(search_zcatalog, 'index_objects')
+    @security.protected(search_zcatalog)
     def index_objects(self):
         # This method returns unwrapped indexes!
         # You should probably use getIndexObjects instead
         return self._catalog.indexes.values()
 
-    security.declareProtected(manage_zcatalog_indexes, 'getIndexObjects')
+    @security.protected(manage_zcatalog_indexes)
     def getIndexObjects(self):
         # Return a list of wrapped(!) indexes
         getIndex = self._catalog.getIndex
@@ -603,7 +601,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                   'width': 8})
         return r
 
-    security.declareProtected(search_zcatalog, 'searchResults')
+    @security.protected(search_zcatalog)
     def searchResults(self, query=None, **kw):
         """Search the catalog.
 
@@ -614,7 +612,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     security.declareProtected(search_zcatalog, '__call__')
     __call__ = searchResults
 
-    security.declareProtected(search_zcatalog, 'search')
+    @security.protected(search_zcatalog)
     def search(self, query,
                sort_index=None, reverse=0, limit=None, merge=1):
         """Programmatic search interface, use for searching the catalog from
@@ -632,7 +630,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         return self._catalog.search(
             query, sort_index, reverse, limit, merge)
 
-    security.declareProtected(search_zcatalog, 'valid_roles')
+    @security.protected(search_zcatalog)
     def valid_roles(self):
         # Return list of valid roles
         obj = self
@@ -650,7 +648,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         roles.sort()
         return roles
 
-    security.declareProtected(manage_zcatalog_entries, 'ZopeFindAndApply')
+    @security.protected(manage_zcatalog_entries)
     def ZopeFindAndApply(self, obj, obj_ids=None, obj_metatypes=None,
                          obj_searchterm=None, obj_expr=None,
                          obj_mtime=None, obj_mspec=None,
@@ -712,17 +710,19 @@ class ZCatalog(Folder, Persistent, Implicit):
 
             bs = aq_base(ob)
 
-            if ((not obj_ids or absattr(bs.id) in obj_ids) and
-                (not obj_metatypes or (hasattr(bs, 'meta_type') and
-                 bs.meta_type in obj_metatypes)) and
-                (not obj_searchterm or
-                 (hasattr(ob, 'PrincipiaSearchSource') and
-                  ob.PrincipiaSearchSource().find(obj_searchterm) >= 0)) and
-                (not obj_expr or expr_match(ob, obj_expr)) and
-                (not obj_mtime or mtime_match(ob, obj_mtime, obj_mspec)) and
-                ((not obj_permission or not obj_roles) or
-                 role_match(ob, obj_permission, obj_roles))):
-
+            if ((not obj_ids or absattr(bs.id) in obj_ids)
+                    and (not obj_metatypes or (hasattr(bs, 'meta_type')
+                         and bs.meta_type in obj_metatypes))
+                    and (not obj_searchterm
+                         or (hasattr(ob, 'PrincipiaSearchSource')
+                             and ob.PrincipiaSearchSource().find(obj_searchterm) >= 0))  # noqa: E501
+                    and (not obj_expr
+                         or expr_match(ob, obj_expr))
+                    and (not obj_mtime
+                         or mtime_match(ob, obj_mtime, obj_mspec))
+                    and ((not obj_permission
+                          or not obj_roles)
+                    or role_match(ob, obj_permission, obj_roles))):
                 if apply_func:
                     apply_func(ob, (apply_path + '/' + p))
                 else:
@@ -742,7 +742,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         return result
 
-    security.declareProtected(search_zcatalog, 'resolve_url')
+    @security.protected(search_zcatalog)
     def resolve_url(self, path, REQUEST):
         # Attempt to resolve a url into an object in the Zope
         # namespace. The url may be absolute or a catalog path
@@ -757,7 +757,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             except Exception:
                 pass
 
-    security.declareProtected(search_zcatalog, 'resolve_path')
+    @security.protected(search_zcatalog)
     def resolve_path(self, path):
         # Attempt to resolve a url into an object in the Zope
         # namespace. The url may be absolute or a catalog path
@@ -768,8 +768,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         except Exception:
             pass
 
-    security.declareProtected(manage_zcatalog_entries,
-                              'manage_normalize_paths')
+    @security.protected(manage_zcatalog_entries)
     def manage_normalize_paths(self, REQUEST):
         """Ensure that all catalog paths are full physical paths
 
@@ -805,7 +804,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         for path in removed:
             self.uncatalog_object(path)
 
-    security.declareProtected(manage_zcatalog_entries, 'manage_setProgress')
+    @security.protected(manage_zcatalog_entries)
     def manage_setProgress(self, pgthreshold=0, RESPONSE=None, URL1=None):
         """Set parameter to perform logging of reindexing operations very
            'pgthreshold' objects
@@ -822,7 +821,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     # Indexing methods
 
-    security.declareProtected(manage_zcatalog_indexes, 'addIndex')
+    @security.protected(manage_zcatalog_indexes)
     def addIndex(self, name, type, extra=None):
         if IPluggableIndex.providedBy(type):
             self._catalog.addIndex(name, type)
@@ -862,26 +861,26 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         self._catalog.addIndex(name, index)
 
-    security.declareProtected(manage_zcatalog_indexes, 'delIndex')
+    @security.protected(manage_zcatalog_indexes)
     def delIndex(self, name):
         self._catalog.delIndex(name)
 
-    security.declareProtected(manage_zcatalog_indexes, 'clearIndex')
+    @security.protected(manage_zcatalog_indexes)
     def clearIndex(self, name):
         self._catalog.getIndex(name).clear()
 
-    security.declareProtected(manage_zcatalog_indexes, 'addColumn')
+    @security.protected(manage_zcatalog_indexes)
     def addColumn(self, name, default_value=None):
         return self._catalog.addColumn(name, default_value,
                                        threshold=self.threshold)
 
-    security.declareProtected(manage_zcatalog_indexes, 'delColumn')
+    @security.protected(manage_zcatalog_indexes)
     def delColumn(self, name):
         return self._catalog.delColumn(name, threshold=self.threshold)
 
     # Catalog plan methods
 
-    security.declareProtected(manage_zcatalog_entries, 'getCatalogPlan')
+    @security.protected(manage_zcatalog_entries)
     def getCatalogPlan(self):
         """Get a string representation of a query plan"""
         pmap = PriorityMap.get_value()
@@ -904,15 +903,14 @@ class ZCatalog(Folder, Persistent, Implicit):
         output.append('}')
         return '\n'.join(output)
 
-    security.declareProtected(manage_zcatalog_entries, 'getCatalogReport')
+    @security.protected(manage_zcatalog_entries)
     def getCatalogReport(self):
         """Query time reporting."""
         rval = self._catalog.getCatalogPlan().report()
         rval.sort(key=operator.itemgetter('duration'), reverse=True)
         return rval
 
-    security.declareProtected(manage_zcatalog_entries,
-                              'manage_resetCatalogReport')
+    @security.protected(manage_zcatalog_entries)
     def manage_resetCatalogReport(self, REQUEST=None):
         """Resets the catalog report."""
         self._catalog.getCatalogPlan().reset()
@@ -921,8 +919,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             REQUEST.response.redirect(REQUEST.URL1 + (
                 '/manage_catalogReport?manage_tabs_message=Report%20cleared'))
 
-    security.declareProtected(manage_zcatalog_entries,
-                              'manage_editCatalogReport')
+    @security.protected(manage_zcatalog_entries)
     def manage_editCatalogReport(self, long_query_time=0.1, REQUEST=None):
         """Edit the long query time."""
         if not isinstance(long_query_time, float):

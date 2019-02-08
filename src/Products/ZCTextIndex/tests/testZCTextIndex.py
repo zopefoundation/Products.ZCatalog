@@ -284,6 +284,7 @@ class ZCIndexTestsBase(object):
 
     def testInvalidIndexTypeRaisesValueError(self):
         caller = LexiconHolder(self.lexicon)
+
         class Extra(object):
             index_type = 'Some invalid index type'
         with self.assertRaises(ValueError):
