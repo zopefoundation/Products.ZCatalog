@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.3 (unreleased)
+4.3 (2019-02-08)
 ----------------
 
 - Adapt remaining ZMI tabs to Bootstrap
