@@ -1,5 +1,4 @@
 language: python
-sudo: false
 python:
     - 2.7
     - 3.5
@@ -8,9 +7,7 @@ matrix:
     include:
         - python: "3.7"
           dist: xenial
-          sudo: true
 install:
-    - pip install six==1.10.0 # force here to avoid conflit with zc.recipe.testrunner
     - pip install zc.buildout
     - pip install coveralls coverage
     - buildout bootstrap
