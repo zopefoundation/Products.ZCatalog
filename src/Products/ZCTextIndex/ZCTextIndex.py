@@ -113,10 +113,9 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
 
         self.index = self._index_factory(aq_base(self.getLexicon()))
 
-    security.declarePrivate('getLexicon')
+    @security.private
     def getLexicon(self):
-        """Get the lexicon for this index
-        """
+        """Get the lexicon for this index."""
         if hasattr(aq_base(self), 'lexicon'):
             # Fix up old ZCTextIndexes by removing direct lexicon ref
             # and changing it to an ID
@@ -144,7 +143,7 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
 
     # External methods not in the Pluggable Index API
 
-    security.declareProtected(search_zcatalog, 'query')
+    @security.protected(search_zcatalog)
     def query(self, query, nbest=10):
         """Return pair (mapping from docids to scores, num results).
 
@@ -348,7 +347,7 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
 
     _queryLexicon = DTMLFile('dtml/queryLexicon', globals())
 
-    security.declareProtected(LexiconQueryPerm, 'queryLexicon')
+    @security.protected(LexiconQueryPerm)
     def queryLexicon(self, REQUEST, words=None, page=0, rows=20, cols=4):
         """Lexicon browser/query user interface
         """
@@ -363,8 +362,9 @@ class PLexicon(Lexicon, Implicit, SimpleItem):
         word_count = len(words)
         rows = max(min(rows, 500), 1)
         cols = max(min(cols, 12), 1)
-        page_count = (word_count / (rows * cols) +
-                      (word_count % (rows * cols) > 0))
+        page_count = (word_count
+                      / (rows * cols)
+                      + (word_count % (rows * cols) > 0))
         page = max(min(page, page_count - 1), 0)
         start = rows * cols * page
         end = min(rows * cols * (page + 1), word_count)

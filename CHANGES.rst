@@ -4,7 +4,7 @@ Changelog
 4.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Flake8 the code.
 
 
 4.3 (2019-02-08)
