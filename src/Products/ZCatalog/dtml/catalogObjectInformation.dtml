@@ -1,5 +1,7 @@
 <dtml-var manage_page_header>
 
+<main class="container-fluid">
+
 <table width="100%" borders="0" cellspacing="2" cellpadding="0">
 <tr bgcolor="#000000">
   <td colspan="2">&nbsp;</td>
@@ -97,6 +99,6 @@ show as '(one, two, three)', rather than in a more normal way.</p><br />
 </dtml-in>
 </table>
 
-
+</main>
 
 <dtml-var manage_page_footer>

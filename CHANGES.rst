@@ -1,11 +1,22 @@
 Changelog
 =========
 
-4.3 (unreleased)
+4.4 (unreleased)
 ----------------
 
 - Make sure WidCode decode handles bytes that were improperly
   converted from Python 2 to Python 3.
+
+
+4.3 (2019-02-08)
+----------------
+
+- Adapt remaining ZMI tabs to Bootstrap
+  (`#45 <https://github.com/zopefoundation/Products.ZCatalog/issues/45>`_)
+
+- Replace deprecated ``cgi.escape`` with ``html.escape`` for Python 3.
+
+- Fix "invalid escape sequence" warning in Python 3.
 
 
 4.2 (2018-10-05)

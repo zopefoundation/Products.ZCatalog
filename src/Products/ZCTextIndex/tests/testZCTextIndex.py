@@ -239,7 +239,7 @@ class ZCIndexTestsBase(object):
         d = {}  # word -> list of version numbers containing that word
         for version, i in zip(text, range(N)):
             # use a simple splitter rather than an official one
-            words = [w for w in re.split('\W+', version.lower())
+            words = [w for w in re.split(r'\W+', version.lower())
                      if len(w) > 1 and w not in stop]
             word_seen = {}
             for w in words:
@@ -272,6 +272,28 @@ class ZCIndexTestsBase(object):
                         total, 0,
                         'did not expect to find {0}'.format(w)
                     )
+
+    def testLexiconIsNotFoundRaisesLookupError(self):
+        caller = LexiconHolder(self.lexicon)
+        with self.assertRaises(LookupError):
+            ZCTextIndex(
+                'name',
+                extra=None,
+                caller=caller,
+            )
+
+    def testInvalidIndexTypeRaisesValueError(self):
+        caller = LexiconHolder(self.lexicon)
+        class Extra(object):
+            index_type = 'Some invalid index type'
+        with self.assertRaises(ValueError):
+            ZCTextIndex(
+                'name',
+                extra=Extra,
+                caller=caller,
+                index_factory=None,
+                lexicon_id='lexicon'
+            )
 
 
 class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
