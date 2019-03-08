@@ -1,7 +1,7 @@
 Changelog
 =========
 
-4.4 (unreleased)
+4.4 (2019-03-08)
 ----------------
 
 - Make sure WidCode decode handles bytes that were improperly
