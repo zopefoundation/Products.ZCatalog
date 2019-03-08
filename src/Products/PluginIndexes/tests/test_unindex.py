@@ -201,8 +201,26 @@ class TestUnIndex(unittest.TestCase):
         index = self._makeOne("rsi")
         for i in (1, 2):
             index.insertForwardIndexEntry(i, i)
-        ers = IISet()  # empty result set
+        ers = IISet()
         for q in ((1,), (1, 2)):
             qd = dict(rsi=dict(query=q))
             self.assertEqual(q, tuple(index._apply_index(qd)[0]))
             self.assertEqual((), tuple(index._apply_index(qd, ers)[0]))
+
+    def test_not(self):
+        index = self._makeOne("idx")
+        index.query_options = "not", "operator"  # activate `not`, `operator`
+        apply = index._apply_index
+        for i, vals in enumerate(((10, 11, 12), (11, 12, 13))):
+            for v in vals:
+                index.insertForwardIndexEntry(v, i)
+        query = {"query" : (10, 11), "not" : (10,)}
+        req = dict(idx=query)
+        # or(10,11), not(10)
+        self.assertEqual((1, ), tuple(apply(req)[0]), "or(10,11), not(10)")
+        # and(10, 11), not(10)
+        query["operator"] = "and"
+        self.assertEqual((), tuple(apply(req)[0]), "and(10, 11), not(10)")
+        # 11, not 10
+        query["query"] = 11
+        self.assertEqual((1,), tuple(apply(req)[0]), "11, not(10)")

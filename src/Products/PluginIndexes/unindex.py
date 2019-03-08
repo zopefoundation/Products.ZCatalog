@@ -496,7 +496,15 @@ class UnIndex(SimpleItem):
                 keys = index.keys()
             else:
                 keys = ()
-
+        if not_keys:
+            if operator == "or":
+                keys = (k for k in keys if k not in not_keys)
+            else:  # "and"
+                for k in not_keys:
+                    if k in keys:
+                        # empty result
+                        keys = ()
+                        break
         # perform the lookups
         def lookup(operator, keys, result):
             for k in keys:
@@ -514,10 +522,7 @@ class UnIndex(SimpleItem):
                     # old style index
                     s = IISet((s,))
                 result.append(s)
-        lookup(operator,
-               (k for k in keys if k not in not_keys),
-               result["sets"]
-               )
+        lookup(operator, keys, result["sets"])
         if not_keys and self.potentially_multivalued and result["sets"]:
             lookup("or", not_keys, result["exclude_sets"])
         return result
