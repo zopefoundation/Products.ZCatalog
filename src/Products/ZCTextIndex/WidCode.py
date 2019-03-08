@@ -86,6 +86,9 @@ _prog = re.compile(r"[\x80-\xFF][\x00-\x7F]*")
 
 
 def decode(code):
+    # Handle bytes that were not properly decoded during Python 3 conversion
+    if not isinstance(code, str):
+        code = code.decode('latin1')
     # Decode a string into a list of wids.
     get = _decoding.get
     # Obscure:  while _decoding does have the key '\x80', its value is 0,
