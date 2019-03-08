@@ -90,9 +90,13 @@ class IPluggableIndex(Interface):
 class ILimitedResultIndex(IPluggableIndex):
 
     def _apply_index(request, resultset=None):
-        """Same as IPluggableIndex' _apply_index method. The additional
-        resultset argument contains the resultset, as already calculated by
-        ZCatalog's search method.
+        """Same as IPluggableIndex' _apply_index method.
+
+        The additional *resultset* argument contains the resultset,
+        as already calculated by ZCatalog's search method.
+        If it is not `None` and `_apply_index` does not return
+        `None`, then the preliminary result must be intersected
+        with *resultset*.
         """
 
 
@@ -103,9 +107,16 @@ class IQueryIndex(IPluggableIndex):
     useOperator = Attribute('A string specifying the default operator.')
     query_options = Attribute('Supported query options for the index.')
 
-    def query_index(record, resultset=None):
-        """Same as _apply_index, but the query is already a pre-parsed
-        IndexQuery object.
+    def query_index(query, resultset=None):
+        """return the result of searching for *query*.
+
+        *query* is a `Products.ZCatalog.query.IndexQuery` and
+        describes what is searched for.
+
+        The return value is an `IISet` or `IITreeSet`.
+
+        If *resultset* is not `None`, then the preliminary result
+        must be intersected with *resultset*.
         """
 
 
