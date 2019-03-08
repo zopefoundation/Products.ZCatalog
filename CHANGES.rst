@@ -7,6 +7,13 @@ Changelog
 - Make sure WidCode decode handles bytes that were improperly
   converted from Python 2 to Python 3.
 
+- Specify supported Python versions using ``python_requires`` in setup.py
+  (`Zope#481 <https://github.com/zopefoundation/Zope/issues/481>`_)
+
+- Added support for Python 3.8
+
+- Flake8 the code.
+
 
 4.3 (2019-02-08)
 ----------------

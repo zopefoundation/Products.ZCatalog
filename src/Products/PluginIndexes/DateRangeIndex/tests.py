@@ -58,8 +58,8 @@ def matchingDummiesByTimeValue(value, precision=1):
     for i, dummy in dummies:
         start = datetime_to_minutes(dummy.start(), precision)
         stop = datetime_to_minutes(dummy.stop(), precision)
-        if ((start is None or start <= value) and
-                (stop is None or stop >= value)):
+        if ((start is None or start <= value)
+                and (stop is None or stop >= value)):
             result.append((i, dummy))
     return result
 

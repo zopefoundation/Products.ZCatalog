@@ -72,7 +72,7 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
             return indexes.get(id)
         return indexes.get(id, default)
 
-    security.declareProtected(manage_zcatalog_indexes, 'objectIds')
+    @security.protected(manage_zcatalog_indexes)
     def objectIds(self, spec=None):
         indexes = aq_parent(aq_inner(self))._catalog.indexes
         if spec is not None:
