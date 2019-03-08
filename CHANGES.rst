@@ -4,6 +4,11 @@ Changelog
 4.4 (unreleased)
 ----------------
 
+- Refactor ``Products.PluginIndexes.unindex.Unindex.query_index``
+  (`#56 <https://github.com/zopefoundation/Products.ZCatalog/issues/56>`_)
+  and fix
+  (`#55 <https://github.com/zopefoundation/Products.ZCatalog/issues/55>`_).
+
 - Specify supported Python versions using ``python_requires`` in setup.py
   (`Zope#481 <https://github.com/zopefoundation/Zope/issues/481>`_)
 

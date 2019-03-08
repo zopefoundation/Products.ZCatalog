@@ -13,7 +13,7 @@
 
 import unittest
 
-from BTrees.IIBTree import difference
+from BTrees.IIBTree import difference, IISet
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
@@ -193,3 +193,16 @@ class TestUnIndex(unittest.TestCase):
         query = IndexQuery({'counter': 42}, 'counter')
         res = index.query_index(query)
         self.assertListEqual(list(res), [])
+
+    def test_resultset_intersection(self):
+        """see #55
+        `https://github.com/zopefoundation/Products.ZCatalog/issues/55`.
+        """
+        index = self._makeOne("rsi")
+        for i in (1, 2):
+            index.insertForwardIndexEntry(i, i)
+        ers = IISet()  # empty result set
+        for q in ((1,), (1, 2)):
+            qd = dict(rsi=dict(query=q))
+            self.assertEqual(q, tuple(index._apply_index(qd)[0]))
+            self.assertEqual((), tuple(index._apply_index(qd, ers)[0]))

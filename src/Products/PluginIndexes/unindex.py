@@ -60,6 +60,12 @@ class UnIndex(SimpleItem):
     useOperator = 'or'
     query_options = ()
 
+    # Set to `False` in derived indexes that know that each
+    #  document is indexed under at most 1 value
+    #  as is e.g. the case for a `FieldIndex`.
+    #  This makes "not/exclude" term searches more efficient
+    potentially_multivalued = True
+
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
         """Create an unindex
@@ -328,18 +334,6 @@ class UnIndex(SimpleItem):
             LOG.debug('Attempt to unindex nonexistent document'
                       ' with id %s', documentId, exc_info=True)
 
-    def _apply_not(self, not_parm, resultset=None):
-        index = self._index
-        setlist = []
-        for k in not_parm:
-            s = index.get(k, None)
-            if s is None:
-                continue
-            elif isinstance(s, int):
-                s = IISet((s, ))
-            setlist.append(s)
-        return multiunion(setlist)
-
     def _convert(self, value, default=None):
         return value
 
@@ -406,255 +400,127 @@ class UnIndex(SimpleItem):
             return None
         return (self.query_index(record, resultset=resultset), (self.id, ))
 
-    def query_index(self, record, resultset=None):
-        """Search the index with the given IndexQuery object.
+    def query_index(self, query, resultset=None):
+        """Search the index with the given `IndexQuery` object *query*.
 
-        If the query has a key which matches the 'id' of
-        the index instance, one of a few things can happen:
-
-          - if the value is a string, turn the value into
-            a single-element sequence, and proceed.
-
-          - if the value is a sequence, return a union search.
-
-          - If the value is a dict and contains a key of the form
-            '<index>_operator' this overrides the default method
-            ('or') to combine search results. Valid values are 'or'
-            and 'and'.
+        If *resultset* is not `None`, then intersect the primary result
+        with *resultset*.
         """
-        index = self._index
-        r = None
-        opr = None
-
-        # not / exclude parameter
-        not_parm = record.get('not', None)
-
-        operator = record.operator
-
+        primary_result = None
+        # do we need this caching? It is promising only
+        #  when the same subquery is performed at least twice
+        #  in the same request
+        #  On the other hand, it significantly complicates the code.
         cachekey = None
         cache = self.getRequestCache()
         if cache is not None:
-            cachekey = self.getRequestCacheKey(record)
-            if cachekey is not None:
-                cached = None
-                if operator == 'or':
-                    cached = cache.get(cachekey, None)
-                else:
-                    cached_setlist = cache.get(cachekey, None)
-                    if cached_setlist is not None:
-                        r = resultset
-                        for s in cached_setlist:
-                            # the result is bound by the resultset
-                            r = intersection(r, s)
-                            # If intersection, we can't possibly get a
-                            # smaller result
-                            if not r:
-                                break
-                        cached = r
-
-                if cached is not None:
-                    if isinstance(cached, int):
-                        cached = IISet((cached, ))
-
-                    if not_parm:
-                        not_parm = list(map(self._convert, not_parm))
-                        exclude = self._apply_not(not_parm, resultset)
-                        cached = difference(cached, exclude)
-
-                    return cached
-
-        if not record.keys and not_parm:
-            # convert into indexed format
-            not_parm = list(map(self._convert, not_parm))
-            # we have only a 'not' query
-            record.keys = [k for k in index.keys() if k not in not_parm]
-        else:
-            # convert query arguments into indexed format
-            record.keys = list(map(self._convert, record.keys))
-
-        # Range parameter
-        range_parm = record.get('range', None)
-        if range_parm:
-            opr = 'range'
-            opr_args = []
-            if range_parm.find('min') > -1:
-                opr_args.append('min')
-            if range_parm.find('max') > -1:
-                opr_args.append('max')
-
-        if record.get('usage', None):
-            # see if any usage params are sent to field
-            opr = record.usage.lower().split(':')
-            opr, opr_args = opr[0], opr[1:]
-
-        if opr == 'range':  # range search
-            if 'min' in opr_args:
-                lo = min(record.keys)
-            else:
-                lo = None
-            if 'max' in opr_args:
-                hi = max(record.keys)
-            else:
-                hi = None
-            if hi:
-                setlist = index.values(lo, hi)
-            else:
-                setlist = index.values(lo)
-
-            # If we only use one key, intersect and return immediately
-            if len(setlist) == 1:
-                result = setlist[0]
-                if isinstance(result, int):
-                    result = IISet((result,))
-
-                if cachekey is not None:
-                    if operator == 'or':
-                        cache[cachekey] = result
-                    else:
-                        cache[cachekey] = [result]
-
-                if not_parm:
-                    exclude = self._apply_not(not_parm, resultset)
-                    result = difference(result, exclude)
-                return result
-
-            if operator == 'or':
-                tmp = []
-                for s in setlist:
-                    if isinstance(s, int):
-                        s = IISet((s,))
-                    tmp.append(s)
-                r = multiunion(tmp)
-
-                if cachekey is not None:
-                    cache[cachekey] = r
-            else:
-                # For intersection, sort with smallest data set first
-                tmp = []
-                for s in setlist:
-                    if isinstance(s, int):
-                        s = IISet((s,))
-                    tmp.append(s)
-                if len(tmp) > 2:
-                    setlist = sorted(tmp, key=len)
-                else:
-                    setlist = tmp
-
-                # 'r' is not invariant of resultset. Thus, we
-                # have to remember 'setlist'
-                if cachekey is not None:
-                    cache[cachekey] = setlist
-
-                r = resultset
-                for s in setlist:
-                    # the result is bound by the resultset
-                    r = intersection(r, s)
-                    # If intersection, we can't possibly get a smaller result
-                    if not r:
-                        break
-
-        else:  # not a range search
-            # Filter duplicates
-            setlist = []
-            for k in record.keys:
-                if k is None:
-                    # Prevent None from being looked up. None doesn't
-                    # have a valid ordering definition compared to any
-                    # other object. BTrees 4.0+ will throw a TypeError
-                    # "object has default comparison".
-                    continue
-                try:
-                    s = index.get(k, None)
-                except TypeError:
-                    # key is not valid for this Btree so the value is None
-                    LOG.error(
-                        '%(context)s: query_index tried '
-                        'to look up key %(key)r from index %(index)r '
-                        'but key was of the wrong type.', dict(
-                            context=self.__class__.__name__,
-                            key=k,
-                            index=self.id,
-                        )
-                    )
-                    s = None
-                # If None, try to bail early
-                if s is None:
-                    if operator == 'or':
-                        # If union, we can possibly get a bigger result
-                        continue
-                    # If intersection, we can't possibly get a smaller result
-                    if cachekey is not None:
-                        # If operator is 'and', we have to cache a list of
-                        # IISet objects
-                        cache[cachekey] = [IISet()]
-                    return IISet()
-                elif isinstance(s, int):
-                    s = IISet((s,))
-                setlist.append(s)
-
-            # If we only use one key return immediately
-            if len(setlist) == 1:
-                result = setlist[0]
-                if isinstance(result, int):
-                    result = IISet((result,))
-
-                if cachekey is not None:
-                    if operator == 'or':
-                        cache[cachekey] = result
-                    else:
-                        cache[cachekey] = [result]
-
-                if not_parm:
-                    exclude = self._apply_not(not_parm, resultset)
-                    result = difference(result, exclude)
-                return result
-
-            if operator == 'or':
-                # If we already get a small result set passed in, intersecting
-                # the various indexes with it and doing the union later is
-                # faster than creating a multiunion first.
-
-                if resultset is not None and len(resultset) < 200:
-                    smalllist = []
-                    for s in setlist:
-                        smalllist.append(intersection(resultset, s))
-                    r = multiunion(smalllist)
-
-                    # 'r' is not invariant of resultset.  Thus, we
-                    # have to remember the union of 'setlist'. But
-                    # this is maybe a performance killer. So we do not cache.
-                    # if cachekey is not None:
-                    #    cache[cachekey] = multiunion(setlist)
-
-                else:
-                    r = multiunion(setlist)
-                    if cachekey is not None:
-                        cache[cachekey] = r
-            else:
-                # For intersection, sort with smallest data set first
-                if len(setlist) > 2:
-                    setlist = sorted(setlist, key=len)
-
-                # 'r' is not invariant of resultset. Thus, we
-                # have to remember the union of 'setlist'
-                if cachekey is not None:
-                    cache[cachekey] = setlist
-
-                r = resultset
-                for s in setlist:
-                    r = intersection(r, s)
-                    # If intersection, we can't possibly get a smaller result
-                    if not r:
-                        break
-
-        if isinstance(r, int):
-            r = IISet((r, ))
+            cachekey = self.getRequestCacheKey(query)
+            primary_result = cache.get(cachekey)
+        if primary_result is None:
+            combiner_info = self.get_combiner_info(query)
+            primary_result = combiner_info["sets"]
+            if len(primary_result) > 1:
+                operator = combiner_info["operator"]
+                if operator == "or":
+                    # Note: `len(resultset)` can be expensive
+                    if resultset is not None and len(resultset) < 200:
+                        # if *resultset* is small, intersecting first
+                        # is more efficient then intersecting after
+                        # the `multiunion`
+                        # We cannot cache in this case
+                        primary_result = [
+                            intersection(resultset, s)
+                            for s in primary_result]
+                        resultset = None  # intersection already done
+                        cachekey = None  # do not cache
+                    primary_result = multiunion(primary_result),
+                else:  # "and"
+                    # For intersection, sort with smallest data set first
+                    #   Note: "len" can be expensive
+                    primary_result = sorted(primary_result, key=len)
+            if primary_result:
+                # handle "excludes"
+                # Note: in the original, the unexcluded partial
+                #   result was cached. This caches
+                #   the excluded result
+                excludes = combiner_info["exclude_sets"]
+                if excludes:
+                    excludes = multiunion(excludes)
+                    primary_result = [
+                        difference(s, excludes) for s in primary_result]
+            if cachekey:  # we should cache
+                cache[cachekey] = primary_result
+        r = resultset if primary_result else None
+        for s in primary_result:
+            r = intersection(r, s)
         if r is None:
-            return IISet()
-        if not_parm:
-            exclude = self._apply_not(not_parm, resultset)
-            r = difference(r, exclude)
+            r = IISet()
         return r
+
+    # `ISimpleCombinerIndex`
+    #  Such an index is characterized by the fact that its search result
+    #  is the combination of a sequence of sets with
+    #  a single `operator` (either `"and"` or `"or"`), optionally
+    #  with some excluded sets specified by `exclude_sets`.
+    def get_combiner_info(self, query):
+        """preprocess *query* and return partial results.
+
+        The result is a dict with keys `operator`, `sets` and `exclude_sets`.
+
+        The search result is: "operator(*sets) - OR(*exclude_sets)".
+        We do not perform this combination here to allow for
+        outside optimizations.
+        """
+        index = self._index
+        # Normalize
+        normalize = self._convert
+        keys = [normalize(k) for k in query.keys] or None
+        not_keys = [normalize(k) for k in query.get("not", ())]
+        # check for range
+        opr = None
+        range_param = query.get("range", None)
+        if range_param is not None:
+            opr = "range"
+            opr_args = [tag for tag in ("min", "max") if tag in range_param]
+        elif query.get("usage", None):  # another way to specify a range
+            opr = query.usage.lower().split(":")
+            opr, opr_args = opr[0], opr[1:]
+        if opr == "range":
+            lo = min(keys) if "min" in opr_args else None
+            hi = max(keys) if "max" in opr_args else None
+            keys = index.keys(lo, hi)  # Note: `keys` handles `None` correctly
+        operator = query.operator
+        result = dict(operator=operator, sets=[], exclude_sets=[])
+        if keys is None:  # no keys have been specified
+            if not_keys:  # pure not
+                keys = index.keys()
+            else:
+                keys = ()
+
+        # perform the lookups
+        def lookup(operator, keys, result):
+            for k in keys:
+                try:
+                    s = index.get(k)  # key of wrong type is not in the index
+                except TypeError:
+                    s = None
+                if s is None:
+                    if operator == "or":
+                        continue  # missing `or` term
+                    # missing `and` term -- result empty
+                    result[:] = []
+                    break
+                elif isinstance(s, int):
+                    # old style index
+                    s = IISet((s,))
+                result.append(s)
+        lookup(operator,
+               (k for k in keys if k not in not_keys),
+               result["sets"]
+               )
+        if not_keys and self.potentially_multivalued and result["sets"]:
+            lookup("or", not_keys, result["exclude_sets"])
+        return result
 
     def hasUniqueValuesFor(self, name):
         """has unique values for column name"""

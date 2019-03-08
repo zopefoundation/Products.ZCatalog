@@ -21,6 +21,7 @@ class FieldIndex(UnIndex):
     """
     meta_type = 'FieldIndex'
     query_options = ('query', 'range', 'not')
+    potentially_multivalued = False  # optimization for exclude terms
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
