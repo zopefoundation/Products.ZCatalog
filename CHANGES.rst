@@ -1,13 +1,20 @@
 Changelog
 =========
 
-4.4 (unreleased)
+4.5 (unreleased)
 ----------------
 
 - Refactor ``Products.PluginIndexes.unindex.Unindex.query_index``
   (`#56 <https://github.com/zopefoundation/Products.ZCatalog/issues/56>`_)
   and fix
   (`#55 <https://github.com/zopefoundation/Products.ZCatalog/issues/55>`_).
+
+
+4.4 (2019-03-08)
+----------------
+
+- Make sure WidCode decode handles bytes that were improperly
+  converted from Python 2 to Python 3.
 
 - Specify supported Python versions using ``python_requires`` in setup.py
   (`Zope#481 <https://github.com/zopefoundation/Zope/issues/481>`_)
