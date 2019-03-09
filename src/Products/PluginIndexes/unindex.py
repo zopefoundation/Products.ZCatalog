@@ -438,12 +438,17 @@ class UnIndex(SimpleItem):
                     # For intersection, sort with smallest data set first
                     #   Note: "len" can be expensive
                     primary_result = sorted(primary_result, key=len)
+                    # Note: If we have `not_sets`, the order computed
+                    #  above may not be optimal.
+                    #  We could avoid this by postponing the sorting.
+                    #  However, the case is likely rare and not
+                    #  worth any special handling
             if primary_result:
                 # handle "excludes"
                 # Note: in the original, the unexcluded partial
                 #   result was cached. This caches
                 #   the excluded result
-                excludes = combiner_info["exclude_sets"]
+                excludes = combiner_info["not_sets"]
                 if excludes:
                     excludes = multiunion(excludes)
                     primary_result = [
@@ -461,21 +466,66 @@ class UnIndex(SimpleItem):
     #  Such an index is characterized by the fact that its search result
     #  is the combination of a sequence of sets with
     #  a single `operator` (either `"and"` or `"or"`), optionally
-    #  with some excluded sets specified by `exclude_sets`.
+    #  with some excluded sets specified by `not_sets`.
     def get_combiner_info(self, query):
         """preprocess *query* and return partial results.
 
-        The result is a dict with keys `operator`, `sets` and `exclude_sets`.
+        The result is a dict with keys `operator`, `sets` and `not_sets`.
 
-        The search result is: "operator(*sets) - OR(*exclude_sets)".
+        The search result is computed as "operator(*sets) - OR(*not_sets)".
         We do not perform this combination here to allow for
-        outside optimizations.
+        outside optimizations (e.g. caching or the handling
+        of an incoming result set).
+        """
+        keys_info = self.get_combiner_keys_info(query)
+        operator = keys_info["operator"]
+        index = self._index
+        result = dict(operator=operator, sets=[], not_sets=[])
+
+        # perform the lookups
+        def lookup(operator, keys, result):
+            for k in keys:
+                try:
+                    s = index.get(k)
+                except TypeError:  # key of wrong type is not in the index
+                    s = None
+                if s is None:
+                    if operator == "or":
+                        continue  # missing `or` term
+                    # missing `and` term -- result empty
+                    result[:] = []
+                    break
+                elif isinstance(s, int):
+                    # old style index
+                    s = IISet((s,))
+                result.append(s)
+
+        lookup(operator, keys_info["keys"], result["sets"])
+        not_keys = keys_info["not_keys"]
+        if not_keys and self.potentially_multivalued and result["sets"]:
+            lookup("or", not_keys, result["not_sets"])
+        return result
+
+    def get_combiner_keys_info(self, query):
+        """preprocess *query* and return the relevant keys information.
+
+        This handles normalization (--> `_convert`) and
+        range searches and prepares and, or and not searches.
+
+        The result is a dict with keys `operator`, `keys` and `not_keys`.
+        Note: the value for `keys` may be a generator.
+
+        This function could be inlined into `get_combiner_info`.
+        It is separated out in order to facilitate
+        (value based) filtering (rather then index based set intersection)
+        (as used, e.g. in `AdvancedQuery`).
         """
         index = self._index
         # Normalize
         normalize = self._convert
         keys = [normalize(k) for k in query.keys] or None
         not_keys = [normalize(k) for k in query.get("not", ())]
+        operator = query.operator
         # check for range
         opr = None
         range_param = query.get("range", None)
@@ -489,12 +539,13 @@ class UnIndex(SimpleItem):
             lo = min(keys) if "min" in opr_args else None
             hi = max(keys) if "max" in opr_args else None
             keys = index.keys(lo, hi)  # Note: `keys` handles `None` correctly
-        operator = query.operator
-        result = dict(operator=operator, sets=[], exclude_sets=[])
         if keys is None:  # no keys have been specified
             if not_keys:  # pure not
                 keys = index.keys()
             else:
+                # Note: might want to turn this into `index.keys()`
+                #  for `operator == "and"` allowing to implement searches
+                #  for all documents indexed by this index.
                 keys = ()
         if not_keys:
             if operator == "or":
@@ -505,27 +556,7 @@ class UnIndex(SimpleItem):
                         # empty result
                         keys = ()
                         break
-        # perform the lookups
-        def lookup(operator, keys, result):
-            for k in keys:
-                try:
-                    s = index.get(k)  # key of wrong type is not in the index
-                except TypeError:
-                    s = None
-                if s is None:
-                    if operator == "or":
-                        continue  # missing `or` term
-                    # missing `and` term -- result empty
-                    result[:] = []
-                    break
-                elif isinstance(s, int):
-                    # old style index
-                    s = IISet((s,))
-                result.append(s)
-        lookup(operator, keys, result["sets"])
-        if not_keys and self.potentially_multivalued and result["sets"]:
-            lookup("or", not_keys, result["exclude_sets"])
-        return result
+        return dict(operator=operator, keys=keys, not_keys=not_keys)
 
     def hasUniqueValuesFor(self, name):
         """has unique values for column name"""
