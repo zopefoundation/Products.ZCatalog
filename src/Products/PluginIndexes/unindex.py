@@ -399,6 +399,11 @@ class UnIndex(SimpleItem):
         If the query does not match the index, return None, otherwise
         return a tuple of (result, used_attributes), where used_attributes
         is again a tuple with the names of all used data fields.
+
+        If not `None`, the resultset argument
+        indicates that the search result is relevant only on this set,
+        i.e. everything outside resultset is of no importance.
+        The index can use this information for optimizations.
         """
         record = IndexQuery(request, self.id, self.query_options,
                             self.operators, self.useOperator)
@@ -409,18 +414,10 @@ class UnIndex(SimpleItem):
     def query_index(self, record, resultset=None):
         """Search the index with the given IndexQuery object.
 
-        If the query has a key which matches the 'id' of
-        the index instance, one of a few things can happen:
-
-          - if the value is a string, turn the value into
-            a single-element sequence, and proceed.
-
-          - if the value is a sequence, return a union search.
-
-          - If the value is a dict and contains a key of the form
-            '<index>_operator' this overrides the default method
-            ('or') to combine search results. Valid values are 'or'
-            and 'and'.
+        If not `None`, the resultset argument
+        indicates that the search result is relevant only on this set,
+        i.e. everything outside resultset is of no importance.
+        The index can use this information for optimizations.
         """
         index = self._index
         r = None
