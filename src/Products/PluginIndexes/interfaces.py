@@ -90,9 +90,12 @@ class IPluggableIndex(Interface):
 class ILimitedResultIndex(IPluggableIndex):
 
     def _apply_index(request, resultset=None):
-        """Same as IPluggableIndex' _apply_index method. The additional
-        resultset argument contains the resultset, as already calculated by
-        ZCatalog's search method.
+        """Same as IPluggableIndex' _apply_index method.
+
+        If not `None`, the additional resultset argument
+        indicates that the search result is relevant only on this set,
+        i.e. everything outside resultset is of no importance.
+        The index can use this information for optimizations.
         """
 
 

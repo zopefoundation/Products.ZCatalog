@@ -193,3 +193,41 @@ class TestUnIndex(unittest.TestCase):
         query = IndexQuery({'counter': 42}, 'counter')
         res = index.query_index(query)
         self.assertListEqual(list(res), [])
+
+    def test_not(self):
+        index = self._makeOne("idx")
+        index.query_options = "not", "operator"  # activate `not`, `operator`
+        apply = index._apply_index
+        for i, vals in enumerate(((10, 11, 12), (11, 12, 13))):
+            for v in vals:
+                index.insertForwardIndexEntry(v, i)
+        query = {"query": (10, 11), "not": (10,)}
+        req = dict(idx=query)
+        # or(10,11), not(10)
+        self.assertEqual((1, ), tuple(apply(req)[0]), "or(10,11), not(10)")
+        # and(10, 11), not(10)
+        query["operator"] = "and"
+        self.assertEqual((), tuple(apply(req)[0]), "and(10, 11), not(10)")
+        # 11, not 10
+        query["query"] = 11
+        self.assertEqual((1,), tuple(apply(req)[0]), "11, not(10)")
+
+    def test_range(self):
+        index = self._makeOne("idx")
+        index.query_options = "range", "usage"  # activate `range`, `usage`
+        apply = index._apply_index
+        docs = tuple(range(10))
+        for i in docs:
+            index.insertForwardIndexEntry(i, i)
+        ranges = (9, None), (None, 1), (5, 6),  # fails: (None, None),
+        for op in ("range", "usage"):
+            for r in ranges:
+                spec = (["range"] if op == "usage" else []) \
+                    + (["min"] if r[0] is not None else []) \
+                    + (["max"] if r[1] is not None else [])
+                query = {"query": [v for v in r if v is not None],
+                         op: ":".join(spec)}
+                self.assertEqual(
+                    docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
+                    tuple(apply(dict(idx=query))[0]),
+                    "%s: %s" % (op, r))
