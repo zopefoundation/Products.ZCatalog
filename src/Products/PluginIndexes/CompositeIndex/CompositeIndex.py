@@ -327,10 +327,21 @@ class CompositeIndex(KeywordIndex):
             query_operators = QUERY_OPERATORS[c.meta_type]
             rec = IndexQuery(query, c.id, query_options,
                              query_operators[0], query_operators[1])
+            opr = None
 
             # not supported: 'not' parameter
             not_parm = rec.get('not', None)
-            if not rec.keys and not_parm:
+            if not_parm:
+                continue
+
+            # not supported: range parameter
+            range_parm = rec.get('range', None)
+            if range_parm:
+                opr = 'range'
+            if rec.get('usage', None):
+                # see if any usage params are sent to field
+                opr = rec.usage.lower().split(':')
+            if opr == 'range':
                 continue
 
             # not supported: 'and' operator
@@ -351,16 +362,20 @@ class CompositeIndex(KeywordIndex):
         if len(c_records) < MIN_COMPONENTS:
             return query
 
-        kw_list = []
-        for c_id, rec in c_records:
-            kw = rec.keys
-            if not kw:
-                continue
+        def tuple_cast(kw):
             if isinstance(kw, list):
                 kw = tuple(kw)
             elif not isinstance(kw, tuple):
                 kw = (kw,)
-            kw = tuple([(c_id, k) for k in kw])
+            return kw
+
+        kw_list = []
+        for c_id, rec in c_records:
+            keys = rec.keys
+            if not keys:
+                continue
+            keys = tuple_cast(keys)
+            kw = tuple([(c_id, k) for k in keys])
             kw_list.append(kw)
 
         # permute keyword list
