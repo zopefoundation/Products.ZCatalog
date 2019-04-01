@@ -369,3 +369,74 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
                              (len(res1), len(res2), query))
             self.assertEqual(res1, res2)
+
+    def testMakeQuery(self):
+
+        ci = CompositeIndex(
+            'ci',
+            extra=[
+                dict(id='fi', meta_type='FieldIndex', attributes=('fi',)),
+                dict(id='ki', meta_type='KeywordIndex', attributes=('ki',)),
+            ]
+        )
+
+        # avoid premature return of `make_query`
+        ci._length.change(1)
+
+        #
+        # 'range' parameter not supported
+        query = dict(fi=dict(query=(1, 3), range='min:max'),
+                     ki=dict(query=(10, 11)))
+
+        result = ci.make_query(query)
+
+        # should return original query
+        self.assertEqual(result, query)
+        #
+
+        # 'and' operator not supported
+        query = dict(fi=dict(query=(1, 3)),
+                     ki=dict(query=(10, 11), operator='and'))
+
+        result = ci.make_query(query)
+
+        # should return original query
+        self.assertEqual(result, query)
+
+        #
+        # regular query
+        query = dict(fi=dict(query=(1, 2, 3)),
+                     ki=dict(query=(10, 11)))
+
+        result = ci.make_query(query)
+
+        exspect = {'ci': {'query': ((('fi', 1), ('ki', 10)),
+                                    (('fi', 1), ('ki', 11)),
+                                    (('fi', 2), ('ki', 10)),
+                                    (('fi', 2), ('ki', 11)),
+                                    (('fi', 3), ('ki', 10)),
+                                    (('fi', 3), ('ki', 11)))}}
+
+        self.assertEqual(set(result[ci]['query']), set(exspect[ci]['query']))
+
+        #
+        # 'not' parameter in query
+        query = dict(fi=dict(query=(1, 2, 3)),
+                     ki={'query': (10, 11), 'not': 15})
+
+        result = ci.make_query(query)
+
+        exspect = {'ci': {'not': ((('fi', 1), ('ki', 15)),
+                                  (('fi', 2), ('ki', 15)),
+                                  (('fi', 3), ('ki', 15))),
+                          'query': ((('fi', 1), ('ki', 10)),
+                                    (('fi', 1), ('ki', 11)),
+                                    (('fi', 2), ('ki', 10)),
+                                    (('fi', 2), ('ki', 11)),
+                                    (('fi', 3), ('ki', 10)),
+                                    (('fi', 3), ('ki', 11)))}}
+
+        # sequence of result is not deterministic.
+        # Therefore, we use type 'set' for comparison.
+        self.assertEqual(set(result[ci]['not']), set(exspect[ci]['not']))
+        self.assertEqual(set(result[ci]['query']), set(exspect[ci]['query']))
