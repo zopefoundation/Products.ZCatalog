@@ -47,6 +47,31 @@ QUERY_OPERATORS = {
 MIN_COMPONENTS = 2
 
 
+def tuple_cast(kw):
+    if isinstance(kw, list):
+        kw = tuple(kw)
+    elif not isinstance(kw, tuple):
+        kw = (kw,)
+    return kw
+
+
+def collect(recs, not_cid=None):
+    kw_list = []
+    for c_id, rec in recs:
+        if c_id != not_cid:
+            keys = list(rec.keys)
+            if not_cid is not None:
+                keys.extend(rec.get('not', []))
+        elif c_id == not_cid:
+            keys = rec.get('not', [])
+        if not keys:
+            continue
+        keys = tuple_cast(keys)
+        kw = tuple([(c_id, k) for k in keys])
+        kw_list.append(kw)
+    return kw_list
+
+
 class ComponentMapping(PersistentMapping):
     """A persistent wrapper for mapping objects
     recording the order in which items are added. """
@@ -163,7 +188,7 @@ class CompositeIndex(KeywordIndex):
          'action': 'manage_browse'},
     )
 
-    query_options = ('query', 'operator')
+    query_options = ('query', 'operator', 'not')
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -322,6 +347,10 @@ class CompositeIndex(KeywordIndex):
         # collect components matching query attributes
         # and check them for completeness
         c_records = []
+
+        # component ids containing 'not' operator
+        not_cids = []
+
         for c in components:
             query_options = QUERY_OPTIONS[c.meta_type]
             query_operators = QUERY_OPERATORS[c.meta_type]
@@ -329,12 +358,7 @@ class CompositeIndex(KeywordIndex):
                              query_operators[0], query_operators[1])
             opr = None
 
-            # not supported: 'not' parameter
-            not_parm = rec.get('not', None)
-            if not_parm:
-                continue
-
-            # not supported: range parameter
+            # not supported: 'range' parameter
             range_parm = rec.get('range', None)
             if range_parm:
                 opr = 'range'
@@ -356,33 +380,35 @@ class CompositeIndex(KeywordIndex):
             if c.meta_type == 'BooleanIndex':
                 rec.keys = [int(bool(v)) for v in rec.keys[:]]
 
+            # rec with 'not' parameter
+            not_parm = rec.get('not', None)
+            if not_parm:
+                not_cids.append(c.id)
+
             c_records.append((c.id, rec))
 
         # return if less than MIN_COMPONENTS query attributes were caught
         if len(c_records) < MIN_COMPONENTS:
             return query
 
-        def tuple_cast(kw):
-            if isinstance(kw, list):
-                kw = tuple(kw)
-            elif not isinstance(kw, tuple):
-                kw = (kw,)
-            return kw
-
-        kw_list = []
-        for c_id, rec in c_records:
-            keys = rec.keys
-            if not keys:
-                continue
-            keys = tuple_cast(keys)
-            kw = tuple([(c_id, k) for k in keys])
-            kw_list.append(kw)
-
+        kw_list = collect(c_records)
         # permute keyword list
         records = tuple(product(*kw_list))
 
+        not_records = set()
+        for c_id in not_cids:
+            kw_list = collect(c_records, not_cid=c_id)
+            not_records.update(product(*kw_list))
+        # permute keyword list with 'not' operator
+        not_records = tuple(not_records)
+
         # substitute matching query attributes as composite index
-        cquery.update({self.id: {'query': records}})
+        if records and not_records:
+            cquery.update({self.id: {'query': records, 'not': not_records}})
+        elif records:
+            cquery.update({self.id: {'query': records}})
+        elif not_records:
+            cquery.update({self.id: {'not': not_records}})
 
         # delete original matching query attributes from query
         for c_id, rec in c_records:
