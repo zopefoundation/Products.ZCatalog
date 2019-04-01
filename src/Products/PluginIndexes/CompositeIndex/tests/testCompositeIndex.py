@@ -320,9 +320,12 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
     def testSearch(self):
 
         obj = TestObject('obj_1', 'Document', 'pending', subject=('subject_1'))
+        self.populateIndexes(4, obj)
         obj = TestObject('obj_2', 'News', 'pending', subject=('subject_2'))
+        self.populateIndexes(4, obj)
         obj = TestObject('obj_3', 'News', 'visible',
                          subject=('subject_1', 'subject_2'))
+        self.populateIndexes(4, obj)
         obj = TestObject('obj_4', 'News', 'visible',
                          subject=('subject_1', 'subject_2'),
                          keyword=('keyword_1', ))
