@@ -20,8 +20,8 @@ logger = logging.getLogger('zope.testCompositeIndex')
 states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
 default_pages = [True, False, False, False, False, False]
-subjects = list(map(lambda x: 'subject_%s' % x, range(6)))
-keywords = list(map(lambda x: 'keyword_%s' % x, range(6)))
+subjects = list(map(lambda x: 'subject_{0}'.format(x), range(6)))
+keywords = list(map(lambda x: 'keyword_{0}'.format(x), range(6)))
 
 
 class TestObject(object):
@@ -39,9 +39,14 @@ class TestObject(object):
         return ['', self.id, ]
 
     def __repr__(self):
-        return ('< %s, %s, %s, %s, %s , %s>' %
-                (self.id, self.portal_type, self.review_state,
-                 self.is_default_page, self.subject, self.keyword))
+        return ('< {id}, {portal_type}, {review_state},\
+        {is_default_page}, {subject} , {keyword}>'.format(
+            id=self.id,
+            portal_type=self.portal_type,
+            review_state=self.review_state,
+            is_default_page=self.is_default_page,
+            subject=self.subject,
+            keyword=self.keyword))
 
 
 class RandomTestObject(TestObject):
@@ -138,8 +143,10 @@ class CompositeIndexTestMixin(object):
         if not rs:
             return set()
 
-        if hasattr(rs, 'keys'):
+        try:
             rs = rs.keys()
+        except AttributeError:
+            pass
 
         return set(rs)
 
@@ -279,8 +286,8 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                         0.5 * duration2, duration1, (duration2, duration1))
 
             # is result identical?
-            self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
-                             (len(res1), len(res2), query))
+            self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
+                             len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
         for l in lengths:
@@ -289,7 +296,7 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                         'indexing %s objects', l)
 
             for i in range(l):
-                name = '%s' % i
+                name = str(i)
                 obj = RandomTestObject(name)
                 self.populateIndexes(i, obj)
 
@@ -366,8 +373,8 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             res1 = self.defaultSearch(query)
             res2 = self.compositeSearch(query)
             # is result identical?
-            self.assertEqual(len(res1), len(res2), '%s != %s for %s' %
-                             (len(res1), len(res2), query))
+            self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
+                             len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
     def testMakeQuery(self):
@@ -417,7 +424,8 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
                                     (('fi', 3), ('ki', 10)),
                                     (('fi', 3), ('ki', 11)))}}
 
-        self.assertEqual(set(result[ci]['query']), set(exspect[ci]['query']))
+        self.assertEqual(set(result['ci']['query']),
+                         set(exspect['ci']['query']))
 
         #
         # 'not' parameter in query
@@ -438,5 +446,7 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
 
         # sequence of result is not deterministic.
         # Therefore, we use type 'set' for comparison.
-        self.assertEqual(set(result[ci]['not']), set(exspect[ci]['not']))
-        self.assertEqual(set(result[ci]['query']), set(exspect[ci]['query']))
+        self.assertEqual(set(result['ci']['not']),
+                         set(exspect['ci']['not']))
+        self.assertEqual(set(result['ci']['query']),
+                         set(exspect['ci']['query']))
