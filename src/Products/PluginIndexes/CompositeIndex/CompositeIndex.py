@@ -383,7 +383,13 @@ class CompositeIndex(KeywordIndex):
             # rec with 'not' parameter
             not_parm = rec.get('not', None)
             if not_parm:
+                # not supported: 'pure not'
+                if len(rec.keys) == 0:
+                    continue
                 not_cids.append(c.id)
+                if c.meta_type == 'BooleanIndex':
+                    not_parm = [int(bool(v)) for v in not_parm[:]]
+                    rec.set('not', not_parm)
 
             c_records.append((c.id, rec))
 
@@ -391,6 +397,7 @@ class CompositeIndex(KeywordIndex):
         if len(c_records) < MIN_COMPONENTS:
             return query
 
+        records = ()
         kw_list = collect(c_records)
         # permute keyword list
         records = tuple(product(*kw_list))
@@ -398,8 +405,9 @@ class CompositeIndex(KeywordIndex):
         not_records = set()
         for c_id in not_cids:
             kw_list = collect(c_records, not_cid=c_id)
-            not_records.update(product(*kw_list))
-        # permute keyword list with 'not' operator
+            if kw_list:
+                not_records.update(product(*kw_list))
+        # permute keyword list for 'not' operator
         not_records = tuple(not_records)
 
         # substitute matching query attributes as composite index

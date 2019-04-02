@@ -450,3 +450,30 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
                          set(exspect['ci']['not']))
         self.assertEqual(set(result['ci']['query']),
                          set(exspect['ci']['query']))
+
+        #
+        # 'pure not' query which result in 1 element tuples
+        # (respectively "MIN_COMPONENTS-1" tuples) are not supported
+        query = dict(fi=dict(query=(1, 2, 3)),
+                     ki={'not': (15, 16)})
+
+        result = ci.make_query(query)
+
+        # should return original query
+        self.assertEqual(result, query)
+
+        #
+        # 'pure not' query of any index must result in 'pure not' query of
+        # CompositeIndex
+        query = dict(fi={'not': 1},
+                     ki={'not': (15, 16)})
+
+        result = ci.make_query(query)
+
+        exspect = {'ci': {'not': ((('fi', 1), ('ki', 15)),
+                                  (('fi', 1), ('ki', 16)))}}
+
+        # sequence of result is not deterministic.
+        # Therefore, we use type 'set' for comparison.
+        self.assertEqual(set(result['ci']['not']),
+                         set(exspect['ci']['not']))
