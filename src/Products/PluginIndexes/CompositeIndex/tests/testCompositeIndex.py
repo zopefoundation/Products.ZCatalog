@@ -283,7 +283,9 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                 # search must be roughly faster than default search
                 if res1 and res2:
                     self.assertLess(
-                        0.5 * duration2, duration1, (duration2, duration1))
+                        0.5 * duration2,
+                        duration1,
+                        (duration2, duration1, query))
 
             # is result identical?
             self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
@@ -327,54 +329,67 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
     def testSearch(self):
 
         obj = TestObject('obj_1', 'Document', 'pending', subject=('subject_1'))
-        self.populateIndexes(4, obj)
+        self.populateIndexes(1, obj)
         obj = TestObject('obj_2', 'News', 'pending', subject=('subject_2'))
-        self.populateIndexes(4, obj)
+        self.populateIndexes(2, obj)
         obj = TestObject('obj_3', 'News', 'visible',
                          subject=('subject_1', 'subject_2'))
-        self.populateIndexes(4, obj)
-        obj = TestObject('obj_4', 'News', 'visible',
+        self.populateIndexes(3, obj)
+        obj = TestObject('obj_4', 'Event', 'private',
                          subject=('subject_1', 'subject_2'),
                          keyword=('keyword_1', ))
         self.populateIndexes(4, obj)
 
-        queries = [{'review_state': {'query': 'pending'},
-                    'portal_type': {'query': 'Document'}},
-                   {'review_state': {'query': ('pending', 'visible')},
-                    'portal_type': {'query': 'News'}},
-                   {'review_state': {'query': 'pending'},
-                    'portal_type': {'query': ('News', 'Document')}},
-                   {'review_state': {'query': ('pending', 'visible')},
-                    'portal_type': {'query': ('News', 'Document')},
-                    'is_default_page': {'query': False}},
-                   {'review_state': {'query': ('pending', 'visible')},
-                    'portal_type': {'query': ('News', 'Document')},
-                    'is_default_page': {'query': False},
-                    'subject': {'query': ('subject_1', 'subject_2'),
-                                'operator': 'or'}},
-                   {'review_state': {'query': ('pending', 'visible')},
-                    'portal_type': {'query': ('News', 'Document')},
-                    'is_default_page': {'query': False},
-                    'subject': {'query': ('subject_1', 'subject_2'),
-                                'operator': 'or'}},
-                   {'review_state': {'query': ('pending', 'visible')},
-                    'portal_type': {'query': ('News', 'Document')},
-                    'is_default_page': {'query': False},
-                    'subject': {'query': ('subject_1', 'subject_2'),
-                                'operator': 'and'}},
-                   {'review_state': {'not': ('pending', 'visible')},
-                    'portal_type': {'query': ('News', 'Document')},
-                    'is_default_page': {'query': False},
-                    'subject': {'query': ('keyword_1',)}},
-                   ]
+        queries = [
+            # query on two attributes
+            {'review_state': {'query': 'pending'},
+             'portal_type': {'query': 'Document'}},
+            # query on two attributes with 'or' operator
+            {'review_state': {'query': ('pending', 'visible')},
+             'portal_type': {'query': 'News'}},
+            # query on two attributeswith one 'not' operator
+            {'review_state': {'query': ('pending', 'visible')},
+             'subject': {'query': 'subject_1', 'not': 'subject_2'}},
+            # query on two attributes with 'or' operator
+            {'review_state': {'query': 'pending'},
+             'portal_type': {'query': ('News', 'Document')}},
+            # query on three attributes
+            {'review_state': {'query': ('pending', 'visible')},
+             'portal_type': {'query': ('News', 'Document')},
+             'is_default_page': {'query': False}},
+            # query on four attributes with explicit 'or' operator
+            {'review_state': {'query': ('pending', 'visible')},
+             'portal_type': {'query': ('News', 'Document')},
+             'is_default_page': {'query': False},
+             'subject': {'query': ('subject_1', 'subject_2'),
+                         'operator': 'or'}},
+            # query on four attributes with explicit 'or' operator
+            {'review_state': {'query': ('pending', 'visible')},
+             'portal_type': {'query': ('News', 'Document')},
+             'is_default_page': {'query': False},
+             'subject': {'query': ('subject_1', 'subject_2'),
+                         'operator': 'or'}},
+            # query on four attributes with with explicit 'and' operator
+            {'review_state': {'query': ('pending', 'visible')},
+             'portal_type': {'query': ('News', 'Document')},
+             'is_default_page': {'query': False},
+             'subject': {'query': ('subject_1', 'subject_2'),
+                         'operator': 'and'}},
+            # query on five attributes with
+            {'review_state': {'not': ('pending', 'visible')},
+             'portal_type': {'query': ('News', 'Document')},
+             'is_default_page': {'query': False},
+             'subject': {'query': ('subject_1', )},
+             'keyword': {'query': ('keyword_1',)}},
+        ]
 
         for query in queries:
-
             res1 = self.defaultSearch(query)
             res2 = self.compositeSearch(query)
             # is result identical?
             self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
-                             len(res1), len(res2), query))
+                len(res1), len(res2), query))
+
             self.assertEqual(res1, res2)
 
     def testMakeQuery(self):
@@ -384,6 +399,7 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             extra=[
                 dict(id='fi', meta_type='FieldIndex', attributes=('fi',)),
                 dict(id='ki', meta_type='KeywordIndex', attributes=('ki',)),
+                dict(id='bi', meta_type='BooleanIndex', attributes=('bi',)),
             ]
         )
 
@@ -417,15 +433,15 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
 
         result = ci.make_query(query)
 
-        exspect = {'ci': {'query': ((('fi', 1), ('ki', 10)),
-                                    (('fi', 1), ('ki', 11)),
-                                    (('fi', 2), ('ki', 10)),
-                                    (('fi', 2), ('ki', 11)),
-                                    (('fi', 3), ('ki', 10)),
-                                    (('fi', 3), ('ki', 11)))}}
+        expect = {'ci': {'query': ((('fi', 1), ('ki', 10)),
+                                   (('fi', 1), ('ki', 11)),
+                                   (('fi', 2), ('ki', 10)),
+                                   (('fi', 2), ('ki', 11)),
+                                   (('fi', 3), ('ki', 10)),
+                                   (('fi', 3), ('ki', 11)))}}
 
         self.assertEqual(set(result['ci']['query']),
-                         set(exspect['ci']['query']))
+                         set(expect['ci']['query']))
 
         #
         # 'not' parameter in query
@@ -434,26 +450,28 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
 
         result = ci.make_query(query)
 
-        exspect = {'ci': {'not': ((('fi', 1), ('ki', 15)),
-                                  (('fi', 2), ('ki', 15)),
-                                  (('fi', 3), ('ki', 15))),
-                          'query': ((('fi', 1), ('ki', 10)),
-                                    (('fi', 1), ('ki', 11)),
-                                    (('fi', 2), ('ki', 10)),
-                                    (('fi', 2), ('ki', 11)),
-                                    (('fi', 3), ('ki', 10)),
-                                    (('fi', 3), ('ki', 11)))}}
+        expect = {'ci': {'not': ((('fi', 1), ('ki', 15)),
+                                 (('fi', 2), ('ki', 15)),
+                                 (('fi', 3), ('ki', 15))),
+                         'query': ((('fi', 1), ('ki', 10)),
+                                   (('fi', 1), ('ki', 11)),
+                                   (('fi', 2), ('ki', 10)),
+                                   (('fi', 2), ('ki', 11)),
+                                   (('fi', 3), ('ki', 10)),
+                                   (('fi', 3), ('ki', 11)))}}
 
         # sequence of result is not deterministic.
         # Therefore, we use type 'set' for comparison.
         self.assertEqual(set(result['ci']['not']),
-                         set(exspect['ci']['not']))
+                         set(expect['ci']['not']))
         self.assertEqual(set(result['ci']['query']),
-                         set(exspect['ci']['query']))
+                         set(expect['ci']['query']))
 
         #
-        # 'pure not' query which result in 1 element tuples
-        # (respectively "MIN_COMPONENTS-1" tuples) are not supported
+        # 'pure not' is not supported. The affected attribute cannot
+        # be used to optimize the query.
+
+        # In the case of two attributes the query cannot be optimized.
         query = dict(fi=dict(query=(1, 2, 3)),
                      ki={'not': (15, 16)})
 
@@ -462,18 +480,32 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
         # should return original query
         self.assertEqual(result, query)
 
+        # In the case of three attributes only two attributes can
+        # be used to optimize the query.
+        query = dict(fi={'query': (1, 2, 3)},
+                     ki={'not': (15, 16)},
+                     bi={'query': (True,)})
+
+        result = ci.make_query(query)
+
+        expect = {'ci': {'query': ((('fi', 1), ('bi', 1)),
+                                   (('fi', 2), ('bi', 1)),
+                                   (('fi', 3), ('bi', 1)))},
+                  'ki': {'not': (15, 16)}}
+
+        # sequence of result is not deterministic.
+        # Therefore, we use type 'set' for comparison.
+        self.assertEqual(set(result['ki']['not']),
+                         set(expect['ki']['not']))
+        self.assertEqual(set(result['ci']['query']),
+                         set(expect['ci']['query']))
+
         #
-        # 'pure not' query of any index must result in 'pure not' query of
-        # CompositeIndex
+        # 'pure not' query on any attribute is also not supported
         query = dict(fi={'not': 1},
                      ki={'not': (15, 16)})
 
         result = ci.make_query(query)
 
-        exspect = {'ci': {'not': ((('fi', 1), ('ki', 15)),
-                                  (('fi', 1), ('ki', 16)))}}
-
-        # sequence of result is not deterministic.
-        # Therefore, we use type 'set' for comparison.
-        self.assertEqual(set(result['ci']['not']),
-                         set(exspect['ci']['not']))
+        # should return original query
+        self.assertEqual(result, query)
