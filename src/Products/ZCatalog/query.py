@@ -117,13 +117,15 @@ class IndexQuery(object):
                 if op == 'query':
                     continue
                 if op not in options:
-                    raise RuntimeError('index %s: option %r is not valid' % (iid, op)) 
+                    raise RuntimeError(('index {0!r}: option {1!r}'
+                                        ' is not valid').format(iid, op))
         else:
             for field in request.keys():
                 if field.startswith(iid + '_'):
                     iid_tmp, op = field.split('_')
                     if op not in options:
-                        raise RuntimeError('index %s: option %r is not valid' % (iid, op))
+                        raise RuntimeError(('index {0!r}: option {1!r}'
+                                            ' is not valid').format(iid, op))
         self._options = options
 
     @property
@@ -135,7 +137,8 @@ class IndexQuery(object):
         iid = self.id
         value = value.lower()
         if value not in self.operators:
-            raise RuntimeError('index %s: operator %r is not valid' % (iid, value))
+            raise RuntimeError(('index {0!r}: operator {1!r}'
+                                ' is not valid').format(iid, value))
         self._operator = value.lower()
 
     def get(self, key, default_v=None):
