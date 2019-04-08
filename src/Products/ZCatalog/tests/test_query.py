@@ -66,3 +66,35 @@ class TestIndexQuery(unittest.TestCase):
         parser = self._makeOne(request, 'path', ('query', 'not'))
         self.assertEqual(parser.get('keys'), ['foo'])
         self.assertEqual(parser.get('not'), [0])
+
+    def test_operator_dict(self):
+        request = {'path': {'query': 'foo', 'operator': 'bar'}}
+        self.assertRaises(RuntimeError,
+                          self._makeOne,
+                          request,
+                          'path',
+                          ('query', 'operator'),
+                          ('or', 'and'))
+
+    def test_operator_string(self):
+        request = {'path': 'foo', 'path_operator': 'bar'}
+        self.assertRaises(RuntimeError,
+                          self._makeOne,
+                          request, 'path',
+                          ('query', 'operator'),
+                          ('or', 'and'))
+
+    def test_options_dict(self):
+        request = {'path': {'query': 'foo', 'baropt': 'dummy'}}
+        self.assertRaises(RuntimeError,
+                          self._makeOne,
+                          request,
+                          'path',
+                          ('query', 'operator'))
+
+    def test_options_string(self):
+        request = {'path': 'foo', 'path_baropt': 'dummy'}
+        self.assertRaises(RuntimeError,
+                          self._makeOne,
+                          request, 'path',
+                          ('query', 'operator'))
