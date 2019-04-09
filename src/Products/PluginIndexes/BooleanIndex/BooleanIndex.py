@@ -256,11 +256,11 @@ class BooleanIndex(UnIndex):
                 yield key
         else:
             for key in unique_values:
-                ilen = len(self._index)
+                ilen = self._index_length.value
                 if key is indexed:
                     yield (key, ilen)
                 else:
-                    ulen = len(self._unindex)
+                    ulen = self._length.value
                     yield (key, ulen - ilen)
 
 
