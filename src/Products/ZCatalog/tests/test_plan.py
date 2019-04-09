@@ -326,7 +326,7 @@ class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
     def test_uniquevalues(self):
         zcat = self._make_catalog()
         indexes = zcat._catalog.indexes
-        self.assertEqual(len(list(indexes['big'].uniqueValues())), 3)
+        self.assertEqual(len(list(indexes['big'].uniqueValues())), 2)
         self.assertEqual(len(list(indexes['date'].uniqueValues())), 0)
         self.assertEqual(len(list(indexes['date'].uniqueValues('start'))), 9)
         self.assertEqual(len(list(indexes['date'].uniqueValues('end'))), 9)

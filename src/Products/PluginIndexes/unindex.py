@@ -679,10 +679,10 @@ class UnIndex(SimpleItem):
             return
 
         if not withLengths:
-            for key in self._index.keys():
+            for key in self._index.iterkeys():
                 yield key
         else:
-            for key, value in self._index.items():
+            for key, value in self._index.iteritems():
                 if isinstance(value, int):
                     yield (key, 1)
                 else:
