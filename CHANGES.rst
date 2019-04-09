@@ -4,7 +4,10 @@ Changelog
 4.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Raise a ValueError if a query uses invalid index parameters. This prevents
+  the query from being changed without feedback to the user and delivering
+  implausible search results.
+  (`#67 <https://github.com/zopefoundation/Products.ZCatalog/pull/67>`_)
 
 
 4.4 (2019-03-08)
