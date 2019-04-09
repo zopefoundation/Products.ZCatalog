@@ -56,6 +56,7 @@ class IndexQuery(object):
         self.id = iid
         self.operators = operators
         self.operator = default_operator
+        self.options = options
 
         if iid not in request:
             self.keys = None
@@ -76,11 +77,7 @@ class IndexQuery(object):
                 if op == 'query':
                     continue
 
-                if op in options:
-                    self.set(op, param[op])
-                else:
-                    raise ValueError(('index {0!r}: option {1!r}'
-                                      ' is not valid').format(iid, op))
+                self.set(op, param[op])
 
         else:
             # query is tuple, list, string, number, or something else
@@ -92,11 +89,8 @@ class IndexQuery(object):
             for field in request.keys():
                 if field.startswith(iid + '_'):
                     iid_tmp, op = field.split('_')
-                    if op in options:
-                        self.set(op, request[field])
-                    else:
-                        raise ValueError(('index {0!r}: option {1!r}'
-                                          ' is not valid').format(iid, op))
+
+                    self.set(op, request[field])
 
         self.keys = keys
         not_value = getattr(self, 'not', None)
@@ -125,4 +119,8 @@ class IndexQuery(object):
         return default_v
 
     def set(self, key, value):
-        setattr(self, key, value)
+        if key in self.options:
+            setattr(self, key, value)
+        else:
+            raise ValueError(('index {0!r}: option {1!r}'
+                              ' is not valid').format(self.id, key))
