@@ -69,7 +69,7 @@ class TestIndexQuery(unittest.TestCase):
 
     def test_operator_dict(self):
         request = {'path': {'query': 'foo', 'operator': 'bar'}}
-        self.assertRaises(RuntimeError,
+        self.assertRaises(ValueError,
                           self._makeOne,
                           request,
                           'path',
@@ -78,7 +78,7 @@ class TestIndexQuery(unittest.TestCase):
 
     def test_operator_string(self):
         request = {'path': 'foo', 'path_operator': 'bar'}
-        self.assertRaises(RuntimeError,
+        self.assertRaises(ValueError,
                           self._makeOne,
                           request, 'path',
                           ('query', 'operator'),
@@ -86,7 +86,7 @@ class TestIndexQuery(unittest.TestCase):
 
     def test_options_dict(self):
         request = {'path': {'query': 'foo', 'baropt': 'dummy'}}
-        self.assertRaises(RuntimeError,
+        self.assertRaises(ValueError,
                           self._makeOne,
                           request,
                           'path',
@@ -94,7 +94,7 @@ class TestIndexQuery(unittest.TestCase):
 
     def test_options_string(self):
         request = {'path': 'foo', 'path_baropt': 'dummy'}
-        self.assertRaises(RuntimeError,
+        self.assertRaises(ValueError,
                           self._makeOne,
                           request, 'path',
                           ('query', 'operator'))

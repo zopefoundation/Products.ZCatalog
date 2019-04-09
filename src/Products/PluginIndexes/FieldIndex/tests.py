@@ -258,11 +258,11 @@ class FieldIndexTests(unittest.TestCase):
         # Make sure that range tests with incompatible paramters
         # raise a RuntimeError
         record['foo']['operator'] = 'and'
-        self.assertRaises(RuntimeError, self._checkApply, record, expect)
+        self.assertRaises(ValueError, self._checkApply, record, expect)
 
         # alternative syntax of record
         record = {'foo': [-99, 3],
                   'foo_range': 'min:max',
                   'foo_operator': 'and'}
 
-        self.assertRaises(RuntimeError, self._checkApply, record, expect)
+        self.assertRaises(ValueError, self._checkApply, record, expect)

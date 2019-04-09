@@ -53,7 +53,6 @@ class IndexQuery(object):
           default_operator -- the default operator
         """
 
-        self.request = request
         self.id = iid
         self.operators = operators
         self.operator = default_operator
@@ -61,8 +60,6 @@ class IndexQuery(object):
         if iid not in request:
             self.keys = None
             return
-
-        self.options = options
 
         param = request[iid]
         keys = None
@@ -75,12 +72,15 @@ class IndexQuery(object):
             else:
                 keys = [query]
 
-            for op in options:
+            for op in param.keys():
                 if op == 'query':
                     continue
 
-                if op in param:
+                if op in options:
                     self.set(op, param[op])
+                else:
+                    raise ValueError(('index {0!r}: option {1!r}'
+                                      ' is not valid').format(iid, op))
 
         else:
             # query is tuple, list, string, number, or something else
@@ -89,10 +89,14 @@ class IndexQuery(object):
             else:
                 keys = [param]
 
-            for op in options:
-                field = iid + "_" + op
-                if field in request:
-                    self.set(op, request[field])
+            for field in request.keys():
+                if field.startswith(iid + '_'):
+                    iid_tmp, op = field.split('_')
+                    if op in options:
+                        self.set(op, request[field])
+                    else:
+                        raise ValueError(('index {0!r}: option {1!r}'
+                                          ' is not valid').format(iid, op))
 
         self.keys = keys
         not_value = getattr(self, 'not', None)
@@ -100,33 +104,6 @@ class IndexQuery(object):
             if not isinstance(not_value, (tuple, list)):
                 not_value = [not_value]
                 self.set('not', not_value)
-
-    @property
-    def options(self):
-        return self._options
-
-    @options.setter
-    def options(self, value):
-        iid = self.id
-        request = self.request
-        options = value
-        param = request[iid]
-
-        if isinstance(param, dict):
-            for op in param.keys():
-                if op == 'query':
-                    continue
-                if op not in options:
-                    raise RuntimeError(('index {0!r}: option {1!r}'
-                                        ' is not valid').format(iid, op))
-        else:
-            for field in request.keys():
-                if field.startswith(iid + '_'):
-                    iid_tmp, op = field.split('_')
-                    if op not in options:
-                        raise RuntimeError(('index {0!r}: option {1!r}'
-                                            ' is not valid').format(iid, op))
-        self._options = options
 
     @property
     def operator(self):
@@ -137,9 +114,9 @@ class IndexQuery(object):
         iid = self.id
         value = value.lower()
         if value not in self.operators:
-            raise RuntimeError(('index {0!r}: operator {1!r}'
-                                ' is not valid').format(iid, value))
-        self._operator = value.lower()
+            raise ValueError(('index {0!r}: operator {1!r}'
+                              ' is not valid').format(iid, value))
+        self._operator = value
 
     def get(self, key, default_v=None):
         value = getattr(self, key, _marker)
