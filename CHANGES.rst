@@ -4,7 +4,8 @@ Changelog
 4.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix rewriting of query to avoid wrong optimization of CompositeIndex.
+  (`#66 <https://github.com/zopefoundation/Products.ZCatalog/pull/66>`_)
 
 
 4.4 (2019-03-08)
