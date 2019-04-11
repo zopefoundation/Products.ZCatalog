@@ -322,7 +322,7 @@ class CatalogPlan(object):
             duration, hits, limit = benchmark[name]
             duration = ((duration * hits) + dt) / float(hits + 1)
             # reset adaption
-            if hits % REFRESH_RATE == 0:
+            if int(hits) % REFRESH_RATE == 0:
                 hits = 0
             hits += 1
             benchmark[name] = Benchmark(duration, hits, limit)

@@ -107,6 +107,7 @@ class DateIndex(UnIndex, PropertyManager):
         self._index = IOBTree()
         self._unindex = IIBTree()
         self._length = Length()
+        self._entry_lengths = IOBTree()
         if self._counter is None:
             self._counter = Length()
         else:

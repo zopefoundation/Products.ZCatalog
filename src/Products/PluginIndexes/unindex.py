@@ -129,6 +129,7 @@ class UnIndex(SimpleItem):
 
     def clear(self):
         self._length = Length()
+        self._entry_lengths = OOBTree()
         self._index = OOBTree()
         self._unindex = IOBTree()
 
@@ -145,12 +146,8 @@ class UnIndex(SimpleItem):
         elements found at each point in the index.
         """
         histogram = {}
-        for item in self._index.items():
-            if isinstance(item, int):
-                entry = 1  # "set" length is 1
-            else:
-                key, value = item
-                entry = len(value)
+        for key in self._index.keys():
+            entry = self._entry_lengths[key].value
             histogram[entry] = histogram.get(entry, 0) + 1
         return histogram
 
@@ -176,6 +173,7 @@ class UnIndex(SimpleItem):
                 indexRow.remove(documentId)
                 if not indexRow:
                     del self._index[entry]
+                    del self._entry_lengths[entry]
                     self._length.change(-1)
             except ConflictError:
                 raise
@@ -183,6 +181,7 @@ class UnIndex(SimpleItem):
                 # index row is an int
                 try:
                     del self._index[entry]
+                    del self._entry_lengths[entry]
                 except KeyError:
                     # swallow KeyError because it was probably
                     # removed and then _length AttributeError raised
@@ -221,15 +220,19 @@ class UnIndex(SimpleItem):
             # We always use a set to avoid getting conflict errors on
             # multiple threads adding a new row at the same time
             self._index[entry] = IITreeSet((documentId, ))
+            self._entry_lengths[entry] = Length(1)
             self._length.change(1)
         else:
             try:
-                indexRow.insert(documentId)
+                success = indexRow.insert(documentId)
+                if success:
+                    self._entry_lengths[entry].change(1)
             except AttributeError:
                 # Inline migration: index row with one element was an int at
                 # first (before Zope 2.13).
                 indexRow = IITreeSet((indexRow, documentId))
                 self._index[entry] = indexRow
+                self._entry_lengths[entry] = Length(2)
 
     def index_object(self, documentId, obj, threshold=None):
         """ wrapper to handle indexing of multiple attributes """
@@ -682,11 +685,9 @@ class UnIndex(SimpleItem):
             for key in self._index.iterkeys():
                 yield key
         else:
-            for key, value in self._index.iteritems():
-                if isinstance(value, int):
-                    yield (key, 1)
-                else:
-                    yield (key, len(value))
+            for key in self._index.iterkeys():
+                length = self._entry_lengths[key].value
+                yield (key, length)
 
     def keyForDocument(self, id):
         # This method is superseded by documentToKeyMap
