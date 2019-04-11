@@ -38,7 +38,7 @@ class Dummy(object):
         self.num = num
 
     def big(self):
-        return self.num > 5
+        return self.num > 2
 
     def numbers(self):
         return (self.num, self.num + 1)
@@ -314,7 +314,7 @@ class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
         zcat._catalog.addIndex('numbers', KeywordIndex('numbers'))
         zcat._catalog.addIndex('path', PathIndex('getPhysicalPath'))
         zcat._catalog.addIndex('uuid', UUIDIndex('num'))
-        for i in range(9):
+        for i in range(19):
             obj = Dummy(i)
             zcat.catalog_object(obj, str(i))
         return zcat
@@ -328,18 +328,20 @@ class TestValueIndexes(cleanup.CleanUp, unittest.TestCase):
         indexes = zcat._catalog.indexes
         self.assertEqual(len(list(indexes['big'].uniqueValues())), 2)
         self.assertEqual(len(list(indexes['date'].uniqueValues())), 0)
-        self.assertEqual(len(list(indexes['date'].uniqueValues('start'))), 9)
-        self.assertEqual(len(list(indexes['date'].uniqueValues('end'))), 9)
-        self.assertEqual(len(list(indexes['num'].uniqueValues())), 9)
-        self.assertEqual(len(list(indexes['numbers'].uniqueValues())), 10)
-        self.assertEqual(len(list(indexes['path'].uniqueValues())), 9)
-        self.assertEqual(len(list(indexes['uuid'].uniqueValues())), 9)
+        self.assertEqual(len(list(indexes['date'].uniqueValues('start'))), 19)
+        self.assertEqual(len(list(indexes['date'].uniqueValues('end'))), 19)
+        self.assertEqual(len(list(indexes['num'].uniqueValues())), 19)
+        self.assertEqual(len(list(indexes['numbers'].uniqueValues())), 20)
+        self.assertEqual(len(list(indexes['path'].uniqueValues())), 19)
+        self.assertEqual(len(list(indexes['uuid'].uniqueValues())), 19)
 
     def test_valueindexes(self):
         zcat = self._make_catalog()
         plan = self._make_plan(zcat._catalog)
+        # only 'big' is a valueindex where the number
+        # of items per value is inhomogen
         self.assertEqual(plan.valueindexes(),
-                         frozenset(['big', 'num', 'path', 'uuid']))
+                         frozenset(['big']))
 
 
 class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
@@ -349,7 +351,7 @@ class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
         self.zcat = ZCatalog('catalog')
         self.zcat.long_query_time = 0.0
         self._add_indexes()
-        for i in range(9):
+        for i in range(19):
             obj = Dummy(i)
             self.zcat.catalog_object(obj, str(i))
 
@@ -412,7 +414,7 @@ class TestCatalogReport(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(r['counter'], 1)
 
         # query key 3
-        key = ('sort_on', ('num', '[3, 4, 5]'))
+        key = ('num', 'sort_on')
         self.zcat.manage_resetCatalogReport()
 
         self.zcat.searchResults(num=[5, 4, 3], sort_on='num')

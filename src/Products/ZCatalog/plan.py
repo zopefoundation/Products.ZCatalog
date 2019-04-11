@@ -31,6 +31,19 @@ MAX_DISTINCT_VALUES = 10
 REFRESH_RATE = 100
 VALUE_INDEX_KEY = 'VALUE_INDEXES'
 
+# Chi-squared distribution table with P-value 0.05 (0.95 quantile)
+# key of dict is the degree of freedom
+CHISQ_QUANTILE = {1: 3.84,
+                  2: 5.99,
+                  3: 7.82,
+                  4: 9.49,
+                  5: 11.07,
+                  6: 12.59,
+                  7: 14.07,
+                  8: 15.51,
+                  9: 16.92,
+                  10: 18.31}
+
 Duration = namedtuple('Duration', ['start', 'end'])
 IndexMeasurement = namedtuple('IndexMeasurement',
                               ['name', 'duration', 'limit'])
@@ -191,9 +204,9 @@ class CatalogPlan(object):
         # in the report key. The number of unique values for the index needs to
         # be lower than the MAX_DISTINCT_VALUES watermark.
 
-        # TODO: Ideally who would only consider those indexes with a small
+        # Ideally who would only consider those indexes with a small
         # number of unique values, where the number of items for each value
-        # differs a lot. If the number of items per value is similar, the
+        # differs a lot. If the distribution of items per value is homogen, the
         # duration of a query is likely similar as well.
         value_indexes = PriorityMap.get_entry(self.cid, VALUE_INDEX_KEY)
         if isinstance(value_indexes, (frozenset, set)):
@@ -206,19 +219,36 @@ class CatalogPlan(object):
         value_indexes = set()
         for name, index in indexes.items():
             if IUniqueValueIndex.providedBy(index):
-                values = index.uniqueValues()
-                i = 0
-                for value in values:
-                    # the total number of unique values might be large and
-                    # expensive to load, so we only check if we can get
-                    # more than MAX_DISTINCT_VALUES
-                    if i >= MAX_DISTINCT_VALUES:
-                        break
-                    i += 1
-                if i > 0 and i < MAX_DISTINCT_VALUES:
-                    # Only consider indexes which actually return a number
-                    # greater than zero
-                    value_indexes.add(name)
+                # Skip indexes with high number of unique values
+                # or no degree of freedom (isize < 2)
+                # index size
+                isize = index.indexSize()
+                if isize < 2 or isize >= MAX_DISTINCT_VALUES:
+                    continue
+
+                values = index.uniqueValues(withLengths=True)
+
+                # chi-square test serves as a measure of goodness of
+                # homogenity of the distribution of items for each value
+                # https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test
+
+                # null hypothesis (expected value) for a homogen distribution
+                ev = float(len(self.catalog)) / float(isize)
+                chi_square = 0
+                for value, l in values:
+                    chi_square += (float(l) - float(ev))**2 / float(ev)
+
+                # Check null hypothesis. If chi_square is lower than
+                # CHISQ_QUANTILE the the distribution of items per
+                # value is homogen. Therefore, the null hypothesis is accepted
+
+                # Degree of freedom
+                df = isize - 1
+                if chi_square < CHISQ_QUANTILE[df]:
+                    continue
+
+                # null hypothesis is rejected
+                value_indexes.add(name)
 
         value_indexes = frozenset(value_indexes)
         PriorityMap.set_entry(self.cid, VALUE_INDEX_KEY, value_indexes)
