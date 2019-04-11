@@ -5,7 +5,7 @@ Changelog
 ----------------
 
 - Fix rewriting of query to avoid wrong optimization of CompositeIndex.
-  (`#66 <https://github.com/zopefoundation/Products.ZCatalog/pull/66>`_)
+  (`#59 <https://github.com/zopefoundation/Products.ZCatalog/issues/59>`_)
 
 
 4.4 (2019-03-08)
