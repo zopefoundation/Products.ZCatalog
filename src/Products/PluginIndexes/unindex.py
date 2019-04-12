@@ -257,6 +257,8 @@ class UnIndex(SimpleItem):
             # "object has default comparison" and won't let it be indexed.
             return 0
 
+        datum = self._convert(datum, default=_marker)
+
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
         oldDatum = self._unindex.get(documentId, _marker)
