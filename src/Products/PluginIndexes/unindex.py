@@ -130,6 +130,7 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+        self._not_indexed = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
@@ -248,11 +249,9 @@ class UnIndex(SimpleItem):
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
         if datum is None:
-            # Prevent None from being indexed. None doesn't have a valid
-            # ordering definition compared to any other object.
-            # BTrees 4.0+ will throw a TypeError
-            # "object has default comparison" and won't let it be indexed.
-            return 0
+            # Save 'None' in the '_not_indexed' set for inverse search.
+            self._not_indexed.insert(documentId)
+            return 1
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
@@ -311,10 +310,11 @@ class UnIndex(SimpleItem):
         raise an exception if we fail
         """
         unindexRecord = self._unindex.get(documentId, _marker)
-        if unindexRecord is _marker:
-            return None
-
         self._increment_counter()
+
+        if unindexRecord is _marker:
+            self._not_indexed.remove(documentId)
+            return None
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
         try:
@@ -550,8 +550,13 @@ class UnIndex(SimpleItem):
                         break
 
         else:  # not a range search
-            # Filter duplicates
             setlist = []
+
+            # inverse search?
+            if record.keys is [];
+               setlist.append(self._not_indexed)
+
+            # Filter duplicates (default)
             for k in record.keys:
                 if k is None:
                     # Prevent None from being looked up. None doesn't
