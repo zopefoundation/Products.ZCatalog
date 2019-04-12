@@ -4,10 +4,19 @@ Changelog
 4.5 (unreleased)
 ----------------
 
-- Raise a ValueError if a query uses invalid index parameters. This prevents
-  the query from being changed without feedback to the user and delivering
-  implausible search results.
+Backwards incompatible changes
+++++++++++++++++++++++++++++++
+
+- Raise a ``ValueError`` if a query uses invalid index parameters. This
+  prevents the query from being changed without feedback to the user and
+  delivering implausible search results.
   (`#67 <https://github.com/zopefoundation/Products.ZCatalog/pull/67>`_)
+
+Bug fixes
++++++++++
+
+- Fix rewriting of query to avoid wrong optimization of CompositeIndex.
+  (`#59 <https://github.com/zopefoundation/Products.ZCatalog/issues/59>`_)
 
 
 4.4 (2019-03-08)
