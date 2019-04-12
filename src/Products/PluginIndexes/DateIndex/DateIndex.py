@@ -22,12 +22,10 @@ from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from DateTime.DateTime import DateTime
 from OFS.PropertyManager import PropertyManager
-from ZODB.POSException import ConflictError
 from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateIndex
 from Products.PluginIndexes.unindex import UnIndex
-from Products.PluginIndexes.util import safe_callable
 
 LOG = getLogger('DateIndex')
 _marker = []
