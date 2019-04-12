@@ -18,6 +18,9 @@ Bug fixes
 - Fix rewriting of query to avoid wrong optimization of CompositeIndex.
   (`#59 <https://github.com/zopefoundation/Products.ZCatalog/issues/59>`_)
 
+- Fix performance issue of ``valueindexes`` method for catalogs with
+  many indexed objects
+  (`#39 <https://github.com/zopefoundation/Products.ZCatalog/issues/39>`_)
 
 4.4 (2019-03-08)
 ----------------
