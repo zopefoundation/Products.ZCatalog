@@ -552,8 +552,8 @@ class UnIndex(SimpleItem):
         else:  # not a range search
             setlist = []
 
-            # inverse search?
-            if record.keys is [];
+            # inverse search or not_parm is set
+            if record.keys is [] or not_parm is not None:
                setlist.append(self._not_indexed)
 
             # Filter duplicates (default)
