@@ -17,9 +17,13 @@ from logging import getLogger
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from App.special_dtml import DTMLFile
+from zope.interface import implementer
 
 from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
+from Products.PluginIndexes.interfaces import (
+    IIndexingMissingValue,
+)
 
 LOG = getLogger('Zope.KeywordIndex')
 
@@ -30,6 +34,7 @@ except NameError:
     basestring = (bytes, str)
 
 
+@implementer(IIndexingMissingValue)
 class KeywordIndex(UnIndex):
     """Like an UnIndex only it indexes sequences of items.
 

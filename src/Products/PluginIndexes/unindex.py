@@ -40,6 +40,8 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
+    MissingValue,
+    IIndexingMissingValue,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -130,7 +132,6 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
-        self._not_indexed = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
@@ -249,9 +250,14 @@ class UnIndex(SimpleItem):
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
         if datum is None:
-            # Save 'None' in the '_not_indexed' set for inverse search.
-            self._not_indexed.insert(documentId)
-            return 1
+            if IIndexingMissingValue.providedby(self):
+                datum = MissingValue
+            else:
+                # Prevent None from being indexed. None doesn't have a valid
+                # ordering definition compared to any other object.
+                # BTrees 4.0+ will throw a TypeError
+                # "object has default comparison" and won't let it be indexed.
+                return 0
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
@@ -313,7 +319,6 @@ class UnIndex(SimpleItem):
         self._increment_counter()
 
         if unindexRecord is _marker:
-            self._not_indexed.remove(documentId)
             return None
 
         self.removeForwardIndexEntry(unindexRecord, documentId)
@@ -452,14 +457,14 @@ class UnIndex(SimpleItem):
                     if isinstance(cached, int):
                         cached = IISet((cached, ))
 
-                    if not_parm is not None:
+                    if not_parm:
                         not_parm = list(map(self._convert, not_parm))
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
                     return cached
 
-        if not record.keys and not_parm is not None:
+        if not record.keys and not_parm:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
             # we have only a 'not' query
@@ -509,7 +514,7 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm is not None:
+                if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
                 return result
@@ -550,13 +555,8 @@ class UnIndex(SimpleItem):
                         break
 
         else:  # not a range search
-            setlist = []
-
-            # inverse search or not_parm is set
-            if record.keys is [] or not_parm is not None:
-               setlist.append(self._not_indexed)
-
             # Filter duplicates (default)
+            setlist = []
             for k in record.keys:
                 if k is None:
                     # Prevent None from being looked up. None doesn't
@@ -592,7 +592,7 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm is not None:
+                if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
                 return result
@@ -639,7 +639,7 @@ class UnIndex(SimpleItem):
             r = IISet((r, ))
         if r is None:
             return IISet()
-        if not_parm is not None:
+        if not_parm:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
         return r

@@ -280,3 +280,14 @@ class ITransposeQuery(Interface):
 
     def getIndexNames():
         """ returns index names that are optimized by index """
+
+
+# MissingValue can be used as query "term" to query
+# for objects the index does not have a value for.
+
+MissingValue = object()
+
+
+class IIndexingMissingValue(Interface):
+    """Marker interface to mark indexes with support the
+    `MissingValue` query term."""
