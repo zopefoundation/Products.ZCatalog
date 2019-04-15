@@ -250,7 +250,7 @@ class UnIndex(SimpleItem):
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
         if datum is None:
-            if IIndexingMissingValue.providedby(self):
+            if IIndexingMissingValue.providedBy(self):
                 datum = MissingValue
             else:
                 # Prevent None from being indexed. None doesn't have a valid

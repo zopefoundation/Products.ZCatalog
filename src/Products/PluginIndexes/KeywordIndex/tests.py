@@ -160,7 +160,8 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._some_req, [])
         self._checkApply(self._overlap_req, [])
         self._checkApply(self._string_req, [])
-        self._checkApply(self._missingvalue_1, [])
+        self._checkApply(self._miss_req_1, [])
+        self._checkApply(self._miss_req_2, [])
 
     def testPopulated(self):
         self._populateIndex()
@@ -185,7 +186,7 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._all_req, values[:-2])
         self._checkApply(self._some_req, values[5:7])
         self._checkApply(self._overlap_req, values[2:7])
-        self._checkApply(self._string_req, values[:-3])
+        self._checkApply(self._string_req, values[:-2])
         self._checkApply(self._miss_req_1, values[7])
         self._checkApply(self._miss_req_2, values[:8])
 
