@@ -18,6 +18,10 @@ Bug fixes
 - Fix rewriting of query to avoid wrong optimization of CompositeIndex.
   (`#59 <https://github.com/zopefoundation/Products.ZCatalog/issues/59>`_)
 
+- Consolidate code for general usage of ``UnIndex._convert`` method to
+  avoid unnecessary doubling of code.
+  (`#69 <https://github.com/zopefoundation/Products.ZCatalog/issues/69>`_)
+
 
 4.4 (2019-03-08)
 ----------------
