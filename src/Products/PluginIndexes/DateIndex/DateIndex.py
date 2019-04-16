@@ -22,12 +22,10 @@ from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from DateTime.DateTime import DateTime
 from OFS.PropertyManager import PropertyManager
-from ZODB.POSException import ConflictError
 from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateIndex
 from Products.PluginIndexes.unindex import UnIndex
-from Products.PluginIndexes.util import safe_callable
 
 LOG = getLogger('DateIndex')
 _marker = []
@@ -112,51 +110,6 @@ class DateIndex(UnIndex, PropertyManager):
         else:
             self._increment_counter()
 
-    def index_object(self, documentId, obj, threshold=None):
-        """index an object, normalizing the indexed value to an integer
-
-           o Normalized value has granularity of one minute.
-
-           o Objects which have 'None' as indexed value are *omitted*,
-             by design.
-        """
-        returnStatus = 0
-
-        try:
-            date_attr = getattr(obj, self.id)
-            if safe_callable(date_attr):
-                date_attr = date_attr()
-
-            ConvertedDate = self._convert(value=date_attr, default=_marker)
-        except AttributeError:
-            ConvertedDate = _marker
-
-        oldConvertedDate = self._unindex.get(documentId, _marker)
-
-        if ConvertedDate != oldConvertedDate:
-            if oldConvertedDate is not _marker:
-                self.removeForwardIndexEntry(oldConvertedDate, documentId)
-                if ConvertedDate is _marker:
-                    try:
-                        del self._unindex[documentId]
-                    except ConflictError:
-                        raise
-                    except Exception:
-                        LOG.error('Should not happen: ConvertedDate was there,'
-                                  ' now it\'s not, for document'
-                                  ' with id %s', documentId)
-
-            if ConvertedDate is not _marker:
-                self.insertForwardIndexEntry(ConvertedDate, documentId)
-                self._unindex[documentId] = ConvertedDate
-
-            returnStatus = 1
-
-        if returnStatus > 0:
-            self._increment_counter()
-
-        return returnStatus
-
     def _convert(self, value, default=None):
         """Convert Date/Time value to our internal representation"""
         if isinstance(value, DateTime):
@@ -186,7 +139,7 @@ class DateIndex(UnIndex, PropertyManager):
 
         # flatten to precision
         if self.precision > 1:
-            t_val = t_val - (t_val % self.precision)
+            t_val = t_val - (int(t_val) % self.precision)
 
         t_val = int(t_val)
 

@@ -257,6 +257,8 @@ class UnIndex(SimpleItem):
             # "object has default comparison" and won't let it be indexed.
             return 0
 
+        datum = self._convert(datum, default=_marker)
+
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
         oldDatum = self._unindex.get(documentId, _marker)
@@ -269,8 +271,14 @@ class UnIndex(SimpleItem):
                     except ConflictError:
                         raise
                     except Exception:
-                        LOG.error('Should not happen: oldDatum was there, '
-                                  'now its not, for document: %s', documentId)
+                        LOG.error('%(context)s: oldDatum was there, '
+                                  'now it\'s not for documentId %(doc_id)s '
+                                  'from index %(index)r.  This '
+                                  'should not happen.', dict(
+                                      context=self.__class__.__name__,
+                                      doc_id=documentId,
+                                      index=self.id),
+                                  exc_info=sys.exc_info())
 
             if datum is not _marker:
                 self.insertForwardIndexEntry(datum, documentId)
@@ -325,8 +333,13 @@ class UnIndex(SimpleItem):
         except ConflictError:
             raise
         except Exception:
-            LOG.debug('Attempt to unindex nonexistent document'
-                      ' with id %s', documentId, exc_info=True)
+            LOG.debug('%(context)s: attempt to unindex nonexistent '
+                      'documentId %(doc_id)s from index %(index)r. This '
+                      'should not happen.', dict(
+                          context=self.__class__.__name__,
+                          doc_id=documentId,
+                          index=self.id),
+                      exc_info=True)
 
     def _apply_not(self, not_parm, resultset=None):
         index = self._index
