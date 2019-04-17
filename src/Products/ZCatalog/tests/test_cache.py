@@ -56,13 +56,13 @@ class Dummy(object):
         return (self.num, self.num + 1)
 
     def getPhysicalPath(self):
-        return '/%s' % self.num
+        return '/{0}'.format(self.num)
 
     def start(self):
-        return '2013-07-%.2d' % (self.num + 1)
+        return '2013-07-{0:0=2d}'.format(self.num + 1)
 
     def end(self):
-        return '2013-07-%.2d' % (self.num + 2)
+        return '2013-07-{0:0=2d}'.format(self.num + 1)
 
 
 class TestCatalogQueryKey(unittest.TestCase):
@@ -79,13 +79,13 @@ class TestCatalogQueryKey(unittest.TestCase):
 
     def test_get_id(self):
         cache_key = self._makeOne()
-        self.assertEquals(cache_key.get_id(),
-                          ('', 'NonPersistentCatalog'))
+        self.assertEqual(cache_key.get_id(),
+                         ('', 'NonPersistentCatalog'))
 
     def test_get_id_persistent(self):
         zcat = ZCatalog('catalog')
         cache_key = self._makeOne(zcat._catalog)
-        self.assertEquals(cache_key.get_id(), ('catalog', ))
+        self.assertEqual(cache_key.get_id(), ('catalog', ))
 
 
 class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
@@ -134,7 +134,7 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         transaction.get().commit()
 
         stats = cache.getStatistics()
-        
+
         hits = stats[0]['hits']
         misses = stats[0]['misses']
 
@@ -143,7 +143,7 @@ class TestCatalogQueryCaching(cleanup.CleanUp, unittest.TestCase):
         transaction.get().commit()
 
         stats = cache.getStatistics()
-        
+
         # check if chache hits
         self.assertEqual(stats[0]['hits'], hits + 2)
         self.assertEqual(stats[0]['misses'], misses)
