@@ -26,6 +26,10 @@ Bug fixes
   many indexed objects
   (`#39 <https://github.com/zopefoundation/Products.ZCatalog/issues/39>`_)
 
+- Make sure ``PathIndex._index_object`` removes old index entries
+  when path of object changes
+  (`#61 <https://github.com/zopefoundation/Products.ZCatalog/issues/61>`_)
+
 
 4.4 (2019-03-08)
 ----------------

@@ -123,8 +123,10 @@ class PathIndex(Persistent, SimpleItem):
         if old_value == path:
             return 0
 
-        if old_value is None:
-            self._length.change(1)
+        if old_value:
+            self.unindex_object(docid)
+
+        self._length.change(1)
 
         for i in range(len(comps)):
             self.insertEntry(comps[i], docid, i)
