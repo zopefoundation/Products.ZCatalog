@@ -12,6 +12,7 @@
 ##############################################################################
 
 import unittest
+from zope.testing import cleanup
 
 from AccessControl.SecurityManagement import setSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
@@ -98,7 +99,7 @@ class PickySecurityManager:
         raise Unauthorized(name)
 
 
-class ZCatalogBase(object):
+class ZCatalogBase(cleanup.CleanUp):
 
     def _makeOne(self):
         from Products.ZCatalog.ZCatalog import ZCatalog
@@ -109,6 +110,7 @@ class ZCatalogBase(object):
         return FieldIndex(name)
 
     def setUp(self):
+        cleanup.CleanUp.setUp(self)
         self._catalog = self._makeOne()
 
     def tearDown(self):

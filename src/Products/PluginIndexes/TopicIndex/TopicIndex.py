@@ -18,6 +18,7 @@ from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import union
 from BTrees.OOBTree import OOBTree
+from BTrees.Length import Length
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implementer
@@ -25,6 +26,7 @@ from zope.interface import implementer
 from Products.PluginIndexes.interfaces import (
     IQueryIndex,
     ITopicIndex,
+    IIndexCounter,
 )
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
 from Products.ZCatalog.query import IndexQuery
@@ -33,7 +35,7 @@ _marker = []
 LOG = getLogger('Zope.TopicIndex')
 
 
-@implementer(ITopicIndex, IQueryIndex)
+@implementer(ITopicIndex, IQueryIndex, IIndexCounter)
 class TopicIndex(Persistent, SimpleItem):
     """A TopicIndex maintains a set of FilteredSet objects.
 
@@ -44,6 +46,7 @@ class TopicIndex(Persistent, SimpleItem):
     meta_type = 'TopicIndex'
     zmi_icon = 'fas fa-info-circle'
     query_options = ('query', 'operator')
+    _counter = None
 
     manage_options = (
         {'label': 'FilteredSets', 'action': 'manage_main'},
@@ -52,6 +55,7 @@ class TopicIndex(Persistent, SimpleItem):
     def __init__(self, id, caller=None):
         self.id = id
         self.filteredSets = OOBTree()
+        self._counter = Length()
         self.operators = ('or', 'and')
         self.defaultOperator = 'or'
 
@@ -61,22 +65,45 @@ class TopicIndex(Persistent, SimpleItem):
     def clear(self):
         for fs in self.filteredSets.values():
             fs.clear()
+        self._increment_counter()
 
     def index_object(self, docid, obj, threshold=100):
         """ hook for (Z)Catalog """
+        res = 0
         for fid, filteredSet in self.filteredSets.items():
-            filteredSet.index_object(docid, obj)
-        return 1
+            res += filteredSet.index_object(docid, obj)
+
+        if res > 0:
+            self._increment_counter()
+            return 1
+
+        return 0
 
     def unindex_object(self, docid):
         """ hook for (Z)Catalog """
+        res = 0
         for fs in self.filteredSets.values():
             try:
                 fs.unindex_object(docid)
+                res += 1
             except KeyError:
                 LOG.debug('Attempt to unindex document'
                           ' with id %s failed', docid)
-        return 1
+
+        if res > 0:
+            self._increment_counter()
+            return 1
+
+        return 0
+
+    def _increment_counter(self):
+        if self._counter is None:
+            self._counter = Length()
+        self._counter.change(1)
+
+    def getCounter(self):
+        """Return a counter which is increased on index changes"""
+        return self._counter is not None and self._counter() or 0
 
     def numObjects(self):
         """Return the number of indexed objects."""

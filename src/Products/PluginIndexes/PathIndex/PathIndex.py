@@ -31,6 +31,7 @@ from Products.PluginIndexes.interfaces import (
     IQueryIndex,
     ISortIndex,
     IUniqueValueIndex,
+    IIndexCounter,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -38,7 +39,8 @@ from Products.ZCatalog.query import IndexQuery
 LOG = getLogger('Zope.PathIndex')
 
 
-@implementer(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
+@implementer(IPathIndex, IQueryIndex, IUniqueValueIndex,
+             ISortIndex, IIndexCounter)
 class PathIndex(Persistent, SimpleItem):
 
     """Index for paths returned by getPhysicalPath.
@@ -61,6 +63,7 @@ class PathIndex(Persistent, SimpleItem):
     operators = ('or', 'and')
     useOperator = 'or'
     query_options = ('query', 'level', 'operator')
+    _counter = None
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
@@ -129,6 +132,7 @@ class PathIndex(Persistent, SimpleItem):
         for i in range(len(comps)):
             self.insertEntry(comps[i], docid, i)
         self._unindex[docid] = path
+        self._increment_counter()
         return 1
 
     def unindex_object(self, docid):
@@ -156,6 +160,7 @@ class PathIndex(Persistent, SimpleItem):
                           'with id %s failed', docid)
 
         self._length.change(-1)
+        self._increment_counter()
         del self._unindex[docid]
 
     def _apply_index(self, request):
@@ -188,6 +193,15 @@ class PathIndex(Persistent, SimpleItem):
             return res
         return IISet()
 
+    def _increment_counter(self):
+        if self._counter is None:
+            self._counter = Length()
+        self._counter.change(1)
+
+    def getCounter(self):
+        """Return a counter which is increased on index changes"""
+        return self._counter is not None and self._counter() or 0
+
     def numObjects(self):
         """ See IPluggableIndex.
         """
@@ -205,6 +219,10 @@ class PathIndex(Persistent, SimpleItem):
         self._index = OOBTree()
         self._unindex = IOBTree()
         self._length = Length(0)
+        if self._counter is None:
+            self._counter = Length(0)
+        else:
+            self._increment_counter()
 
     # IUniqueValueIndex implementation
 

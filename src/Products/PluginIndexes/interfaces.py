@@ -283,3 +283,10 @@ class ITransposeQuery(Interface):
 
     def getIndexNames():
         """ returns index names that are optimized by index """
+
+
+class IIndexCounter(Interface):
+    """ Invalidation helper API for pluggable indexes"""
+
+    def getCounter():
+        """Return a counter which is increased on index changes"""

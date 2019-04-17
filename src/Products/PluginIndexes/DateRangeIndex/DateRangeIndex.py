@@ -250,6 +250,7 @@ class DateRangeIndex(UnIndex):
         # unique index identifier
         iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
                                     self.id, self.getCounter())
+
         # record identifier
         if resultset is None:
             rid = '_{0}'.format(tid)

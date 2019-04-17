@@ -38,6 +38,7 @@ from Products.PluginIndexes.interfaces import (
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain, NoBrainer
 from Products.ZCatalog.plan import CatalogPlan
+from Products.ZCatalog.cache import cache
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.query import IndexQuery
 
@@ -594,6 +595,28 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         return rs
 
+    @cache
+    def _apply_query_plan(self, cr, query):
+
+        plan = cr.plan()
+        if not plan:
+            plan = self._sorted_search_indexes(query)
+
+        rs = None  # result set
+        for index_id in plan:
+            # The actual core loop over all indices.
+            if index_id not in self.indexes:
+                # We can have bogus keys or the plan can contain
+                # index names that have been removed in the
+                # meantime.
+                continue
+
+            rs = self._search_index(cr, index_id, query, rs)
+            if not rs:
+                break
+
+        return rs
+
     def search(self, query,
                sort_index=None, reverse=False, limit=None, merge=True):
         """Iterate through the indexes, applying the query to each one. If
@@ -619,21 +642,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         cr = self.getCatalogPlan(query)
         cr.start()
 
-        plan = cr.plan()
-        if not plan:
-            plan = self._sorted_search_indexes(query)
-
-        rs = None  # result set
-        for index_id in plan:
-            # The actual core loop over all indices.
-            if index_id not in self.indexes:
-                # We can have bogus keys or the plan can contain index names
-                # that have been removed in the meantime.
-                continue
-
-            rs = self._search_index(cr, index_id, query, rs)
-            if not rs:
-                break
+        rs = self._apply_query_plan(cr, query)
 
         if not rs:
             # None of the indexes found anything to do with the query.

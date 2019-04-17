@@ -41,10 +41,7 @@ class FilteredSetBase(Persistent):
         raise RuntimeError('index_object not defined')
 
     def unindex_object(self, documentId):
-        try:
-            self.ids.remove(documentId)
-        except KeyError:
-            pass
+        self.ids.remove(documentId)
 
     def getId(self):
         return self.id
@@ -78,12 +75,15 @@ class PythonFilteredSet(FilteredSetBase):
     meta_type = 'PythonFilteredSet'
 
     def index_object(self, documentId, o):
+        res = 0
         try:
             if RestrictionCapableEval(self.expr).eval({'o': o}):
                 self.ids.insert(documentId)
+                res = 1
             else:
                 try:
                     self.ids.remove(documentId)
+                    res = 1
                 except KeyError:
                     pass
         except ConflictError:
@@ -91,6 +91,7 @@ class PythonFilteredSet(FilteredSetBase):
         except Exception:
             LOG.warn('eval() failed Object: %s, expr: %s',
                      o.getId(), self.expr, exc_info=sys.exc_info())
+        return res
 
 
 def factory(f_id, f_type, expr):
