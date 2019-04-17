@@ -238,6 +238,31 @@ class BooleanIndex(UnIndex):
         items.append((not bool(indexed), false))
         return items
 
+    def uniqueValues(self, name=None, withLengths=0):
+        """returns the unique values for name
+
+        if withLengths is true, returns a sequence of
+        tuples of (value, length)
+        """
+        if name is None:
+            name = self.id
+        elif name != self.id:
+            return
+
+        indexed = bool(self._index_value)
+        unique_values = (indexed, not indexed)
+        if not withLengths:
+            for key in unique_values:
+                yield key
+        else:
+            for key in unique_values:
+                ilen = len(self._index)
+                if key is indexed:
+                    yield (key, ilen)
+                else:
+                    ulen = len(self._unindex)
+                    yield (key, ulen - ilen)
+
 
 manage_addBooleanIndexForm = DTMLFile('dtml/addBooleanIndex', globals())
 

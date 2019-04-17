@@ -25,6 +25,7 @@ from Acquisition import aq_parent
 from zope.dottedname.resolve import resolve
 
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
+from Products.PluginIndexes.interfaces import IDateRangeIndex
 
 
 MAX_DISTINCT_VALUES = 10
@@ -191,34 +192,33 @@ class CatalogPlan(object):
         # in the report key. The number of unique values for the index needs to
         # be lower than the MAX_DISTINCT_VALUES watermark.
 
-        # TODO: Ideally who would only consider those indexes with a small
+        # Ideally who would only consider those indexes with a small
         # number of unique values, where the number of items for each value
         # differs a lot. If the number of items per value is similar, the
-        # duration of a query is likely similar as well.
+        # duration of a query is likely similar as well. However, calculating
+        # all the value indexes with the number of items per value is
+        # quite slow. Therefore, we do not make this distinction.
         value_indexes = PriorityMap.get_entry(self.cid, VALUE_INDEX_KEY)
         if isinstance(value_indexes, (frozenset, set)):
-            # Calculating all the value indexes is quite slow, so we do this
-            # once for the first query. Since this is an optimization only,
-            # slightly outdated results based on index changes in the running
-            # process can be ignored.
+            # Since this is an optimization only, slightly outdated results
+            # based on index changes in the running process can be ignored.
             return value_indexes
 
         value_indexes = set()
         for name, index in indexes.items():
             if IUniqueValueIndex.providedBy(index):
-                values = index.uniqueValues()
-                i = 0
-                for value in values:
-                    # the total number of unique values might be large and
-                    # expensive to load, so we only check if we can get
-                    # more than MAX_DISTINCT_VALUES
-                    if i >= MAX_DISTINCT_VALUES:
-                        break
-                    i += 1
-                if i > 0 and i < MAX_DISTINCT_VALUES:
-                    # Only consider indexes which actually return a number
-                    # greater than zero
-                    value_indexes.add(name)
+
+                # DateRangeIndex is unsuitable for this purpose
+                if IDateRangeIndex.providedBy(index):
+                    continue
+
+                # the size of an UniqueValueIndex is typically equal to the
+                # number of unique values
+                isize = index.indexSize()
+                if isize >= MAX_DISTINCT_VALUES:
+                    continue
+
+                value_indexes.add(name)
 
         value_indexes = frozenset(value_indexes)
         PriorityMap.set_entry(self.cid, VALUE_INDEX_KEY, value_indexes)
