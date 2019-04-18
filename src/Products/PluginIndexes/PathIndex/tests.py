@@ -367,6 +367,21 @@ class PathIndexTests(unittest.TestCase):
         lst = list(res[0].keys())
         self.assertEqual(lst, [2, 3, 4])
 
+    def test__apply_index_when_path_changes(self):
+        index = self._makeOne()
+        doc = Dummy('/aa')
+        index.index_object(0, doc)
+        res = index._apply_index(dict(path='aa'))
+        self.assertEqual(list(res[0].keys()), [0])
+
+        doc.path = '/bb'
+        index.index_object(0, doc)
+        res = index._apply_index(dict(path='bb'))
+        self.assertEqual(list(res[0].keys()), [0])
+
+        res = index._apply_index(dict(path='aa'))
+        self.assertEqual(list(res[0].keys()), [])
+
     def test_numObjects_empty(self):
         index = self._makeOne()
         self.assertEqual(index.numObjects(), 0)
