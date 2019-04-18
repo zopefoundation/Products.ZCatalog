@@ -43,6 +43,8 @@ class TopicIndex(Persistent, SimpleItem):
 
     meta_type = 'TopicIndex'
     zmi_icon = 'fas fa-info-circle'
+    operators = ('or', 'and')
+    useOperator = 'or'
     query_options = ('query', 'operator')
 
     manage_options = (
@@ -52,8 +54,6 @@ class TopicIndex(Persistent, SimpleItem):
     def __init__(self, id, caller=None):
         self.id = id
         self.filteredSets = OOBTree()
-        self.operators = ('or', 'and')
-        self.defaultOperator = 'or'
 
     def getId(self):
         return self.id
@@ -92,7 +92,8 @@ class TopicIndex(Persistent, SimpleItem):
             return f.getIds()
 
     def _apply_index(self, request):
-        record = IndexQuery(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options,
+                            self.operators, self.useOperator)
         if record.keys is None:
             return None
         return (self.query_index(record), (self.id, ))
@@ -101,7 +102,7 @@ class TopicIndex(Persistent, SimpleItem):
         """Hook for (Z)Catalog
         'record' --  mapping type (usually {"topic": "..." }
         """
-        operator = record.get('operator', self.defaultOperator).lower()
+        operator = record.operator
         if operator == 'or':
             set_func = union
         else:

@@ -30,6 +30,9 @@ Bug fixes
   when path of object changes
   (`#61 <https://github.com/zopefoundation/Products.ZCatalog/issues/61>`_)
 
+- Consequent use of ``QueryIndex`` capabilities 
+ (`#65 <https://github.com/zopefoundation/Products.ZCatalog/issues/65>`_)
+
 
 4.4 (2019-03-08)
 ----------------
