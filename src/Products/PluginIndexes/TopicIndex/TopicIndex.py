@@ -84,7 +84,7 @@ class TopicIndex(Persistent, SimpleItem):
 
     def indexSize(self):
         """Return the size of the index in terms of distinct values."""
-        return 'n/a'
+        return len(self.filteredSets)
 
     def search(self, filter_id):
         f = self.filteredSets.get(filter_id, None)
