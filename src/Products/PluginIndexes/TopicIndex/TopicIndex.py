@@ -83,7 +83,7 @@ class TopicIndex(Persistent, SimpleItem):
         """Return the number of indexed objects."""
         setlist = []
         for fs in self.filteredSets.values():
-            setlist.append(fs.ids)
+            setlist.append(fs.getIds())
         return len(multiunion(setlist))
 
     def indexSize(self):
@@ -129,7 +129,18 @@ class TopicIndex(Persistent, SimpleItem):
         """ Takes a document ID and returns all the information we have
             on that specific object.
         """
-        return self.filteredSets.keys()
+        res = []
+        for fs in self.filteredSets.values():
+            ids = fs.getIds()
+            if docid in ids:
+                res.append(fs.getId())
+
+        if res:
+            return res
+        elif default is not _marker:
+            return default
+
+        return None
 
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.

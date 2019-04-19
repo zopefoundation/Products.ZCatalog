@@ -98,3 +98,9 @@ class TestTopicIndex(TestBase):
 
     def testIndexSize(self):
         self.assertEqual(self.TI.indexSize(), 2)
+
+    def testGetEntryForObject(self):
+        self.assertEqual(self.TI.getEntryForObject(0), None)
+        self.assertEqual(self.TI.getEntryForObject(0, 'foo'), 'foo')
+        self.assertEqual(self.TI.getEntryForObject(1), ['doc1'])
+        self.assertEqual(self.TI.getEntryForObject(3), ['doc2'])
