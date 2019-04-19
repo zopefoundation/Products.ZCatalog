@@ -104,3 +104,8 @@ class TestTopicIndex(TestBase):
         self.assertEqual(self.TI.getEntryForObject(0, 'foo'), 'foo')
         self.assertEqual(self.TI.getEntryForObject(1), ['doc1'])
         self.assertEqual(self.TI.getEntryForObject(3), ['doc2'])
+
+    def testUniqueValues(self):
+        self.assertEqual(list(self.TI.uniqueValues()), ['doc1', 'doc2'])
+        self.assertEqual(list(self.TI.uniqueValues(withLength=1)),
+                         [('doc1', 2), ('doc2', 2)])

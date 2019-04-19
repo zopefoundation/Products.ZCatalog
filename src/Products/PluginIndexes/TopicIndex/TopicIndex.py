@@ -122,8 +122,23 @@ class TopicIndex(Persistent, SimpleItem):
         return IITreeSet()
 
     def uniqueValues(self, name=None, withLength=0):
-        """ needed to be consistent with the interface """
-        return self.filteredSets.keys()
+        """Return an iterable/sequence of unique values for name.
+
+        If 'withLengths' is true, returns a iterable/sequence of tuples of
+        (value, length).
+        """
+
+        if name is None:
+            name = self.id
+        elif name != self.id:
+            return
+
+        if not withLength:
+            for key in self.filteredSets.keys():
+                yield key
+        else:
+            for key, value in self.filteredSets.items():
+                yield (key, len(value.getIds()))
 
     def getEntryForObject(self, docid, default=_marker):
         """ Takes a document ID and returns all the information we have
