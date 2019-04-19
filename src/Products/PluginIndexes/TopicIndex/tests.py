@@ -92,3 +92,9 @@ class TestTopicIndex(TestBase):
         self.TI.index_object(1, Obj('1', 'doc2'))
         self._searchOr('doc1', [2])
         self._searchOr('doc2', [1, 3, 4])
+
+    def testNumObjects(self):
+        self.assertEqual(self.TI.numObjects(), 4)
+
+    def testIndexSize(self):
+        self.assertEqual(self.TI.indexSize(), 2)
