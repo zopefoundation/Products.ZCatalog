@@ -17,6 +17,7 @@ from App.special_dtml import DTMLFile
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import union
+from BTrees.IIBTree import multiunion
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
@@ -80,7 +81,10 @@ class TopicIndex(Persistent, SimpleItem):
 
     def numObjects(self):
         """Return the number of indexed objects."""
-        return 'n/a'
+        setlist = []
+        for fs in self.filteredSets.values():
+            setlist.append(fs.ids)
+        return len(multiunion(setlist))
 
     def indexSize(self):
         """Return the size of the index in terms of distinct values."""
