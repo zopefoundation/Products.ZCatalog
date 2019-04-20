@@ -69,10 +69,12 @@ class TestTopicIndex(TestBase):
     def test_interfaces(self):
         from Products.PluginIndexes.interfaces import ITopicIndex
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IUniqueValueIndex
         from zope.interface.verify import verifyClass
 
         verifyClass(ITopicIndex, TopicIndex)
         verifyClass(IPluggableIndex, TopicIndex)
+        verifyClass(IUniqueValueIndex, TopicIndex)
 
     def testOr(self):
         self._searchOr('doc1', [1, 2])
@@ -109,3 +111,7 @@ class TestTopicIndex(TestBase):
         self.assertEqual(list(self.TI.uniqueValues()), ['doc1', 'doc2'])
         self.assertEqual(list(self.TI.uniqueValues(withLength=1)),
                          [('doc1', 2), ('doc2', 2)])
+
+    def testHasUniqueValuesFor(self):
+        self.assertFalse(self.TI.hasUniqueValuesFor('miss'))
+        self.assertTrue(self.TI.hasUniqueValuesFor('topic'))

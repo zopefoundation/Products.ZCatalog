@@ -26,6 +26,7 @@ from zope.interface import implementer
 from Products.PluginIndexes.interfaces import (
     IQueryIndex,
     ITopicIndex,
+    IUniqueValueIndex,
 )
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
 from Products.ZCatalog.query import IndexQuery
@@ -34,7 +35,7 @@ _marker = []
 LOG = getLogger('Zope.TopicIndex')
 
 
-@implementer(ITopicIndex, IQueryIndex)
+@implementer(ITopicIndex, IQueryIndex, IUniqueValueIndex)
 class TopicIndex(Persistent, SimpleItem):
     """A TopicIndex maintains a set of FilteredSet objects.
 
@@ -120,6 +121,12 @@ class TopicIndex(Persistent, SimpleItem):
         if res:
             return res
         return IITreeSet()
+
+    def hasUniqueValuesFor(self, name):
+        """has unique values for column name"""
+        if name == self.id:
+            return 1
+        return 0
 
     def uniqueValues(self, name=None, withLength=0):
         """Return an iterable/sequence of unique values for name.
