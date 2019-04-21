@@ -147,7 +147,7 @@ class TopicIndex(Persistent, SimpleItem):
             for key, value in self.filteredSets.items():
                 yield (key, len(value.getIds()))
 
-    def getEntryForObject(self, docid, default=_marker):
+    def getEntryForObject(self, docid, default=None):
         """ Takes a document ID and returns all the information we have
             on that specific object.
         """
@@ -157,12 +157,7 @@ class TopicIndex(Persistent, SimpleItem):
             if docid in ids:
                 res.append(fs.getId())
 
-        if res:
-            return res
-        elif default is not _marker:
-            return default
-
-        return None
+        return res or default
 
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.
