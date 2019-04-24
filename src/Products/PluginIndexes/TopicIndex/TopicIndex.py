@@ -17,6 +17,7 @@ from App.special_dtml import DTMLFile
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import union
+from BTrees.IIBTree import multiunion
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
@@ -25,6 +26,7 @@ from zope.interface import implementer
 from Products.PluginIndexes.interfaces import (
     IQueryIndex,
     ITopicIndex,
+    IUniqueValueIndex,
 )
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
 from Products.ZCatalog.query import IndexQuery
@@ -33,7 +35,7 @@ _marker = []
 LOG = getLogger('Zope.TopicIndex')
 
 
-@implementer(ITopicIndex, IQueryIndex)
+@implementer(ITopicIndex, IQueryIndex, IUniqueValueIndex)
 class TopicIndex(Persistent, SimpleItem):
     """A TopicIndex maintains a set of FilteredSet objects.
 
@@ -43,6 +45,8 @@ class TopicIndex(Persistent, SimpleItem):
 
     meta_type = 'TopicIndex'
     zmi_icon = 'fas fa-info-circle'
+    operators = ('or', 'and')
+    useOperator = 'or'
     query_options = ('query', 'operator')
 
     manage_options = (
@@ -52,8 +56,6 @@ class TopicIndex(Persistent, SimpleItem):
     def __init__(self, id, caller=None):
         self.id = id
         self.filteredSets = OOBTree()
-        self.operators = ('or', 'and')
-        self.defaultOperator = 'or'
 
     def getId(self):
         return self.id
@@ -80,11 +82,14 @@ class TopicIndex(Persistent, SimpleItem):
 
     def numObjects(self):
         """Return the number of indexed objects."""
-        return 'n/a'
+        setlist = []
+        for fs in self.filteredSets.values():
+            setlist.append(fs.getIds())
+        return len(multiunion(setlist))
 
     def indexSize(self):
         """Return the size of the index in terms of distinct values."""
-        return 'n/a'
+        return len(self.filteredSets)
 
     def search(self, filter_id):
         f = self.filteredSets.get(filter_id, None)
@@ -92,7 +97,8 @@ class TopicIndex(Persistent, SimpleItem):
             return f.getIds()
 
     def _apply_index(self, request):
-        record = IndexQuery(request, self.id, self.query_options)
+        record = IndexQuery(request, self.id, self.query_options,
+                            self.operators, self.useOperator)
         if record.keys is None:
             return None
         return (self.query_index(record), (self.id, ))
@@ -101,7 +107,7 @@ class TopicIndex(Persistent, SimpleItem):
         """Hook for (Z)Catalog
         'record' --  mapping type (usually {"topic": "..." }
         """
-        operator = record.get('operator', self.defaultOperator).lower()
+        operator = record.operator
         if operator == 'or':
             set_func = union
         else:
@@ -116,15 +122,42 @@ class TopicIndex(Persistent, SimpleItem):
             return res
         return IITreeSet()
 
-    def uniqueValues(self, name=None, withLength=0):
-        """ needed to be consistent with the interface """
-        return self.filteredSets.keys()
+    def hasUniqueValuesFor(self, name):
+        """has unique values for column name"""
+        if name == self.id:
+            return 1
+        return 0
 
-    def getEntryForObject(self, docid, default=_marker):
+    def uniqueValues(self, name=None, withLength=0):
+        """Return an iterable/sequence of unique values for name.
+
+        If 'withLengths' is true, returns a iterable/sequence of tuples of
+        (value, length).
+        """
+
+        if name is None:
+            name = self.id
+        elif name != self.id:
+            return
+
+        if not withLength:
+            for key in self.filteredSets.keys():
+                yield key
+        else:
+            for key, value in self.filteredSets.items():
+                yield (key, len(value.getIds()))
+
+    def getEntryForObject(self, docid, default=None):
         """ Takes a document ID and returns all the information we have
             on that specific object.
         """
-        return self.filteredSets.keys()
+        res = []
+        for fs in self.filteredSets.values():
+            ids = fs.getIds()
+            if docid in ids:
+                res.append(fs.getId())
+
+        return res or default
 
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.

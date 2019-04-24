@@ -38,7 +38,7 @@ class FilteredSetBase(Persistent):
         self.ids = IITreeSet()
 
     def index_object(self, documentId, obj):
-        raise RuntimeError('index_object not defined')
+        raise NotImplementedError('index_object not defined')
 
     def unindex_object(self, documentId):
         try:
