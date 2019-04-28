@@ -70,8 +70,9 @@ class TestKeywordIndex(unittest.TestCase):
                         (4, Dummy(['a', 'b', 'c', 'd'])),
                         (5, Dummy(['a', 'b', 'c', 'e'])),
                         (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
-                        (7, Dummy([None])),
-                        (8, Dummy(['0'])),
+                        (7, Dummy(['0'])),
+                        (8, Dummy([])),
+                        (9, Dummy(None)),
                         ]
         self._noop_req = {'bar': 123}
         self._all_req = {'foo': ['a']}
@@ -100,12 +101,15 @@ class TestKeywordIndex(unittest.TestCase):
             result, used = self._index._apply_index(req)
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (list(result),
-                             list(map(lambda x: x[0], expectedValues)))
+                '%s | %s | %s' % (list(result),
+                                  list(map(lambda x: x[0], expectedValues)),
+                                  req)
 
             if hasattr(result, 'keys'):
                 result = result.keys()
             for k, v in expectedValues:
+                if k not in result:
+                    import pdb; pdb.set_trace()
                 assert k in result
 
         index = self._index
@@ -167,34 +171,37 @@ class TestKeywordIndex(unittest.TestCase):
         self._populateIndex()
         values = self._values
 
-        assert len(self._index.referencedObjects()) == len(values)
+        self.assertEqual(len(self._index.referencedObjects()), len(values) - 1)
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
                 is self._marker)
         self._index.unindex_object(1234)  # nothrow
-        self.assertEqual(self._index.indexSize(), len(values) - 1)
+        self.assertEqual(self._index.indexSize(), len(values) - 3)
 
         for k, v in values:
-            entry = self._index.getEntryForObject(k)
+            entry = self._index.getEntryForObject(k, None)
+            if entry is None:
+                self.assertEqual(entry, v.foo())
+                continue
             entry.sort()
             kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
 
-        assert len(list(self._index.uniqueValues('foo'))) == len(values) - 1
+        assert len(list(self._index.uniqueValues('foo'))) == len(values) - 3
         assert self._index._apply_index(self._noop_req) is None
 
-        self._checkApply(self._all_req, values[:-2])
+        self._checkApply(self._all_req, values[:-3])
         self._checkApply(self._some_req, values[5:7])
         self._checkApply(self._overlap_req, values[2:7])
-        self._checkApply(self._string_req, values[:-2])
-        self._checkApply(self._miss_req_1, values[7])
-        self._checkApply(self._miss_req_2, values[:8])
+        self._checkApply(self._string_req, values[:-3])
+        self._checkApply(self._miss_req_1, values[9:10])
+        self._checkApply(self._miss_req_2, values[:7] + values[9:10])
 
         self._checkApply(self._not_1, [])
         self._checkApply(self._not_2, values[5:6])
-        self._checkApply(self._not_3, values[:8])
-        self._checkApply(self._not_4, values[:5])
-        self._checkApply(self._not_5, values[:8])
+        self._checkApply(self._not_3, values[:7] + values[9:10])
+        self._checkApply(self._not_4, values[:5] + values[9:10])
+        self._checkApply(self._not_5, values[:7] + values[9:10])
         self._checkApply(self._not_6, values[2:7])
         self._checkApply(self._not_7, values[:8])
 

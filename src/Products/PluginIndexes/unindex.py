@@ -25,6 +25,7 @@ from BTrees.IIBTree import (
     IITreeSet,
     IISet,
     multiunion,
+    union,
 )
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
@@ -132,6 +133,7 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+        self._not_indexed = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
@@ -258,12 +260,14 @@ class UnIndex(SimpleItem):
                 # BTrees 4.0+ will throw a TypeError
                 # "object has default comparison" and won't let it be indexed.
                 return 0
+        else:
+            datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
         oldDatum = self._unindex.get(documentId, _marker)
         if datum != oldDatum:
-            if oldDatum is not _marker:
+            if oldDatum not in [_marker, MissingValue]:
                 self.removeForwardIndexEntry(oldDatum, documentId)
                 if datum is _marker:
                     try:
@@ -275,8 +279,11 @@ class UnIndex(SimpleItem):
                                   'now its not, for document: %s' % documentId)
 
             if datum is not _marker:
-                self.insertForwardIndexEntry(datum, documentId)
-                self._unindex[documentId] = datum
+                if datum is MissingValue:
+                    self._not_indexed.insert(documentId)
+                else:
+                    self.insertForwardIndexEntry(datum, documentId)
+                    self._unindex[documentId] = datum
 
             returnStatus = 1
 
@@ -316,12 +323,24 @@ class UnIndex(SimpleItem):
         raise an exception if we fail
         """
         unindexRecord = self._unindex.get(documentId, _marker)
-        self._increment_counter()
 
         if unindexRecord is _marker:
+            if IIndexingMissingValue.providedBy(self):
+                try:
+                    self._not_indexed.remove(documentId)
+                    self._increment_counter()
+                except ConflictError:
+                    raise
+                except Exception:
+                    LOG.debug('Attempt to unindex nonexistent document'
+                              ' with id %s' % documentId, exc_info=True)
+
             return None
 
+        self._increment_counter()
+
         self.removeForwardIndexEntry(unindexRecord, documentId)
+
         try:
             del self._unindex[documentId]
         except ConflictError:
@@ -461,14 +480,23 @@ class UnIndex(SimpleItem):
                         not_parm = list(map(self._convert, not_parm))
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
-
+                        # pure not
+                        if not record.keys \
+                           and IIndexingMissingValue.providedBy(self) \
+                           and MissingValue not in not_parm:
+                            cached = union(cached, self._not_indexed)
                     return cached
 
+        with_miss = False
+        # pure not
         if not record.keys and not_parm:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
             # we have only a 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
+            if IIndexingMissingValue.providedBy(self) \
+               and MissingValue not in not_parm:
+                with_miss = True
         else:
             # convert query arguments into indexed format
             record.keys = list(map(self._convert, record.keys))
@@ -517,6 +545,8 @@ class UnIndex(SimpleItem):
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+                    if with_miss:
+                        result = union(result, self._not_indexed)
                 return result
 
             if operator == 'or':
@@ -564,6 +594,10 @@ class UnIndex(SimpleItem):
                     # other object. BTrees 4.0+ will throw a TypeError
                     # "object has default comparison".
                     continue
+                if k is MissingValue:
+                    setlist.append(self._not_indexed)
+                    continue
+
                 s = index.get(k, None)
                 # If None, try to bail early
                 if s is None:
@@ -595,6 +629,8 @@ class UnIndex(SimpleItem):
                 if not_parm:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+                    if with_miss:
+                        result = union(result, self._not_indexed)
                 return result
 
             if operator == 'or':
@@ -642,6 +678,8 @@ class UnIndex(SimpleItem):
         if not_parm:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
+            if with_miss:
+                r = union(r, self._not_indexed)
         return r
 
     def hasUniqueValuesFor(self, name):

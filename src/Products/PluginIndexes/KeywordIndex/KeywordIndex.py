@@ -25,6 +25,7 @@ from Products.PluginIndexes.interfaces import (
     IIndexingMissingValue,
 )
 
+_marker = []
 LOG = getLogger('Zope.KeywordIndex')
 
 try:
@@ -64,6 +65,8 @@ class KeywordIndex(UnIndex):
         # we'll do so.
 
         newKeywords = self._get_object_keywords(obj, attr)
+        if newKeywords is None:
+            return self._not_indexed.insert(documentId)
 
         oldKeywords = self._unindex.get(documentId, None)
 
@@ -72,8 +75,7 @@ class KeywordIndex(UnIndex):
             try:
                 for kw in newKeywords:
                     self.insertForwardIndexEntry(kw, documentId)
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
+                self._unindex[documentId] = list(newKeywords)
             except TypeError:
                 return 0
         else:
@@ -86,10 +88,7 @@ class KeywordIndex(UnIndex):
             rdiff = difference(newKeywords, oldKeywords)
             if fdiff or rdiff:
                 # if we've got forward or reverse changes
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
-                else:
-                    del self._unindex[documentId]
+                self._unindex[documentId] = list(newKeywords)
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
                 if rdiff:
@@ -98,12 +97,14 @@ class KeywordIndex(UnIndex):
         return 1
 
     def _get_object_keywords(self, obj, attr):
-        newKeywords = getattr(obj, attr, ())
+        newKeywords = getattr(obj, attr, None)
         if safe_callable(newKeywords):
             try:
                 newKeywords = newKeywords()
             except (AttributeError, TypeError):
-                return ()
+                return None
+        if newKeywords is None:
+            return None
         if not newKeywords:
             return ()
         elif isinstance(newKeywords, basestring):
@@ -128,15 +129,27 @@ class KeywordIndex(UnIndex):
     def unindex_object(self, documentId):
         """ carefully unindex the object with integer id 'documentId'"""
 
-        keywords = self._unindex.get(documentId, None)
+        keywords = self._unindex.get(documentId, _marker)
 
-        # Couldn't we return 'None' immediately
-        # if keywords is 'None' (or _marker)???
+        if keywords is _marker:
+            try:
+                self._not_indexed.remove(documentId)
+                self._increment_counter()
+            except KeyError:
+                LOG.debug('%s: Attempt to unindex nonexistent '
+                          'document with id %s' %
+                          (self.__class__.__name__, documentId),
+                          exc_info=True)
+            return None
 
-        if keywords is not None:
-            self._increment_counter()
+        self._increment_counter()
+
+        if keywords is None:
+            self._not_indexed.remove(documentId)
+            return
 
         self.unindex_objectKeywords(documentId, keywords)
+
         try:
             del self._unindex[documentId]
         except KeyError:
