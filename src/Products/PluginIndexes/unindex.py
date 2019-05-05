@@ -25,6 +25,7 @@ from BTrees.IIBTree import (
     IITreeSet,
     IISet,
     multiunion,
+    union,
 )
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
@@ -40,6 +41,10 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
+    MissingValue,
+    IIndexingMissingValue,
+    EmptyValue,
+    IIndexingEmptyValue,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -132,6 +137,12 @@ class UnIndex(SimpleItem):
         self._index = OOBTree()
         self._unindex = IOBTree()
 
+        if self.providesNotIndexed(MissingValue):
+            self._missingvalue_set = IITreeSet()
+
+        if self.providesNotIndexed(EmptyValue):
+            self._emptyvalue_set = IITreeSet()
+
         if self._counter is None:
             self._counter = Length()
         else:
@@ -165,6 +176,39 @@ class UnIndex(SimpleItem):
         if default is _marker:
             return self._unindex.get(documentId)
         return self._unindex.get(documentId, default)
+
+    def removeNotIndexed(self, valuetype, documentid):
+        not_indexed = self.getNotIndexed(valuetype)
+        try:
+            not_indexed.remove(documentid)
+            return 1
+        except KeyError:
+            return 0
+
+    def insertNotIndexed(self, valuetype, documentid):
+        not_indexed = self.getNotIndexed(valuetype)
+        return not_indexed.insert(documentid)
+
+    def providesNotIndexed(self, valuetype=None):
+        if valuetype is None:
+            return (IIndexingMissingValue.providedBy(self) or
+                    IIndexingEmptyValue.providedBy(self))
+
+        if valuetype is MissingValue:
+            return IIndexingMissingValue.providedBy(self)
+
+        if valuetype is EmptyValue:
+            return IIndexingEmptyValue.providedBy(self)
+
+        return False
+
+    def getNotIndexed(self, valuetype):
+        if valuetype is MissingValue:
+            return self._missingvalue_set
+        if valuetype is EmptyValue:
+            return self._emptyvalue_set
+
+        raise NotImplementedError
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId
@@ -256,8 +300,8 @@ class UnIndex(SimpleItem):
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
             return 0
-
-        datum = self._convert(datum, default=_marker)
+        elif datum is not MissingValue:
+            datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
@@ -281,8 +325,11 @@ class UnIndex(SimpleItem):
                                   exc_info=sys.exc_info())
 
             if datum is not _marker:
-                self.insertForwardIndexEntry(datum, documentId)
-                self._unindex[documentId] = datum
+                if datum in [MissingValue, EmptyValue]:
+                    self.insertNotIndexed(datum, documentId)
+                else:
+                    self.insertForwardIndexEntry(datum, documentId)
+                    self._unindex[documentId] = datum
 
             returnStatus = 1
 
@@ -292,12 +339,16 @@ class UnIndex(SimpleItem):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
+
         try:
             datum = getattr(obj, attr)
             if safe_callable(datum):
                 datum = datum()
         except (AttributeError, TypeError):
-            datum = _marker
+            if self.providesNotIndexed(MissingValue):
+                return MissingValue
+            return _marker
+
         return datum
 
     def _increment_counter(self):
@@ -323,6 +374,23 @@ class UnIndex(SimpleItem):
         """
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
+            if self.providesNotIndexed():
+                res = 0
+                if self.providesNotIndexed(MissingValue):
+                    res += self.removeNotIndexed(MissingValue, documentId)
+                if self.providesNotIndexed(EmptyValue):
+                    res += self.removeNotIndexed(EmptyValue, documentId)
+
+                if res:
+                    self._increment_counter()
+                else:
+                    LOG.debug('%(context)s: attempt to unindex nonexistent '
+                              'documentId %(doc_id)s from index %(index)r. '
+                              'This should not happen.', dict(
+                                  context=self.__class__.__name__,
+                                  doc_id=documentId,
+                                  index=self.id),
+                              exc_info=True)
             return None
 
         self._increment_counter()
@@ -437,7 +505,7 @@ class UnIndex(SimpleItem):
         opr = None
 
         # not / exclude parameter
-        not_parm = record.get('not', None)
+        not_parm = record.get('not', _marker)
 
         operator = record.operator
 
@@ -466,18 +534,29 @@ class UnIndex(SimpleItem):
                     if isinstance(cached, int):
                         cached = IISet((cached, ))
 
-                    if not_parm:
+                    if not_parm is not _marker:
                         not_parm = list(map(self._convert, not_parm))
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
+                        # pure not
+                        if not record.keys \
+                           and self.providesNotIndexed(MissingValue) \
+                           and MissingValue not in not_parm:
+                            cached = union(cached,
+                                           self.getNotIndexed(MissingValue))
+
                     return cached
 
-        if not record.keys and not_parm:
+        ret_miss_val = False
+        if not record.keys and not_parm is not _marker:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
             # we have only a 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
+            if self.providesNotIndexed(MissingValue) \
+               and MissingValue not in not_parm:
+                ret_miss_val = True
         else:
             # convert query arguments into indexed format
             record.keys = list(map(self._convert, record.keys))
@@ -523,9 +602,12 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+                    if ret_miss_val:
+                        result = union(result,
+                                       self.getNotIndexed(MissingValue))
                 return result
 
             if operator == 'or':
@@ -573,6 +655,19 @@ class UnIndex(SimpleItem):
                     # other object. BTrees 4.0+ will throw a TypeError
                     # "object has default comparison".
                     continue
+
+                # query for MissingValue
+                if k is MissingValue:
+                    s = self.getNotIndexed(MissingValue)
+                    setlist.append(s)
+                    continue
+
+                # query for EmptyValue
+                if k is EmptyValue:
+                    s = self.getNotIndexed(EmptyValue)
+                    setlist.append(s)
+                    continue
+
                 try:
                     s = index.get(k, None)
                 except TypeError:
@@ -614,9 +709,12 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+                    if ret_miss_val:
+                        result = union(result,
+                                       self.getNotIndexed(MissingValue))
                 return result
 
             if operator == 'or':
@@ -661,9 +759,11 @@ class UnIndex(SimpleItem):
             r = IISet((r, ))
         if r is None:
             return IISet()
-        if not_parm:
+        if not_parm is not _marker:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
+            if ret_miss_val:
+                r = union(r, self.getNotIndexed(MissingValue))
         return r
 
     def hasUniqueValuesFor(self, name):

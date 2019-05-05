@@ -16,10 +16,18 @@ from logging import getLogger
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from App.special_dtml import DTMLFile
+from zope.interface import implementer
 
 from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
+from Products.PluginIndexes.interfaces import (
+    IIndexingMissingValue,
+    MissingValue,
+    IIndexingEmptyValue,
+    EmptyValue,
+)
 
+_marker = []
 LOG = getLogger('Zope.KeywordIndex')
 
 try:
@@ -29,6 +37,7 @@ except NameError:
     basestring = (bytes, str)
 
 
+@implementer(IIndexingMissingValue, IIndexingEmptyValue)
 class KeywordIndex(UnIndex):
     """Like an UnIndex only it indexes sequences of items.
 
@@ -58,16 +67,17 @@ class KeywordIndex(UnIndex):
         # we'll do so.
 
         newKeywords = self._get_object_keywords(obj, attr)
-
         oldKeywords = self._unindex.get(documentId, None)
 
         if oldKeywords is None:
             # we've got a new document, let's not futz around.
+            if newKeywords in [MissingValue, EmptyValue]:
+                return self.insertNotIndexed(newKeywords, documentId)
+
             try:
                 for kw in newKeywords:
                     self.insertForwardIndexEntry(kw, documentId)
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
+                self._unindex[documentId] = list(newKeywords)
             except TypeError:
                 return 0
         else:
@@ -75,7 +85,10 @@ class KeywordIndex(UnIndex):
             # to figure out if any of the keywords have actually changed
             if type(oldKeywords) is not OOSet:
                 oldKeywords = OOSet(oldKeywords)
-            newKeywords = OOSet(newKeywords)
+            if newKeywords in [MissingValue, EmptyValue]:
+                newKeywords = OOSet()
+            else:
+                newKeywords = OOSet(newKeywords)
             fdiff = difference(oldKeywords, newKeywords)
             rdiff = difference(newKeywords, oldKeywords)
             if fdiff or rdiff:
@@ -84,6 +97,7 @@ class KeywordIndex(UnIndex):
                     self._unindex[documentId] = list(newKeywords)
                 else:
                     del self._unindex[documentId]
+
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
                 if rdiff:
@@ -92,14 +106,18 @@ class KeywordIndex(UnIndex):
         return 1
 
     def _get_object_keywords(self, obj, attr):
-        newKeywords = getattr(obj, attr, ())
+        newKeywords = getattr(obj, attr, None)
         if safe_callable(newKeywords):
             try:
                 newKeywords = newKeywords()
             except (AttributeError, TypeError):
-                return ()
+                return MissingValue
+
+        if newKeywords is None:
+            return MissingValue
+
         if not newKeywords:
-            return ()
+            return EmptyValue
         elif isinstance(newKeywords, basestring):
             return (newKeywords,)
         else:
@@ -122,13 +140,25 @@ class KeywordIndex(UnIndex):
     def unindex_object(self, documentId):
         """ carefully unindex the object with integer id 'documentId'"""
 
-        keywords = self._unindex.get(documentId, None)
+        keywords = self._unindex.get(documentId, _marker)
 
-        # Couldn't we return 'None' immediately
-        # if keywords is 'None' (or _marker)???
+        if keywords is _marker:
+            res = 0
+            res += self.removeNotIndexed(MissingValue, documentId)
+            res += self.removeNotIndexed(EmptyValue, documentId)
 
-        if keywords is not None:
-            self._increment_counter()
+            if res:
+                self._increment_counter()
+            else:
+                LOG.debug('%(context)s: Attempt to unindex nonexistent '
+                          'document with id %(doc_id)s', dict(
+                              context=self.__class__.__name__,
+                              doc_id=documentId),
+                          exc_info=True)
+
+            return None
+
+        self._increment_counter()
 
         self.unindex_objectKeywords(documentId, keywords)
         try:

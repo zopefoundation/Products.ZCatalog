@@ -283,3 +283,34 @@ class ITransposeQuery(Interface):
 
     def getIndexNames():
         """ returns index names that are optimized by index """
+
+
+# a marker class for not indexed values
+class NotIndexedValue(object):
+
+    def __nonzero__(self):
+        return False
+
+# MissingValue can be used as query "term" to query
+# for objects the index does not have a value for
+# (like a not defined value)
+
+
+MissingValue = NotIndexedValue()
+
+
+class IIndexingMissingValue(Interface):
+    """Marker interface to mark indexes with support the
+    `MissingValue` query term."""
+
+
+# EmptyValue can be used as query "term" to query
+# for objects with an empty value (like an empty set).
+
+
+EmptyValue = NotIndexedValue()
+
+
+class IIndexingEmptyValue(Interface):
+    """Marker interface to mark indexes with support the
+    `EmptyValue` query term."""

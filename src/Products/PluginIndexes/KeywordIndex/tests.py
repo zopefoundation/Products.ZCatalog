@@ -16,6 +16,11 @@ import unittest
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
+from Products.PluginIndexes.interfaces import (
+    MissingValue,
+    EmptyValue,
+)
+
 
 class Dummy(object):
 
@@ -67,6 +72,8 @@ class TestKeywordIndex(unittest.TestCase):
                         (5, Dummy(['a', 'b', 'c', 'e'])),
                         (6, Dummy(['a', 'b', 'c', 'e', 'f'])),
                         (7, Dummy(['0'])),
+                        (8, Dummy([])),
+                        (9, Dummy(None)),
                         ]
         self._noop_req = {'bar': 123}
         self._all_req = {'foo': ['a']}
@@ -74,6 +81,10 @@ class TestKeywordIndex(unittest.TestCase):
         self._overlap_req = {'foo': ['c', 'e']}
         self._string_req = {'foo': 'a'}
         self._zero_req = {'foo': ['0']}
+        self._miss_req_1 = {'foo': [MissingValue]}
+        self._miss_req_2 = {'foo': ['a', MissingValue]}
+        self._empty_req_1 = {'foo': [EmptyValue]}
+        self._empty_req_2 = {'foo': [EmptyValue, 'f']}
 
         self._not_1 = {'foo': {'query': 'f', 'not': 'f'}}
         self._not_2 = {'foo': {'query': ['e', 'f'], 'not': 'f'}}
@@ -81,6 +92,10 @@ class TestKeywordIndex(unittest.TestCase):
         self._not_4 = {'foo': {'not': ['0', 'e']}}
         self._not_5 = {'foo': {'not': ['0', 'no-value']}}
         self._not_6 = {'foo': 'c', 'bar': {'query': 123, 'not': 1}}
+        self._not_7 = {'foo': {'not': [MissingValue]}}
+        self._not_8 = {'foo': {'not': []}}
+        self._not_9 = {'foo': {'not': [EmptyValue, ]}}
+        self._not_10 = {'foo': {'not': [EmptyValue, 'f']}}
 
     def _populateIndex(self):
         for k, v in self._values:
@@ -152,38 +167,53 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply(self._some_req, [])
         self._checkApply(self._overlap_req, [])
         self._checkApply(self._string_req, [])
+        self._checkApply(self._miss_req_1, [])
+        self._checkApply(self._miss_req_2, [])
 
     def testPopulated(self):
         self._populateIndex()
         values = self._values
 
-        assert len(self._index.referencedObjects()) == len(values)
+        self.assertEqual(len(self._index.referencedObjects()), len(values) - 2)
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
                 is self._marker)
         self._index.unindex_object(1234)  # nothrow
-        self.assertEqual(self._index.indexSize(), len(values) - 1)
+        self.assertEqual(self._index.indexSize(), len(values) - 3)
 
-        for k, v in values:
-            entry = self._index.getEntryForObject(k)
+        for k, v in values[:8]:
+            entry = self._index.getEntryForObject(k, None)
             entry.sort()
             kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
 
-        assert len(list(self._index.uniqueValues('foo'))) == len(values) - 1
+        empty_indexed = self._index.getNotIndexed(EmptyValue)
+        self.assertEqual(8 in empty_indexed, True)
+
+        miss_indexed = self._index.getNotIndexed(MissingValue)
+        self.assertEqual(9 in miss_indexed, True)
+
+        assert len(list(self._index.uniqueValues('foo'))) == len(values) - 3
         assert self._index._apply_index(self._noop_req) is None
 
-        self._checkApply(self._all_req, values[:-1])
+        self._checkApply(self._all_req, values[:-3])
         self._checkApply(self._some_req, values[5:7])
         self._checkApply(self._overlap_req, values[2:7])
-        self._checkApply(self._string_req, values[:-1])
+        self._checkApply(self._string_req, values[:-3])
+        self._checkApply(self._miss_req_1, values[9:10])
+        self._checkApply(self._miss_req_2, values[:7] + values[9:10])
+        self._checkApply(self._empty_req_1, values[8:9])
+        self._checkApply(self._empty_req_2, values[6:7] + values[8:9])
 
         self._checkApply(self._not_1, [])
         self._checkApply(self._not_2, values[5:6])
-        self._checkApply(self._not_3, values[:7])
-        self._checkApply(self._not_4, values[:5])
-        self._checkApply(self._not_5, values[:7])
+        self._checkApply(self._not_3, values[:7] + values[9:10])
+        self._checkApply(self._not_4, values[:5] + values[9:10])
+        self._checkApply(self._not_5, values[:7] + values[9:10])
         self._checkApply(self._not_6, values[2:7])
+        self._checkApply(self._not_7, values[:8])
+        self._checkApply(self._not_8, values[:8] + values[9:10])
+        self._checkApply(self._not_9, values[:8] + values[9:10])
 
     def testReindexChange(self):
         self._populateIndex()
