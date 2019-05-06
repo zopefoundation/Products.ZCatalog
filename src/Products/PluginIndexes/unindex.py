@@ -41,6 +41,7 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
+    NotIndexedValue,
     MissingValue,
     IIndexingMissingValue,
     EmptyValue,
@@ -325,7 +326,7 @@ class UnIndex(SimpleItem):
                                   exc_info=sys.exc_info())
 
             if datum is not _marker:
-                if datum in [MissingValue, EmptyValue]:
+                if isinstance(datum, NotIndexedValue):
                     self.insertNotIndexed(datum, documentId)
                 else:
                     self.insertForwardIndexEntry(datum, documentId)

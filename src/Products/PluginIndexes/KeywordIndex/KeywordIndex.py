@@ -21,6 +21,7 @@ from zope.interface import implementer
 from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.PluginIndexes.interfaces import (
+    NotIndexedValue,
     IIndexingMissingValue,
     MissingValue,
     IIndexingEmptyValue,
@@ -71,7 +72,7 @@ class KeywordIndex(UnIndex):
 
         if oldKeywords is None:
             # we've got a new document, let's not futz around.
-            if newKeywords in [MissingValue, EmptyValue]:
+            if isinstance(newKeywords, NotIndexedValue):
                 return self.insertNotIndexed(newKeywords, documentId)
 
             try:
@@ -85,7 +86,7 @@ class KeywordIndex(UnIndex):
             # to figure out if any of the keywords have actually changed
             if type(oldKeywords) is not OOSet:
                 oldKeywords = OOSet(oldKeywords)
-            if newKeywords in [MissingValue, EmptyValue]:
+            if isinstance(newKeywords, NotIndexedValue):
                 newKeywords = OOSet()
             else:
                 newKeywords = OOSet(newKeywords)
