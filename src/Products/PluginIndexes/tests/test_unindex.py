@@ -17,7 +17,16 @@ from BTrees.IIBTree import difference
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
+from zope.interface import directlyProvides
+
 from Products.ZCatalog.query import IndexQuery
+from Products.PluginIndexes.interfaces import (
+    NotIndexedValue,
+    MissingValue,
+    IIndexingMissingValue,
+    EmptyValue,
+    IIndexingEmptyValue,
+)
 
 
 class TestUnIndex(unittest.TestCase):
@@ -231,3 +240,35 @@ class TestUnIndex(unittest.TestCase):
                     docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
                     tuple(apply(dict(idx=query))[0]),
                     "%s: %s" % (op, r))
+
+    def test_missingvalue(self):
+        index = self._makeOne("foo")
+        index.query_options = "not", "operator"  # activate `not`, `operator`
+        apply = index._apply_index
+
+        class Dummy(object):
+            def __init__(self, value):
+                if value:
+                    self.foo = value
+
+        def populate():
+            for i, obj in enumerate((Dummy('a'), Dummy('b'), Dummy(None))):
+                index.index_object(i, obj)
+
+        populate()
+
+        # pure 'not' query
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1,))
+
+        directlyProvides(index, IIndexingMissingValue)
+        self.assertTrue(IIndexingMissingValue.providedBy(index))
+
+        index.clear()
+        populate()
+        self.assertEqual(tuple(apply(req)[0]), (1, 2,))
+
+    def ___test_emptyvalue(self):
+        index = self._makeOne("idx")
+        apply = index._apply_index
+        pass
