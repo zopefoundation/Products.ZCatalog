@@ -414,6 +414,9 @@ class UnIndex(SimpleItem):
         index = self._index
         setlist = []
         for k in not_parm:
+            # not indexed values are excluded by default
+            if isinstance(k, NotIndexedValue):
+                continue
             s = index.get(k, None)
             if s is None:
                 continue
@@ -540,7 +543,7 @@ class UnIndex(SimpleItem):
                         exclude = self._apply_not(not_parm, resultset)
                         cached = difference(cached, exclude)
 
-                        # pure not
+                        # pure 'not' query
                         if not record.keys \
                            and self.providesNotIndexed(MissingValue) \
                            and MissingValue not in not_parm:
@@ -553,7 +556,7 @@ class UnIndex(SimpleItem):
         if not record.keys and not_parm is not _marker:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
-            # we have only a 'not' query
+            # we have a pure 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
             if self.providesNotIndexed(MissingValue) \
                and MissingValue not in not_parm:
