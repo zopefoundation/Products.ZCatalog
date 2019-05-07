@@ -104,6 +104,11 @@ class KeywordIndex(UnIndex):
                 if rdiff:
                     for kw in rdiff:
                         self.insertForwardIndexEntry(kw, documentId)
+
+        # maybe a previous attribute was a not indexable value
+        if newKeywords:
+            self.removeNotIndexed(EmptyValue, documentId)
+
         return 1
 
     def _get_object_keywords(self, obj, attr):

@@ -352,7 +352,8 @@ class UnIndex(SimpleItem):
                 return MissingValue
             return _marker
 
-        if not datum and self.providesNotIndexed(EmptyValue):
+        if not isinstance(datum, bool) and not datum \
+           and self.providesNotIndexed(EmptyValue):
             return EmptyValue
 
         return datum
