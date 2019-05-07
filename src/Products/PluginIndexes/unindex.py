@@ -139,10 +139,10 @@ class UnIndex(SimpleItem):
         self._unindex = IOBTree()
 
         if self.providesNotIndexed(MissingValue):
-            self._missingvalue_set = IITreeSet()
+            self._missing_set = IITreeSet()
 
         if self.providesNotIndexed(EmptyValue):
-            self._emptyvalue_set = IITreeSet()
+            self._empty_set = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
@@ -190,24 +190,26 @@ class UnIndex(SimpleItem):
         not_indexed = self.getNotIndexed(valuetype)
         return not_indexed.insert(documentid)
 
-    def providesNotIndexed(self, valuetype=None):
-        if valuetype is None:
-            return (IIndexingMissingValue.providedBy(self) or
-                    IIndexingEmptyValue.providedBy(self))
+    def providesNotIndexed(self, valuetypes=[MissingValue, EmptyValue]):
 
-        if valuetype is MissingValue:
-            return IIndexingMissingValue.providedBy(self)
+        if not isinstance(valuetypes, (list, tuple)):
+            valuetypes = (valuetypes, )
 
-        if valuetype is EmptyValue:
-            return IIndexingEmptyValue.providedBy(self)
+        if MissingValue in valuetypes \
+           and IIndexingMissingValue.providedBy(self):
+            return True
+
+        if EmptyValue in valuetypes \
+           and IIndexingEmptyValue.providedBy(self):
+            return True
 
         return False
 
     def getNotIndexed(self, valuetype):
         if valuetype is MissingValue:
-            return self._missingvalue_set
+            return self._missing_set
         if valuetype is EmptyValue:
-            return self._emptyvalue_set
+            return self._empty_set
 
         raise NotImplementedError
 
@@ -301,7 +303,7 @@ class UnIndex(SimpleItem):
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
             return 0
-        elif datum is not MissingValue:
+        elif not isinstance(datum, NotIndexedValue):
             datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
@@ -349,6 +351,9 @@ class UnIndex(SimpleItem):
             if self.providesNotIndexed(MissingValue):
                 return MissingValue
             return _marker
+
+        if not datum and self.providesNotIndexed(EmptyValue):
+            return EmptyValue
 
         return datum
 
