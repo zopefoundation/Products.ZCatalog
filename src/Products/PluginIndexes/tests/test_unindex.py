@@ -242,33 +242,75 @@ class TestUnIndex(unittest.TestCase):
                     "%s: %s" % (op, r))
 
     def test_missingvalue(self):
-        index = self._makeOne("foo")
-        index.query_options = "not", "operator"  # activate `not`, `operator`
+        index = self._makeOne('foo')
+        # enable MissingValue support
+        directlyProvides(index, IIndexingMissingValue)
+        # reinitialize Btrees & Sets
+        index.clear()
+        # activate `not`, `operator`
+        index.query_options = 'not', 'operator'
         apply = index._apply_index
 
         class Dummy(object):
             def __init__(self, value):
-                if value:
+                # set attribute only if value is set
+                if value is not None:
                     self.foo = value
 
-        def populate():
-            for i, obj in enumerate((Dummy('a'), Dummy('b'), Dummy(None))):
-                index.index_object(i, obj)
+        values = ((0, Dummy('a')),
+                  (1, Dummy('b')),
+                  (2, Dummy(None)))
 
-        populate()
+        for i, obj in values:
+            index.index_object(i, obj)
 
-        # pure 'not' query
+        req = {'foo': {'query': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (0,))
+
+        req = {'foo': {'query': ['a', MissingValue]}}
+        self.assertEqual(tuple(apply(req)[0]), (0, 2))
+
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1, 2,))
+
+        req = {'foo': {'not': ['a', MissingValue]}}
+        self.assertEqual(tuple(apply(req)[0]), (1,))
+
+        index.unindex_object(2)
         req = {'foo': {'not': 'a'}}
         self.assertEqual(tuple(apply(req)[0]), (1,))
 
-        directlyProvides(index, IIndexingMissingValue)
-        self.assertTrue(IIndexingMissingValue.providedBy(index))
-
+    def test_emptyvalue(self):
+        index = self._makeOne('foo')
+        # enable EmptyValue support
+        directlyProvides(index, IIndexingEmptyValue)
+        # reinitialize Btrees & Sets
         index.clear()
-        populate()
-        self.assertEqual(tuple(apply(req)[0]), (1, 2,))
-
-    def ___test_emptyvalue(self):
-        index = self._makeOne("idx")
+        # activate `not`, `operator`
+        index.query_options = 'not', 'operator'
         apply = index._apply_index
-        pass
+
+        class Dummy(object):
+            def __init__(self, value):
+                # set attribute only if value is set
+                if value is not None:
+                    self.foo = value
+
+        values = ((0, Dummy('a')),
+                  (1, Dummy('b')),
+                  (2, Dummy('')))
+
+        for i, obj in values:
+            index.index_object(i, obj)
+
+        req = {'foo': {'query': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (0,))
+
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1,))
+
+        req = {'foo': {'query': ['a', EmptyValue]}}
+        self.assertEqual(tuple(apply(req)[0]), (0, 2))
+
+        index.unindex_object(2)
+        self.assertEqual(tuple(apply(req)[0]), (0,))
