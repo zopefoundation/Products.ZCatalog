@@ -21,7 +21,6 @@ from zope.interface import directlyProvides
 
 from Products.ZCatalog.query import IndexQuery
 from Products.PluginIndexes.interfaces import (
-    NotIndexedValue,
     MissingValue,
     IIndexingMissingValue,
     EmptyValue,
