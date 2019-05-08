@@ -24,12 +24,22 @@ from App.special_dtml import DTMLFile
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from Persistence import PersistentMapping
-from zope.interface import implementer
+from zope.interface import implementer_only
 
-from Products.PluginIndexes.interfaces import ITransposeQuery
+from Products.PluginIndexes.interfaces import (
+    ILimitedResultIndex,
+    IQueryIndex,
+    ISortIndex,
+    IUniqueValueIndex,
+    IRequestCacheIndex,
+    ITransposeQuery,
+    MissingValue,
+    EmptyValue,
+)
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
+
 
 LOG = logging.getLogger('CompositeIndex')
 
@@ -172,7 +182,8 @@ class Component(object):
                 'attributes: {0.attributes}>').format(self)
 
 
-@implementer(ITransposeQuery)
+@implementer_only(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
+                  ISortIndex, IRequestCacheIndex, ITransposeQuery)
 class CompositeIndex(KeywordIndex):
 
     """Index for composition of simple fields.
@@ -379,6 +390,14 @@ class CompositeIndex(KeywordIndex):
             # convert rec keys to int for BooleanIndex
             if c.meta_type == 'BooleanIndex':
                 rec.keys = [int(bool(v)) for v in rec.keys[:]]
+
+            # cannot currently support KeywordIndex's
+            # MissigValue/EmptyValue feature
+            if c.meta_type == 'KeywordIndex':
+                if MissingValue in rec.keys:
+                    continue
+                if EmptyValue in rec.keys:
+                    continue
 
             # rec with 'not' parameter
             not_parm = rec.get('not', None)
