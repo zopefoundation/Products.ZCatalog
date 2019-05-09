@@ -32,7 +32,7 @@ Bug fixes
 
 - Code cleanup and completion of TopicIndex according to existing index
   methods and properties
- (`#65 <https://github.com/zopefoundation/Products.ZCatalog/issues/65>`_)
+  (`#65 <https://github.com/zopefoundation/Products.ZCatalog/issues/65>`_)
 
 
 4.4 (2019-03-08)
