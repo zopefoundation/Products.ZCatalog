@@ -107,7 +107,7 @@
 				              </td>
 				              <td class="text-left" tal:content="ob/meta_type"></td>
 				              <td class="text-left zmi-object-size hidden-xs"
-				              		tal:content="ob/indexSize">
+				              		tal:content="ob/indexSize|string:n/a">
 				              </td>
 				            </tal:obj>
 				          </tr>
