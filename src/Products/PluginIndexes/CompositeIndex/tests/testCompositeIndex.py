@@ -191,6 +191,10 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                                     unittest.TestCase):
     layer = PseudoLayer
 
+    @unittest.skipIf(
+        sys.platform.startswith('win'),
+        'Time() is not well resolved in Windows.'
+        ' In Python 3 use time.perf_count()')
     def testPerformance(self):
         self.enableLog()
 
