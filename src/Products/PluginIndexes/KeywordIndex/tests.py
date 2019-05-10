@@ -174,7 +174,7 @@ class TestKeywordIndex(unittest.TestCase):
         self._populateIndex()
         values = self._values
 
-        self.assertEqual(len(self._index.referencedObjects()), len(values) - 2)
+        self.assertEqual(len(self._index.referencedObjects()), len(values))
         assert self._index.getEntryForObject(1234) is None
         assert (self._index.getEntryForObject(1234, self._marker)
                 is self._marker)
@@ -224,6 +224,18 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply({'foo': ['x', 'y']}, [(6, expected), ])
         self._checkApply({'foo': ['a', 'b', 'c', 'e', 'f']}, values[:6])
 
+        self.assertIs(self._index._unindex.get(9), missing)
+        expected = Dummy(['z'])
+        self._index.index_object(9, expected)
+        self._checkApply({'foo': ['z']}, [(9, expected), ])
+        self.assertEqual(self._index._unindex.get(9), ['z'])
+
+        self.assertIs(self._index._unindex.get(8), empty)
+        expected = Dummy(['q'])
+        self._index.index_object(8, expected)
+        self._checkApply({'foo': ['q']}, [(8, expected), ])
+        self.assertEqual(self._index._unindex.get(8), ['q'])
+
     def testReindexNoChange(self):
         self._populateIndex()
         expected = Dummy(['foo', 'bar'])
@@ -269,29 +281,29 @@ class TestKeywordIndex(unittest.TestCase):
         record = {'foo': {'query': ['a', 'e'], 'operator': 'and'}}
         self._checkApply(record, values[5:7])
 
-    def test_noindexing_when_noattribute(self):
+    def test_missing_when_noattribute(self):
         to_index = Dummy(['hello'])
         self._index._index_object(10, to_index, attr='UNKNOWN')
-        self.assertFalse(self._index._unindex.get(10))
-        self.assertFalse(self._index.getEntryForObject(10))
+        self.assertIs(self._index._unindex.get(10), missing)
+        self.assertTrue(self._index.getEntryForObject(10))
 
-    def test_noindexing_when_raising_attribute(self):
+    def test_missing_when_raising_attribute(self):
         class FauxObject:
             def foo(self):
                 raise AttributeError
         to_index = FauxObject()
         self._index._index_object(10, to_index, attr='foo')
-        self.assertFalse(self._index._unindex.get(10))
-        self.assertFalse(self._index.getEntryForObject(10))
+        self.assertIs(self._index._unindex.get(10), missing)
+        self.assertTrue(self._index.getEntryForObject(10))
 
-    def test_noindexing_when_raising_typeeror(self):
+    def test_missing_when_raising_typeeror(self):
         class FauxObject:
             def foo(self, name):
                 return 'foo'
         to_index = FauxObject()
         self._index._index_object(10, to_index, attr='foo')
-        self.assertFalse(self._index._unindex.get(10))
-        self.assertFalse(self._index.getEntryForObject(10))
+        self.assertIs(self._index._unindex.get(10), missing)
+        self.assertTrue(self._index.getEntryForObject(10))
 
     def test_value_removes(self):
         to_index = Dummy(['hello'])
@@ -300,7 +312,7 @@ class TestKeywordIndex(unittest.TestCase):
 
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
-        self.assertFalse(self._index._unindex.get(10))
+        self.assertIs(self._index._unindex.get(10), empty)
 
     def test_getCounter(self):
         index = self._makeOne('foo')

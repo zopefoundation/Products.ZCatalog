@@ -69,23 +69,32 @@ class KeywordIndex(UnIndex):
         newKeywords = self._get_object_keywords(obj, attr)
         oldKeywords = self._unindex.get(documentId, None)
 
-        if oldKeywords is None:
+        if oldKeywords is None or oldKeywords in (missing, empty):
             # we've got a new document, let's not futz around.
-            if isinstance(newKeywords, (type(missing), type(empty))):
-                return self.insertSpecialIndexEntry(newKeywords, documentId)
+            if newKeywords in (missing, empty):
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+                self._unindex[documentId] = newKeywords
+                return 1
 
             try:
                 for kw in newKeywords:
                     self.insertForwardIndexEntry(kw, documentId)
-                self._unindex[documentId] = list(newKeywords)
             except TypeError:
                 return 0
+
+            self._unindex[documentId] = list(newKeywords)
+
+            if oldKeywords in (missing, empty):
+                self.removeSpecialIndexEntry(oldKeywords, documentId)
+
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
-            if type(oldKeywords) is not OOSet:
+            if not isinstance(oldKeywords, OOSet):
                 oldKeywords = OOSet(oldKeywords)
-            if isinstance(newKeywords, (type(missing), type(empty))):
+
+            if newKeywords in (missing, empty):
+                specialvalue = newKeywords
                 newKeywords = OOSet()
             else:
                 newKeywords = OOSet(newKeywords)
@@ -96,7 +105,8 @@ class KeywordIndex(UnIndex):
                 if newKeywords:
                     self._unindex[documentId] = list(newKeywords)
                 else:
-                    del self._unindex[documentId]
+                    self.insertSpecialIndexEntry(specialvalue, documentId)
+                    self._unindex[documentId] = specialvalue
 
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
@@ -104,9 +114,10 @@ class KeywordIndex(UnIndex):
                     for kw in rdiff:
                         self.insertForwardIndexEntry(kw, documentId)
 
-        # maybe a previous attribute was a not indexable value
         if newKeywords:
-            self.removeSpecialIndexEntry(empty, documentId)
+            # maybe a previous extra attribute was a not indexable value
+            for sv in (missing, empty):
+                self.removeSpecialIndexEntry(sv, documentId)
 
         return 1
 
@@ -148,13 +159,17 @@ class KeywordIndex(UnIndex):
         keywords = self._unindex.get(documentId, _marker)
 
         if keywords is _marker:
-            res = 0
-            res += self.removeSpecialIndexEntry(missing, documentId)
-            res += self.removeSpecialIndexEntry(empty, documentId)
+            return
 
-            if res:
-                self._increment_counter()
-            else:
+        self._increment_counter()
+
+        if keywords in (missing, empty):
+            try:
+                if not self.removeSpecialIndexEntry(keywords, documentId):
+                    raise KeyError
+                del self._unindex[documentId]
+
+            except KeyError:
                 LOG.debug('%(context)s: Attempt to unindex nonexistent '
                           'document with id %(doc_id)s', dict(
                               context=self.__class__.__name__,
@@ -162,8 +177,6 @@ class KeywordIndex(UnIndex):
                           exc_info=True)
 
             return None
-
-        self._increment_counter()
 
         self.unindex_objectKeywords(documentId, keywords)
         try:
