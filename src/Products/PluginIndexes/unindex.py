@@ -562,11 +562,20 @@ class UnIndex(SimpleItem):
         if not record.keys and not_parm is not _marker:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
-            # we have a pure 'not' query
-            record.keys = [k for k in index.keys() if k not in not_parm]
-            if self.providesSpecialIndex(missing) \
-               and missing not in not_parm:
-                ret_miss_val = True
+
+            excludes = []
+            for sv in (missing, empty):
+                if self.providesSpecialIndex(sv) and sv in not_parm:
+                    excludes.append(self.getSpecialIndex(sv))
+
+            excludes.append(self._apply_not(not_parm, resultset))
+            result = difference(IISet(self._unindex), multiunion(excludes))
+
+            if cachekey is not None:
+                cache[cachekey] = result
+
+            return result
+
         else:
             # convert query arguments into indexed format
             record.keys = list(map(self._convert, record.keys))
@@ -666,15 +675,9 @@ class UnIndex(SimpleItem):
                     # "object has default comparison".
                     continue
 
-                # query for MissingValue
-                if k is missing:
-                    s = self.getSpecialIndex(missing)
-                    setlist.append(s)
-                    continue
-
-                # query for EmptyValue
-                if k is empty:
-                    s = self.getSpecialIndex(empty)
+                # query for MissingValue or EmptyValue
+                if k in (missing, empty):
+                    s = self.getSpecialIndex(k)
                     setlist.append(s)
                     continue
 

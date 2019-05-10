@@ -270,6 +270,8 @@ class TestUnIndex(unittest.TestCase):
         self.assertEqual(tuple(apply(req)[0]), (0, 2))
 
         req = {'foo': {'not': 'a'}}
+        import pdb; pdb.set_trace()
+        
         self.assertEqual(tuple(apply(req)[0]), (1, 2,))
 
         req = {'foo': {'not': ['a', missing]}}

@@ -113,7 +113,7 @@ class TestKeywordIndex(unittest.TestCase):
             if hasattr(result, 'keys'):
                 result = result.keys()
             for k, v in expectedValues:
-                assert k in result
+                self.assertIn(k, result)
 
         index = self._index
 
@@ -207,14 +207,15 @@ class TestKeywordIndex(unittest.TestCase):
 
         self._checkApply(self._not_1, [])
         self._checkApply(self._not_2, values[5:6])
-        self._checkApply(self._not_3, values[:7] + values[9:10])
-        self._checkApply(self._not_4, values[:5] + values[9:10])
-        self._checkApply(self._not_5, values[:7] + values[9:10])
+        self._checkApply(self._not_3, values[:7] + values[8:10])
+        self._checkApply(self._not_4, values[:5] + values[8:10])
+        self._checkApply(self._not_5, values[:7] + values[8:10])
         self._checkApply(self._not_6, values[2:7])
-        self._checkApply(self._not_7, values[:8])
-        self._checkApply(self._not_8, values[:8] + values[9:10])
+        self._checkApply(self._not_7, values[:9])
+        self._checkApply(self._not_8, values[:10])
         self._checkApply(self._not_9, values[:8] + values[9:10])
-
+        self._checkApply(self._not_10, values[:6] + values[7:8] + values[9:10])
+        
     def testReindexChange(self):
         self._populateIndex()
         values = self._values
