@@ -21,9 +21,9 @@ from zope.interface import directlyProvides
 
 from Products.ZCatalog.query import IndexQuery
 from Products.PluginIndexes.interfaces import (
-    MissingValue,
+    missing,
     IIndexingMissingValue,
-    EmptyValue,
+    empty,
     IIndexingEmptyValue,
 )
 
@@ -266,13 +266,13 @@ class TestUnIndex(unittest.TestCase):
         req = {'foo': {'query': 'a'}}
         self.assertEqual(tuple(apply(req)[0]), (0,))
 
-        req = {'foo': {'query': ['a', MissingValue]}}
+        req = {'foo': {'query': ['a', missing]}}
         self.assertEqual(tuple(apply(req)[0]), (0, 2))
 
         req = {'foo': {'not': 'a'}}
         self.assertEqual(tuple(apply(req)[0]), (1, 2,))
 
-        req = {'foo': {'not': ['a', MissingValue]}}
+        req = {'foo': {'not': ['a', missing]}}
         self.assertEqual(tuple(apply(req)[0]), (1,))
 
         index.unindex_object(2)
@@ -308,7 +308,7 @@ class TestUnIndex(unittest.TestCase):
         req = {'foo': {'not': 'a'}}
         self.assertEqual(tuple(apply(req)[0]), (1,))
 
-        req = {'foo': {'query': ['a', EmptyValue]}}
+        req = {'foo': {'query': ['a', empty]}}
         self.assertEqual(tuple(apply(req)[0]), (0, 2))
 
         index.unindex_object(2)

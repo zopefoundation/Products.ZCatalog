@@ -41,11 +41,10 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
-    NotIndexedValue,
-    MissingValue,
     IIndexingMissingValue,
-    EmptyValue,
+    missing,
     IIndexingEmptyValue,
+    empty,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -138,10 +137,10 @@ class UnIndex(SimpleItem):
         self._index = OOBTree()
         self._unindex = IOBTree()
 
-        if self.providesNotIndexed(MissingValue):
+        if self.providesSpecialIndex(missing):
             self._missing_set = IITreeSet()
 
-        if self.providesNotIndexed(EmptyValue):
+        if self.providesSpecialIndex(empty):
             self._empty_set = IITreeSet()
 
         if self._counter is None:
@@ -178,37 +177,37 @@ class UnIndex(SimpleItem):
             return self._unindex.get(documentId)
         return self._unindex.get(documentId, default)
 
-    def removeNotIndexed(self, valuetype, documentid):
-        not_indexed = self.getNotIndexed(valuetype)
+    def removeSpecialIndexEntry(self, valuetype, documentid):
+        not_indexed = self.getSpecialIndex(valuetype)
         try:
             not_indexed.remove(documentid)
             return 1
         except KeyError:
             return 0
 
-    def insertNotIndexed(self, valuetype, documentid):
-        not_indexed = self.getNotIndexed(valuetype)
+    def insertSpecialIndexEntry(self, valuetype, documentid):
+        not_indexed = self.getSpecialIndex(valuetype)
         return not_indexed.insert(documentid)
 
-    def providesNotIndexed(self, valuetypes=[MissingValue, EmptyValue]):
+    def providesSpecialIndex(self, valuetypes=[missing, empty]):
 
         if not isinstance(valuetypes, (list, tuple)):
             valuetypes = (valuetypes, )
 
-        if MissingValue in valuetypes \
+        if missing in valuetypes \
            and IIndexingMissingValue.providedBy(self):
             return True
 
-        if EmptyValue in valuetypes \
+        if empty in valuetypes \
            and IIndexingEmptyValue.providedBy(self):
             return True
 
         return False
 
-    def getNotIndexed(self, valuetype):
-        if valuetype is MissingValue:
+    def getSpecialIndex(self, valuetype):
+        if valuetype is missing:
             return self._missing_set
-        if valuetype is EmptyValue:
+        if valuetype is empty:
             return self._empty_set
 
         raise NotImplementedError
@@ -303,7 +302,7 @@ class UnIndex(SimpleItem):
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
             return 0
-        elif not isinstance(datum, NotIndexedValue):
+        elif datum not in [missing, empty]:
             datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
@@ -328,8 +327,8 @@ class UnIndex(SimpleItem):
                                   exc_info=sys.exc_info())
 
             if datum is not _marker:
-                if isinstance(datum, NotIndexedValue):
-                    self.insertNotIndexed(datum, documentId)
+                if datum in [missing, empty]:
+                    self.insertSpecialIndexEntry(datum, documentId)
                 else:
                     self.insertForwardIndexEntry(datum, documentId)
                     self._unindex[documentId] = datum
@@ -348,12 +347,12 @@ class UnIndex(SimpleItem):
             if safe_callable(datum):
                 datum = datum()
         except (AttributeError, TypeError):
-            if self.providesNotIndexed(MissingValue):
-                return MissingValue
+            if self.providesSpecialIndex(missing):
+                return missing
             return _marker
 
-        if not datum and self.providesNotIndexed(EmptyValue):
-            return EmptyValue
+        if not datum and self.providesSpecialIndex(empty):
+            return empty
 
         return datum
 
@@ -380,12 +379,14 @@ class UnIndex(SimpleItem):
         """
         unindexRecord = self._unindex.get(documentId, _marker)
         if unindexRecord is _marker:
-            if self.providesNotIndexed():
+            if self.providesSpecialIndex():
                 res = 0
-                if self.providesNotIndexed(MissingValue):
-                    res += self.removeNotIndexed(MissingValue, documentId)
-                if self.providesNotIndexed(EmptyValue):
-                    res += self.removeNotIndexed(EmptyValue, documentId)
+                if self.providesSpecialIndex(missing):
+                    res += self.removeSpecialIndexEntry(missing,
+                                                        documentId)
+                if self.providesSpecialIndex(empty):
+                    res += self.removeSpecialIndexEntry(empty,
+                                                        documentId)
 
                 if res:
                     self._increment_counter()
@@ -420,7 +421,7 @@ class UnIndex(SimpleItem):
         setlist = []
         for k in not_parm:
             # not indexed values are excluded by default
-            if isinstance(k, NotIndexedValue):
+            if k in [missing, empty]:
                 continue
             s = index.get(k, None)
             if s is None:
@@ -550,10 +551,10 @@ class UnIndex(SimpleItem):
 
                         # pure 'not' query
                         if not record.keys \
-                           and self.providesNotIndexed(MissingValue) \
-                           and MissingValue not in not_parm:
+                           and self.providesSpecialIndex(missing) \
+                           and missing not in not_parm:
                             cached = union(cached,
-                                           self.getNotIndexed(MissingValue))
+                                           self.getSpecialIndex(missing))
 
                     return cached
 
@@ -563,8 +564,8 @@ class UnIndex(SimpleItem):
             not_parm = list(map(self._convert, not_parm))
             # we have a pure 'not' query
             record.keys = [k for k in index.keys() if k not in not_parm]
-            if self.providesNotIndexed(MissingValue) \
-               and MissingValue not in not_parm:
+            if self.providesSpecialIndex(missing) \
+               and missing not in not_parm:
                 ret_miss_val = True
         else:
             # convert query arguments into indexed format
@@ -616,7 +617,7 @@ class UnIndex(SimpleItem):
                     result = difference(result, exclude)
                     if ret_miss_val:
                         result = union(result,
-                                       self.getNotIndexed(MissingValue))
+                                       self.getSpecialIndex(missing))
                 return result
 
             if operator == 'or':
@@ -666,14 +667,14 @@ class UnIndex(SimpleItem):
                     continue
 
                 # query for MissingValue
-                if k is MissingValue:
-                    s = self.getNotIndexed(MissingValue)
+                if k is missing:
+                    s = self.getSpecialIndex(missing)
                     setlist.append(s)
                     continue
 
                 # query for EmptyValue
-                if k is EmptyValue:
-                    s = self.getNotIndexed(EmptyValue)
+                if k is empty:
+                    s = self.getSpecialIndex(empty)
                     setlist.append(s)
                     continue
 
@@ -723,7 +724,7 @@ class UnIndex(SimpleItem):
                     result = difference(result, exclude)
                     if ret_miss_val:
                         result = union(result,
-                                       self.getNotIndexed(MissingValue))
+                                       self.getSpecialIndex(missing))
                 return result
 
             if operator == 'or':
@@ -772,7 +773,7 @@ class UnIndex(SimpleItem):
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
             if ret_miss_val:
-                r = union(r, self.getNotIndexed(MissingValue))
+                r = union(r, self.getSpecialIndex(missing))
         return r
 
     def hasUniqueValuesFor(self, name):

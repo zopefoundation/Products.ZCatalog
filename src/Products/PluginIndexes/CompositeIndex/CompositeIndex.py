@@ -33,8 +33,8 @@ from Products.PluginIndexes.interfaces import (
     IUniqueValueIndex,
     IRequestCacheIndex,
     ITransposeQuery,
-    MissingValue,
-    EmptyValue,
+    missing,
+    empty,
 )
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
@@ -392,11 +392,11 @@ class CompositeIndex(KeywordIndex):
                 rec.keys = [int(bool(v)) for v in rec.keys[:]]
 
             # cannot currently support KeywordIndex's
-            # MissigValue/EmptyValue feature
+            # missing/empty feature
             if c.meta_type == 'KeywordIndex':
-                if MissingValue in rec.keys:
+                if missing in rec.keys:
                     continue
-                if EmptyValue in rec.keys:
+                if empty in rec.keys:
                     continue
 
             # rec with 'not' parameter

@@ -21,11 +21,10 @@ from zope.interface import implementer
 from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.PluginIndexes.interfaces import (
-    NotIndexedValue,
     IIndexingMissingValue,
-    MissingValue,
+    missing,
     IIndexingEmptyValue,
-    EmptyValue,
+    empty,
 )
 
 _marker = []
@@ -72,8 +71,8 @@ class KeywordIndex(UnIndex):
 
         if oldKeywords is None:
             # we've got a new document, let's not futz around.
-            if isinstance(newKeywords, NotIndexedValue):
-                return self.insertNotIndexed(newKeywords, documentId)
+            if isinstance(newKeywords, (type(missing), type(empty))):
+                return self.insertSpecialIndexEntry(newKeywords, documentId)
 
             try:
                 for kw in newKeywords:
@@ -86,7 +85,7 @@ class KeywordIndex(UnIndex):
             # to figure out if any of the keywords have actually changed
             if type(oldKeywords) is not OOSet:
                 oldKeywords = OOSet(oldKeywords)
-            if isinstance(newKeywords, NotIndexedValue):
+            if isinstance(newKeywords, (type(missing), type(empty))):
                 newKeywords = OOSet()
             else:
                 newKeywords = OOSet(newKeywords)
@@ -107,7 +106,7 @@ class KeywordIndex(UnIndex):
 
         # maybe a previous attribute was a not indexable value
         if newKeywords:
-            self.removeNotIndexed(EmptyValue, documentId)
+            self.removeSpecialIndexEntry(empty, documentId)
 
         return 1
 
@@ -117,13 +116,13 @@ class KeywordIndex(UnIndex):
             try:
                 newKeywords = newKeywords()
             except (AttributeError, TypeError):
-                return MissingValue
+                return missing
 
         if newKeywords is None:
-            return MissingValue
+            return missing
 
         if not newKeywords:
-            return EmptyValue
+            return empty
         elif isinstance(newKeywords, basestring):
             return (newKeywords,)
         else:
@@ -150,8 +149,8 @@ class KeywordIndex(UnIndex):
 
         if keywords is _marker:
             res = 0
-            res += self.removeNotIndexed(MissingValue, documentId)
-            res += self.removeNotIndexed(EmptyValue, documentId)
+            res += self.removeSpecialIndexEntry(missing, documentId)
+            res += self.removeSpecialIndexEntry(empty, documentId)
 
             if res:
                 self._increment_counter()

@@ -17,8 +17,8 @@ from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
 from Products.PluginIndexes.interfaces import (
-    MissingValue,
-    EmptyValue,
+    missing,
+    empty,
 )
 
 
@@ -81,10 +81,10 @@ class TestKeywordIndex(unittest.TestCase):
         self._overlap_req = {'foo': ['c', 'e']}
         self._string_req = {'foo': 'a'}
         self._zero_req = {'foo': ['0']}
-        self._miss_req_1 = {'foo': [MissingValue]}
-        self._miss_req_2 = {'foo': ['a', MissingValue]}
-        self._empty_req_1 = {'foo': [EmptyValue]}
-        self._empty_req_2 = {'foo': [EmptyValue, 'f']}
+        self._miss_req_1 = {'foo': [missing]}
+        self._miss_req_2 = {'foo': ['a', missing]}
+        self._empty_req_1 = {'foo': [empty]}
+        self._empty_req_2 = {'foo': [empty, 'f']}
 
         self._not_1 = {'foo': {'query': 'f', 'not': 'f'}}
         self._not_2 = {'foo': {'query': ['e', 'f'], 'not': 'f'}}
@@ -92,10 +92,10 @@ class TestKeywordIndex(unittest.TestCase):
         self._not_4 = {'foo': {'not': ['0', 'e']}}
         self._not_5 = {'foo': {'not': ['0', 'no-value']}}
         self._not_6 = {'foo': 'c', 'bar': {'query': 123, 'not': 1}}
-        self._not_7 = {'foo': {'not': [MissingValue]}}
+        self._not_7 = {'foo': {'not': [missing]}}
         self._not_8 = {'foo': {'not': []}}
-        self._not_9 = {'foo': {'not': [EmptyValue, ]}}
-        self._not_10 = {'foo': {'not': [EmptyValue, 'f']}}
+        self._not_9 = {'foo': {'not': [empty, ]}}
+        self._not_10 = {'foo': {'not': [empty, 'f']}}
 
     def _populateIndex(self):
         for k, v in self._values:
@@ -187,10 +187,10 @@ class TestKeywordIndex(unittest.TestCase):
             kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
 
-        empty_indexed = self._index.getNotIndexed(EmptyValue)
+        empty_indexed = self._index.getSpecialIndex(empty)
         self.assertEqual(8 in empty_indexed, True)
 
-        miss_indexed = self._index.getNotIndexed(MissingValue)
+        miss_indexed = self._index.getSpecialIndex(missing)
         self.assertEqual(9 in miss_indexed, True)
 
         assert len(list(self._index.uniqueValues('foo'))) == len(values) - 3
