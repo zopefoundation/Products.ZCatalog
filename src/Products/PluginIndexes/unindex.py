@@ -136,12 +136,13 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+        self._special_index = OOBTree()
 
         if self.providesSpecialIndex(missing):
-            self._missing_set = IITreeSet()
+            self._special_index[missing] = IITreeSet()
 
         if self.providesSpecialIndex(empty):
-            self._empty_set = IITreeSet()
+            self._special_index[empty] = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
@@ -178,16 +179,16 @@ class UnIndex(SimpleItem):
         return self._unindex.get(documentId, default)
 
     def removeSpecialIndexEntry(self, valuetype, documentid):
-        not_indexed = self.getSpecialIndex(valuetype)
+        special_indexed = self.getSpecialIndex(valuetype)
         try:
-            not_indexed.remove(documentid)
+            special_indexed.remove(documentid)
             return 1
         except KeyError:
             return 0
 
     def insertSpecialIndexEntry(self, valuetype, documentid):
-        not_indexed = self.getSpecialIndex(valuetype)
-        return not_indexed.insert(documentid)
+        special_indexed = self.getSpecialIndex(valuetype)
+        return special_indexed.insert(documentid)
 
     def providesSpecialIndex(self, valuetypes=[missing, empty]):
 
@@ -205,12 +206,10 @@ class UnIndex(SimpleItem):
         return False
 
     def getSpecialIndex(self, valuetype):
-        if valuetype is missing:
-            return self._missing_set
-        if valuetype is empty:
-            return self._empty_set
-
-        raise NotImplementedError
+        try:
+            return self._special_index[valuetype]
+        except KeyError:
+            raise NotImplementedError
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId
@@ -331,7 +330,7 @@ class UnIndex(SimpleItem):
                     self.insertSpecialIndexEntry(datum, documentId)
                 else:
                     self.insertForwardIndexEntry(datum, documentId)
-                    self._unindex[documentId] = datum
+                self._unindex[documentId] = datum
 
             returnStatus = 1
 
@@ -378,31 +377,24 @@ class UnIndex(SimpleItem):
         raise an exception if we fail
         """
         unindexRecord = self._unindex.get(documentId, _marker)
-        if unindexRecord is _marker:
-            if self.providesSpecialIndex():
-                res = 0
-                if self.providesSpecialIndex(missing):
-                    res += self.removeSpecialIndexEntry(missing,
-                                                        documentId)
-                if self.providesSpecialIndex(empty):
-                    res += self.removeSpecialIndexEntry(empty,
-                                                        documentId)
 
-                if res:
-                    self._increment_counter()
-                else:
-                    LOG.debug('%(context)s: attempt to unindex nonexistent '
-                              'documentId %(doc_id)s from index %(index)r. '
-                              'This should not happen.', dict(
-                                  context=self.__class__.__name__,
-                                  doc_id=documentId,
-                                  index=self.id),
-                              exc_info=True)
+        if unindexRecord is _marker:
             return None
 
         self._increment_counter()
 
-        self.removeForwardIndexEntry(unindexRecord, documentId)
+        if self.providesSpecialIndex(unindexRecord):
+            if not self.removeSpecialIndexEntry(unindexRecord, documentId):
+                LOG.debug('%(context)s: attempt to unindex nonexistent '
+                          'documentId %(doc_id)s from index %(index)r. '
+                          'This should not happen.', dict(
+                              context=self.__class__.__name__,
+                              doc_id=documentId,
+                              index=self.id),
+                          exc_info=True)
+        else:
+            self.removeForwardIndexEntry(unindexRecord, documentId)
+
         try:
             del self._unindex[documentId]
         except ConflictError:
@@ -546,15 +538,15 @@ class UnIndex(SimpleItem):
 
                     if not_parm is not _marker:
                         not_parm = list(map(self._convert, not_parm))
-                        exclude = self._apply_not(not_parm, resultset)
-                        cached = difference(cached, exclude)
 
-                        # pure 'not' query
-                        if not record.keys \
-                           and self.providesSpecialIndex(missing) \
-                           and missing not in not_parm:
-                            cached = union(cached,
-                                           self.getSpecialIndex(missing))
+                        excludes = []
+                        for sv in (missing, empty):
+                            if self.providesSpecialIndex(sv) \
+                               and sv in not_parm:
+                                excludes.append(self.getSpecialIndex(sv))
+
+                        excludes.append(self._apply_not(not_parm, resultset))
+                        cached = difference(cached, multiunion(excludes))
 
                     return cached
 
@@ -568,11 +560,12 @@ class UnIndex(SimpleItem):
                 if self.providesSpecialIndex(sv) and sv in not_parm:
                     excludes.append(self.getSpecialIndex(sv))
 
-            excludes.append(self._apply_not(not_parm, resultset))
-            result = difference(IISet(self._unindex), multiunion(excludes))
-
+            result = IISet(self._unindex)
             if cachekey is not None:
                 cache[cachekey] = result
+
+            excludes.append(self._apply_not(not_parm, resultset))
+            result = difference(result, multiunion(excludes))
 
             return result
 

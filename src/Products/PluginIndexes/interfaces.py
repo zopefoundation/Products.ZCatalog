@@ -285,7 +285,7 @@ class ITransposeQuery(Interface):
         """ returns index names that are optimized by index """
 
 
-class _SpecialIndexValue(object):
+class _SpecialIndexValue(str):
     """generic marker class for values that cannot be indexed regularly"""
 
     def __nonzero__(self):
@@ -297,13 +297,10 @@ class IIndexingMissingValue(Interface):
     `missing` query term."""
 
 
-class MissingValue(_SpecialIndexValue):
-    """MissingValue can be used as query term to query
-    for objects the index does not have a value for
-    (like a not defined value)"""
-
-
-missing = MissingValue()
+# `missing` can be used as query term to query
+# for objects the index does not have a value for
+# (like a not defined value)
+missing = _SpecialIndexValue('missing')
 
 
 class IIndexingEmptyValue(Interface):
@@ -311,9 +308,6 @@ class IIndexingEmptyValue(Interface):
     `empty` query term."""
 
 
-class EmptyValue(_SpecialIndexValue):
-    """EmptyValue can be used as query "term" to query
-    for objects with an empty value (like an empty set)"""
-
-
-empty = EmptyValue()
+# `empty` Value can be used as query "term" to query
+#    for objects with an empty value (like an empty set)
+empty = _SpecialIndexValue('empty')
