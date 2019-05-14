@@ -12,7 +12,7 @@
 <tr class="location-bar">
   <td colspan="2" align="left">
   <div class="std-text">
-  <strong>Catalog record at <dtml-var expr="getpath(_.int(rid))" html_quote></strong>
+  <h2>Catalog record at <dtml-var expr="getpath(_.int(rid))" html_quote></h2>
   </div>
   </td>
 </tr>
@@ -27,12 +27,11 @@
   </td>
 </tr>
 </table>
-
-<br />
+<hr />
 <table width="100%" borders="0" cellspacing="2" cellpadding="0">
 <tr class="section-bar">
   <td colspan="3" align="left">
-  <div class="form-label">Metadata Contents</div>
+  <div class="form-label"><h3>Metadata Contents</h3></div>
   </td>
 </tr>
 <tr>
@@ -62,13 +61,13 @@
 </tr>
 </dtml-in>
 </table>
+<hr />
 
-<br /> 
 
 <table width="100%" borders="0" cellspacing="2" cellpadding="0">
 <tr class="section-bar">
   <td colspan="3" align="left">
-  <div class="form-label">Index Contents</div>
+  <div class="form-label"><h3>Index Contents</h3></div>
   </td>
 </tr>
 <tr>
