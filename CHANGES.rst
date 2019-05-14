@@ -1,7 +1,13 @@
 Changelog
 =========
 
-4.5 (unreleased)
+5.1 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
+5.0 (2019-05-10)
 ----------------
 
 Backwards incompatible changes
