@@ -289,7 +289,10 @@ class _SpecialIndexValue(str):
     """generic marker class for values that cannot be indexed regularly"""
 
     def __nonzero__(self):
-        return 0
+        return False
+
+    def __bool__(self):
+        return False
 
 
 class IIndexingMissingValue(Interface):

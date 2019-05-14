@@ -286,7 +286,7 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = Dummy(['hello'])
         self._index._index_object(10, to_index, attr='UNKNOWN')
         self.assertIs(self._index._unindex.get(10), missing)
-        self.assertTrue(self._index.getEntryForObject(10))
+        self.assertIs(self._index.getEntryForObject(10), missing)
 
     def test_missing_when_raising_attribute(self):
         class FauxObject:
@@ -295,7 +295,7 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = FauxObject()
         self._index._index_object(10, to_index, attr='foo')
         self.assertIs(self._index._unindex.get(10), missing)
-        self.assertTrue(self._index.getEntryForObject(10))
+        self.assertIs(self._index.getEntryForObject(10), missing)
 
     def test_missing_when_raising_typeeror(self):
         class FauxObject:
@@ -304,7 +304,7 @@ class TestKeywordIndex(unittest.TestCase):
         to_index = FauxObject()
         self._index._index_object(10, to_index, attr='foo')
         self.assertIs(self._index._unindex.get(10), missing)
-        self.assertTrue(self._index.getEntryForObject(10))
+        self.assertIs(self._index.getEntryForObject(10), missing)
 
     def test_value_removes(self):
         to_index = Dummy(['hello'])
