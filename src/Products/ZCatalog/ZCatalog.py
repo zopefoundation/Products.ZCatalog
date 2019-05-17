@@ -38,6 +38,7 @@ from DocumentTemplate.security import RestrictedDTML
 from OFS.Folder import Folder
 from OFS.ObjectManager import ObjectManager
 from Persistence import Persistent
+from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from Products.PluginIndexes.interfaces import IPluggableIndex
 import transaction
 from zExceptions import BadRequest
@@ -121,7 +122,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     manage_catalogView = DTMLFile('dtml/catalogView', globals())
 
     security.declareProtected(manage_zcatalog_entries, 'manage_catalogIndexes')
-    manage_catalogIndexes = DTMLFile('dtml/catalogIndexes', globals())
+    manage_catalogIndexes = PageTemplateFile('zpt/catalogIndexes', globals())
 
     security.declareProtected(manage_zcatalog_entries, 'manage_catalogSchema')
     manage_catalogSchema = DTMLFile('dtml/catalogSchema', globals())

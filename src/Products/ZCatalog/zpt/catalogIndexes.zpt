@@ -1,0 +1,150 @@
+<tal:header replace="structure here/manage_page_header" />
+
+<tal:tabs replace="structure here/manage_tabs" />
+
+<main class="container-fluid">
+
+	<p class="form-help">
+		This list defines what indexes the Catalog will contain. When objects
+		get cataloged, the values of any attributes which match
+		an index in this list will get indexed. If you add indexes to a Catalog
+		which contains indexed objects, you MUST at the least re-index your newly
+		added index. You may want to update the whole Catalog.
+	</p>
+	<tal:indexes define="indexes context/Indexes">
+		<tal:add define="filtered_meta_types python:sorted(indexes.filtered_meta_types(), key=lambda mt: mt['name'])">
+			<form tal:attributes="action context/absolute_url" method="get">
+				<div class="form-group mt-4 mb-4">
+					<div class="input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text">Add <span class="d-sm-block d-none">&nbsp;new&nbsp;</span> Index:</span>
+						</div>
+							<tal:indexlist condition="python:len(filtered_meta_types) > 1">
+								<select id="addindex" class="form-control" name=":action"
+									onChange=""
+									tal:attributes="onChange string:location.href='${request/URL1}/'+this.options[this.selectedIndex].value">
+									<option value="manage_workspace" disabled>Select type to add...</option>
+									<tal:types repeat="indextype filtered_meta_types">
+										<option tal:attributes="value indextype/action"
+											tal:content="indextype/name"></option>
+									</tal:types>
+								</select>
+							</tal:indexlist>
+							<div class="input-group-append">
+								<input class="btn btn-primary" type="submit" name="submit" value="Add" />
+						</div>
+					</div>
+				</div>
+
+			</form>
+		</tal:add>
+		<form tal:attributes="action string:${request/URL1}/" name="objectItems" method="post">
+			<tal:items define="
+                    skey python:request.get('skey','id');
+                    rkey python:request.get('rkey','asc');
+                    rkey_alt python:'desc' if rkey=='asc' else 'asc';
+					obs python: indexes.manage_get_sortedObjects(sortkey=skey, revkey=rkey);">
+			  <tal:itemslist condition="obs">
+				<table class="table table-striped table-hover table-sm objectItems">
+			        <thead class="thead-light" tal:attributes="class python:'thead-light sorted_%s'%(request.get('rkey',''))">
+			          <tr>
+			            <th scope="col" class="zmi-object-check text-right">
+			              <input type="checkbox" id="checkAll" onclick="checkbox_all();" />
+			            </th>
+
+			            <th scope="col" class="zmi-object-id">
+			              <a title="Sort Ascending by Name"
+			                 href="?skey=id&rkey=asc"
+			                 tal:attributes="title python:'Sort %s by Name'%( rkey_alt.upper() );
+			                                 href python:'?skey=id&rkey=%s'%( rkey_alt );
+			                                 class python:request.get('skey',None)=='id' and 'zmi-sort_key' or None;
+			                                ">
+			                Name
+			                <i class="fa fa-sort"></i>
+			              </a>
+			            </th>
+
+			            <th scope="col" class="zmi-object-indextype">
+			              <a title="Sort Ascending by index type"
+			                 href="?skey=meta_type&rkey=asc"
+			                 tal:attributes="title python:'Sort %s by index type'%( rkey_alt.upper() );
+			                                 href python:'?skey=meta_type&rkey=%s'%( rkey_alt );
+			                                 class python:request.get('skey',None)=='meta_type' and 'zmi-sort_key' or None;
+			                                ">
+			                Index type
+			                <i class="fa fa-sort"></i>
+			              </a>
+			            </th>
+
+			            <th scope="col" class="zmi-object-size hidden-xs">
+			              <a title="Sort Ascending by indexed values"
+			                 href="?skey=indexSize&rkey=asc"
+			                 tal:attributes="title python:'Sort %s by indexed values'%( rkey_alt.upper() );
+			                                 href python:'?skey=indexSize&rkey=%s'%( rkey_alt );
+			                                 class python:request.get('skey',None)=='indexSize' and 'zmi-sort_key' or None;
+			                                ">
+			                # distinct values
+			                <i class="fa fa-sort"></i>
+			              </a>
+			            </th>
+			            
+			          </tr>
+			        </thead>
+					<tbody>
+						<tr tal:repeat="ob_dict obs">
+				            <tal:obj define="ob nocall:ob_dict/obj">
+				              <td class="zmi-object-check text-right" onclick="$(this).children('input').trigger('click');">
+				                <input type="checkbox" class="checkbox-list-item" name="ids:list" tal:attributes="value ob_dict/id" 
+				                  onclick="event.stopPropagation();select_objectitem($(this));" />
+				              </td>
+				              <td>
+				              	<a tal:attributes="href string:Indexes/${ob_dict/quoted_id}/manage_workspace" tal:content="ob_dict/id"></a>
+				              	<small tal:define="sourcenames ob/getIndexSourceNames"
+				              	   tal:condition="python: len(sourcenames) != 1 or sourcenames[0] != ob_dict['id']"
+				              	   tal:on-error="string:(${ob_dict/title|nothing})">
+				              		(indexed attributes: <span tal:replace="python: ', '.join(sourcenames)"/>)   	
+				              	</small>
+				              </td>
+				              <td class="text-left" tal:content="ob/meta_type"></td>
+				              <td class="text-left zmi-object-size hidden-xs"
+				              		tal:content="ob/indexSize|string:n/a">
+				              </td>
+				            </tal:obj>
+				          </tr>
+					</tbody>
+				</table>
+
+				<div class="zmi-controls">
+					<input class="btn btn-primary" type="submit" name="manage_delIndex:method" value="Remove index" />
+					<input class="btn btn-primary" type="submit" name="manage_reindexIndex:method" value="Reindex" />
+					<input class="btn btn-primary" type="submit" name="manage_clearIndex:method" value="Clear index" />
+				</div>
+
+				</tal:itemslist>
+				<tal:noitems condition="not: obs">
+					<div class="alert alert-info">There are currently no indexes</div>
+				</tal:noitems>
+			</tal:items>
+		</form>
+	</tal:indexes>
+</main>
+<script>
+  // +++++++++++++++++++++++++++
+  // Item  Selection
+  // +++++++++++++++++++++++++++
+  function checkbox_all() {
+    var checkboxes = document.getElementsByClassName('checkbox-list-item');
+    // Toggle Highlighting CSS-Class
+    if (document.getElementById('checkAll').checked) {
+      $('table.objectItems tbody tr').addClass('checked');
+    } else {
+      $('table.objectItems tbody tr').removeClass('checked');
+    };
+    // Set Checkbox like checkAll-Box
+    for (i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = document.getElementById('checkAll').checked;
+    }
+  };
+</script>
+<tal:footer replace="structure here/manage_page_footer" />
+

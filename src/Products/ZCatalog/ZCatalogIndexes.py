@@ -16,6 +16,7 @@
 from AccessControl.class_init import InitializeClass
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import manage_zcatalog_indexes
+from AccessControl.Permissions import view_management_screens
 from Acquisition import aq_base
 from Acquisition import aq_inner
 from Acquisition import aq_parent
@@ -72,6 +73,17 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
             return indexes.get(id)
         return indexes.get(id, default)
 
+    @security.protected(view_management_screens)
+    def manage_get_sortedObjects(self, sortkey, revkey):
+        """We need to wrap the index objects because some of them
+        can have security which does not work if they are unwrapped.
+        This happened to ZCTextIndex objects in Plone."""
+        items = super(ZCatalogIndexes, self).manage_get_sortedObjects(
+            sortkey, revkey)
+        for item in items:
+            item['obj'] = item['obj'].__of__(self)
+        return items
+
     @security.protected(manage_zcatalog_indexes)
     def objectIds(self, spec=None):
         indexes = aq_parent(aq_inner(self))._catalog.indexes
@@ -98,7 +110,6 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
 
     def __bobo_traverse__(self, REQUEST, name):
         indexes = aq_parent(self)._catalog.indexes
-
         o = indexes.get(name, None)
         if o is not None:
             if getattr(o, 'manage_workspace', None) is None:
