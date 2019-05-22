@@ -109,17 +109,28 @@ class UnIndex(SimpleItem):
         self.call_methods = call_methods
 
         # allow index to index multiple attributes
-        ia = _get(extra, 'indexed_attrs', id)
-        if isinstance(ia, str):
-            self.indexed_attrs = ia.split(',')
-        else:
-            self.indexed_attrs = list(ia)
-        self.indexed_attrs = [
-            attr.strip() for attr in self.indexed_attrs if attr]
-        if not self.indexed_attrs:
-            self.indexed_attrs = [id]
-
+        self.indexed_attrs = _get(extra, 'indexed_attrs', id)
         self.clear()
+
+    @property
+    def indexed_attrs(self):
+        return self._indexed_attrs
+
+    @indexed_attrs.setter
+    def indexed_attrs(self, value):
+        if isinstance(value, str):
+            value = value.split(',')
+        else:
+            value = list(value)
+        value = [attr.strip() for attr in value if attr]
+        if not value:
+            value = [self.id]
+
+        if len(value) > 1:
+            raise NotImplementedError('Multiple indexed attributes'
+                                      ' are not supported')
+
+        self._indexed_attrs = value
 
     def __len__(self):
         return self._length()
