@@ -248,7 +248,10 @@ class UnIndex(SimpleItem):
         fields = self.getIndexSourceNames()
         res = 0
         for attr in fields:
-            res += self._index_object(documentId, obj, threshold, attr)
+            r = self._index_object(documentId, obj, threshold, attr)
+            if isinstance(r, tuple):
+                r, datum = r
+            res += r
 
         if res > 0:
             self._increment_counter()
@@ -266,7 +269,7 @@ class UnIndex(SimpleItem):
             # ordering definition compared to any other object.
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
-            return 0
+            return (0, datum)
 
         datum = self._convert(datum, default=_marker)
 
@@ -297,7 +300,7 @@ class UnIndex(SimpleItem):
 
             returnStatus = 1
 
-        return returnStatus
+        return (returnStatus, datum)
 
     def _get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
