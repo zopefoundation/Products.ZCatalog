@@ -114,17 +114,28 @@ class UnIndex(SimpleItem):
         self.call_methods = call_methods
 
         # allow index to index multiple attributes
-        ia = _get(extra, 'indexed_attrs', id)
-        if isinstance(ia, str):
-            self.indexed_attrs = ia.split(',')
-        else:
-            self.indexed_attrs = list(ia)
-        self.indexed_attrs = [
-            attr.strip() for attr in self.indexed_attrs if attr]
-        if not self.indexed_attrs:
-            self.indexed_attrs = [id]
-
+        self.indexed_attrs = _get(extra, 'indexed_attrs', id)
         self.clear()
+
+    @property
+    def indexed_attrs(self):
+        return self._indexed_attrs
+
+    @indexed_attrs.setter
+    def indexed_attrs(self, value):
+        if isinstance(value, str):
+            value = value.split(',')
+        else:
+            value = list(value)
+        value = [attr.strip() for attr in value if attr]
+        if not value:
+            value = [self.id]
+
+        if len(value) > 1:
+            raise NotImplementedError('Multiple indexed attributes'
+                                      ' are not supported')
+
+        self._indexed_attrs = value
 
     def __len__(self):
         return self._length()
@@ -282,7 +293,10 @@ class UnIndex(SimpleItem):
         fields = self.getIndexSourceNames()
         res = 0
         for attr in fields:
-            res += self._index_object(documentId, obj, threshold, attr)
+            r = self._index_object(documentId, obj, threshold, attr)
+            if isinstance(r, tuple):
+                r, datum = r
+            res += r
 
         if res > 0:
             self._increment_counter()
@@ -300,7 +314,9 @@ class UnIndex(SimpleItem):
             # ordering definition compared to any other object.
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
-            return 0
+
+            return (0, datum)
+
         elif datum not in [missing, empty]:
             datum = self._convert(datum, default=_marker)
 
@@ -334,7 +350,7 @@ class UnIndex(SimpleItem):
 
             returnStatus = 1
 
-        return returnStatus
+        return (returnStatus, datum)
 
     def _get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
