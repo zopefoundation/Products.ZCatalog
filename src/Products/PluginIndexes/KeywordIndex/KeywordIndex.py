@@ -67,9 +67,9 @@ class KeywordIndex(UnIndex):
         # we'll do so.
 
         newKeywords = self._get_object_keywords(obj, attr)
-        oldKeywords = self._unindex.get(documentId, None)
+        oldKeywords = self._unindex.get(documentId, _marker)
 
-        if oldKeywords is None or oldKeywords in (missing, empty):
+        if oldKeywords is _marker or oldKeywords in (missing, empty):
             # we've got a new document, let's not futz around.
             if newKeywords in (missing, empty):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
