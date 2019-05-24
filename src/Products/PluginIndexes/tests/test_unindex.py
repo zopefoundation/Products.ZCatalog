@@ -313,3 +313,11 @@ class TestUnIndex(unittest.TestCase):
 
         index.unindex_object(2)
         self.assertEqual(tuple(apply(req)[0]), (0,))
+
+    def test_multiple_indexed_attr(self):
+        self.assertRaises(NotImplementedError,
+                          self._makeOne,
+                          'foo',
+                          extra={'indexed_attrs':
+                                 'foo, bar'}
+                          )
