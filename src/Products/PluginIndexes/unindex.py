@@ -160,8 +160,11 @@ class UnIndex(SimpleItem):
         else:
             self._increment_counter()
 
-    def __nonzero__(self):
-        return not not self._unindex
+    def __bool__(self):
+        return bool(self._unindex)
+
+    # python2.7 backward compatibility
+    __nonzero__ = __bool__
 
     def histogram(self):
         """Return a mapping which provides a histogram of the number of

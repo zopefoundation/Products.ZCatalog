@@ -288,11 +288,11 @@ class ITransposeQuery(Interface):
 class _SpecialIndexValue(str):
     """generic marker class for values that cannot be indexed regularly"""
 
-    def __nonzero__(self):
-        return False
-
     def __bool__(self):
         return False
+
+    # python2.7 backward compatibility
+    __nonzero__ = __bool__
 
 
 class IIndexingMissingValue(Interface):
