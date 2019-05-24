@@ -183,6 +183,7 @@ class TestKeywordIndex(unittest.TestCase):
 
         for k, v in values[:8]:
             entry = self._index.getEntryForObject(k, None)
+            entry = list(entry)
             entry.sort()
             kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
@@ -229,13 +230,13 @@ class TestKeywordIndex(unittest.TestCase):
         expected = Dummy(['z'])
         self._index.index_object(9, expected)
         self._checkApply({'foo': ['z']}, [(9, expected), ])
-        self.assertEqual(self._index._unindex.get(9), ['z'])
+        self.assertEqual(list(self._index._unindex.get(9)), ['z'])
 
         self.assertIs(self._index._unindex.get(8), empty)
         expected = Dummy(['q'])
         self._index.index_object(8, expected)
         self._checkApply({'foo': ['q']}, [(8, expected), ])
-        self.assertEqual(self._index._unindex.get(8), ['q'])
+        self.assertEqual(list(self._index._unindex.get(8)), ['q'])
 
     def testReindexNoChange(self):
         self._populateIndex()
