@@ -25,7 +25,6 @@ from BTrees.IIBTree import (
     IITreeSet,
     IISet,
     multiunion,
-    union,
 )
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
