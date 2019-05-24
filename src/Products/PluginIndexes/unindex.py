@@ -576,7 +576,6 @@ class UnIndex(SimpleItem):
 
                     return cached
 
-        ret_miss_val = False
         if not record.keys and not_parm is not _marker:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
@@ -643,9 +642,7 @@ class UnIndex(SimpleItem):
                 if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
-                    if ret_miss_val:
-                        result = union(result,
-                                       self.getSpecialIndex(missing))
+
                 return result
 
             if operator == 'or':
@@ -744,9 +741,7 @@ class UnIndex(SimpleItem):
                 if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
-                    if ret_miss_val:
-                        result = union(result,
-                                       self.getSpecialIndex(missing))
+
                 return result
 
             if operator == 'or':
@@ -794,8 +789,7 @@ class UnIndex(SimpleItem):
         if not_parm is not _marker:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
-            if ret_miss_val:
-                r = union(r, self.getSpecialIndex(missing))
+
         return r
 
     def hasUniqueValuesFor(self, name):
