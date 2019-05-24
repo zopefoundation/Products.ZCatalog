@@ -82,7 +82,7 @@ class KeywordIndex(UnIndex):
             except TypeError:
                 return 0
 
-            self._unindex[documentId] = list(newKeywords)
+            self._unindex[documentId] = OOSet(newKeywords)
 
             if oldKeywords in (missing, empty):
                 self.removeSpecialIndexEntry(oldKeywords, documentId)
@@ -103,7 +103,7 @@ class KeywordIndex(UnIndex):
             if fdiff or rdiff:
                 # if we've got forward or reverse changes
                 if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
+                    self._unindex[documentId] = OOSet(newKeywords)
                 else:
                     self.insertSpecialIndexEntry(specialvalue, documentId)
                     self._unindex[documentId] = specialvalue
