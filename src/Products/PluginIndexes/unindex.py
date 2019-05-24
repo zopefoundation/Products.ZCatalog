@@ -365,6 +365,13 @@ class UnIndex(SimpleItem):
             if safe_callable(datum):
                 datum = datum()
         except (AttributeError, TypeError):
+            LOG.debug('%(context)s: Cannot determine datum for attribute '
+                      '%(attr)s of object %(obj)r', dict(
+                          context=self.__class__.__name__,
+                          attr=attr,
+                          obj=obj),
+                      exc_info=True)
+
             if self.providesSpecialIndex(missing):
                 return missing
             return _marker

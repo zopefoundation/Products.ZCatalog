@@ -127,6 +127,13 @@ class KeywordIndex(UnIndex):
             try:
                 newKeywords = newKeywords()
             except (AttributeError, TypeError):
+                LOG.debug('%(context)s: Cannot determine datum for attribute '
+                          '%(attr)s of object %(obj)r', dict(
+                              context=self.__class__.__name__,
+                              attr=attr,
+                              obj=obj),
+                          exc_info=True)
+
                 return missing
 
         if newKeywords is None:
