@@ -227,12 +227,22 @@ class TestKeywordIndex(unittest.TestCase):
         self._checkApply({'foo': ['a', 'b', 'c', 'e', 'f']}, values[:6])
 
         self.assertIs(self._index._unindex.get(9), missing)
+        expected = Dummy([])  # empty
+        # replace missing with empty
+        self._index.index_object(9, expected)
+        self._checkApply({'foo': missing}, [])
+
         expected = Dummy(['z'])
         self._index.index_object(9, expected)
         self._checkApply({'foo': ['z']}, [(9, expected), ])
         self.assertEqual(list(self._index._unindex.get(9)), ['z'])
 
         self.assertIs(self._index._unindex.get(8), empty)
+        expected = Dummy(None)  # missing
+        # replace empty with missing
+        self._index.index_object(8, expected)
+        self._checkApply({'foo': empty}, [])
+
         expected = Dummy(['q'])
         self._index.index_object(8, expected)
         self._checkApply({'foo': ['q']}, [(8, expected), ])
@@ -289,7 +299,7 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertIs(self._index._unindex.get(10), missing)
         self.assertIs(self._index.getEntryForObject(10), missing)
 
-    def test_missing_when_raising_attribute(self):
+    def test_missing_when_raising_attribute_error(self):
         class FauxObject:
             def foo(self):
                 raise AttributeError
@@ -298,7 +308,7 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertIs(self._index._unindex.get(10), missing)
         self.assertIs(self._index.getEntryForObject(10), missing)
 
-    def test_missing_when_raising_typeeror(self):
+    def test_missing_when_raising_type_error(self):
         class FauxObject:
             def foo(self, name):
                 return 'foo'
