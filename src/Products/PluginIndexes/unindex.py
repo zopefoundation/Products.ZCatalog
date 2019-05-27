@@ -63,6 +63,10 @@ class UnIndex(SimpleItem):
     operators = ('or', 'and')
     useOperator = 'or'
     query_options = ()
+    special_values = {TypeError: missing,
+                      AttributeError: missing,
+                      None: missing,
+                      '': empty}
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -369,19 +373,22 @@ class UnIndex(SimpleItem):
             if safe_callable(datum):
                 datum = datum()
         except (AttributeError, TypeError):
+            datum = self.special_values.get(sys.exc_info()[0], _marker)
             LOG.debug('%(context)s: Cannot determine datum for attribute '
-                      '%(attr)s of object %(obj)r', dict(
-                          context=self.__class__.__name__,
-                          attr=attr,
-                          obj=obj),
+                      '%(attr)s of object %(obj)r',
+                      dict(context=self.__class__.__name__,
+                           attr=attr,
+                           obj=obj),
                       exc_info=True)
 
-            if self.providesSpecialIndex(missing):
-                return missing
+            if self.providesSpecialIndex(datum):
+                return datum
             return _marker
 
-        if not datum and self.providesSpecialIndex(empty):
-            return empty
+        if self.providesSpecialIndex(empty):
+            datum = self.special_values.get(datum, _marker)
+            if datum is not _marker:
+                return datum
 
         return datum
 
