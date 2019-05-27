@@ -320,7 +320,7 @@ class TestKeywordIndex(unittest.TestCase):
     def test_value_removes(self):
         to_index = Dummy(['hello'])
         self._index._index_object(10, to_index, attr='foo')
-        self.assertTrue(self._index._unindex.get(10))
+        self.assertEqual(list(self._index._unindex.get(10)), ['hello'])
 
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')

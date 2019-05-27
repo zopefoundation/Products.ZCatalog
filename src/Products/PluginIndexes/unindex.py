@@ -327,7 +327,12 @@ class UnIndex(SimpleItem):
         oldDatum = self._unindex.get(documentId, _marker)
         if datum != oldDatum:
             if oldDatum is not _marker:
-                self.removeForwardIndexEntry(oldDatum, documentId)
+
+                if oldDatum in [missing, empty]:
+                    self.removeSpecialIndexEntry(oldDatum, documentId)
+                else:
+                    self.removeForwardIndexEntry(oldDatum, documentId)
+
                 if datum is _marker:
                     try:
                         del self._unindex[documentId]

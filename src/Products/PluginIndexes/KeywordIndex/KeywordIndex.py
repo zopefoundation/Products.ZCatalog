@@ -102,35 +102,30 @@ class KeywordIndex(UnIndex):
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
             if oldKeywords in (missing, empty):
-                oldSpecialvalue = oldKeywords
-                oldKeywords = OOSet()
-            elif not isinstance(oldKeywords, OOSet):
-                oldKeywords = OOSet(oldKeywords)
+                self.removeSpecialIndexEntry(oldKeywords, documentId)
+                oldSet = OOSet()
+            else:
+                if not isinstance(oldKeywords, OOSet):
+                    oldKeywords = OOSet(oldKeywords)
+                oldSet = oldKeywords
 
             if newKeywords in (missing, empty):
-                newSpecialvalue = newKeywords
-                newKeywords = OOSet()
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+                newSet = OOSet()
             else:
-                newKeywords = OOSet(newKeywords)
+                newSet = newKeywords = OOSet(newKeywords)
 
-            fdiff = difference(oldKeywords, newKeywords)
-            rdiff = difference(newKeywords, oldKeywords)
+            fdiff = difference(oldSet, newSet)
+            rdiff = difference(newSet, oldSet)
             if fdiff or rdiff:
                 # if we've got forward or reverse changes
-                if newKeywords:
-                    self._unindex[documentId] = OOSet(newKeywords)
-                else:
-                    self.insertSpecialIndexEntry(newSpecialvalue, documentId)
-                    self._unindex[documentId] = newSpecialvalue
-
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
                 if rdiff:
                     for kw in rdiff:
                         self.insertForwardIndexEntry(kw, documentId)
 
-            if not oldKeywords and oldSpecialvalue in (missing, empty):
-                self.removeSpecialIndexEntry(oldSpecialvalue, documentId)
+            self._unindex[documentId] = newKeywords
 
         return 1
 

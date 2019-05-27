@@ -288,6 +288,10 @@ class ITransposeQuery(Interface):
 class _SpecialIndexValue(str):
     """generic marker class for values that cannot be indexed regularly"""
 
+    def __iter__(self):
+        # don't treat _SpecialIndexValue as iterable string
+        yield self
+
     def __bool__(self):
         return False
 
