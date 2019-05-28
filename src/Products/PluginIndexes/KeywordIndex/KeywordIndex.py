@@ -11,6 +11,7 @@
 #
 ##############################################################################
 
+import sys
 from logging import getLogger
 
 from BTrees.OOBTree import difference
@@ -47,6 +48,10 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
+    special_values = {TypeError: missing,
+                      AttributeError: missing,
+                      None: missing,
+                      (): empty}
 
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
@@ -131,6 +136,17 @@ class KeywordIndex(UnIndex):
 
     def _get_object_keywords(self, obj, attr):
         newKeywords = getattr(obj, attr, None)
+
+        def _getSpecialValueFor(datum):
+            try:
+                special_value = self.special_values[datum]
+            except TypeError:
+                raise KeyError(datum)
+
+            if self.providesSpecialIndex(special_value):
+                return special_value
+            raise KeyError(datum)
+
         if safe_callable(newKeywords):
             try:
                 newKeywords = newKeywords()
@@ -142,24 +158,34 @@ class KeywordIndex(UnIndex):
                               obj=obj),
                           exc_info=True)
 
-                return missing
+                newKeywords = sys.exc_info()[0]
+                try:
+                    return _getSpecialValueFor(newKeywords)
+                except KeyError:
+                    return _marker
 
-        if newKeywords is None:
-            return missing
+        try:
+            return _getSpecialValueFor(newKeywords)
+        except KeyError:
+            pass
 
-        if not newKeywords:
-            return empty
-        elif isinstance(newKeywords, basestring):
-            return (newKeywords,)
+        # normalize datum
+        if isinstance(newKeywords, basestring):
+            newKeywords = (newKeywords,)
         else:
             try:
                 # unique
                 newKeywords = set(newKeywords)
             except TypeError:
                 # Not a sequence
-                return (newKeywords,)
+                newKeywords = (newKeywords,)
             else:
-                return tuple(newKeywords)
+                newKeywords = tuple(newKeywords)
+
+        try:
+            return _getSpecialValueFor(newKeywords)
+        except KeyError:
+            return newKeywords
 
     def unindex_objectKeywords(self, documentId, keywords):
         """ carefully unindex the object with integer id 'documentId'"""

@@ -299,8 +299,17 @@ class _SpecialIndexValue(str):
     __nonzero__ = __bool__
 
 
-class IIndexingMissingValue(Interface):
-    """Marker interface to mark indexes with support the
+class _IIndexingSpecialValue(Interface):
+    """Abstract marker interface to mark indexes which support a
+    special value query term."""
+
+    special_values = Attribute('A dict which maps not regularly indexable '
+                               'values or errors on value calculation to '
+                               'a special value')
+
+
+class IIndexingMissingValue(_IIndexingSpecialValue):
+    """Marker interface to mark indexes which support the
     `missing` query term."""
 
 
@@ -310,11 +319,11 @@ class IIndexingMissingValue(Interface):
 missing = _SpecialIndexValue('missing')
 
 
-class IIndexingEmptyValue(Interface):
+class IIndexingEmptyValue(_IIndexingSpecialValue):
     """Marker interface to mark indexes with support the
     `empty` query term."""
 
 
 # `empty` Value can be used as query "term" to query
-#    for objects with an empty value (like an empty set)
+# for objects with an empty value (like an empty set)
 empty = _SpecialIndexValue('empty')

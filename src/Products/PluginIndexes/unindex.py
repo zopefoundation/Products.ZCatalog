@@ -65,8 +65,7 @@ class UnIndex(SimpleItem):
     query_options = ()
     special_values = {TypeError: missing,
                       AttributeError: missing,
-                      None: missing,
-                      '': empty}
+                      None: missing}
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -368,29 +367,37 @@ class UnIndex(SimpleItem):
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
 
+        def _getSpecialValueFor(datum):
+            try:
+                special_value = self.special_values[datum]
+            except TypeError:
+                raise KeyError(datum)
+
+            if self.providesSpecialIndex(special_value):
+                return special_value
+            raise KeyError(datum)
+
         try:
             datum = getattr(obj, attr)
             if safe_callable(datum):
                 datum = datum()
         except (AttributeError, TypeError):
-            datum = self.special_values.get(sys.exc_info()[0], _marker)
             LOG.debug('%(context)s: Cannot determine datum for attribute '
                       '%(attr)s of object %(obj)r',
                       dict(context=self.__class__.__name__,
                            attr=attr,
                            obj=obj),
                       exc_info=True)
+            datum = sys.exc_info()[0]
+            try:
+                return _getSpecialValueFor(datum)
+            except KeyError:
+                return _marker
 
-            if self.providesSpecialIndex(datum):
-                return datum
-            return _marker
-
-        if self.providesSpecialIndex(empty):
-            datum = self.special_values.get(datum, _marker)
-            if datum is not _marker:
-                return datum
-
-        return datum
+        try:
+            return _getSpecialValueFor(datum)
+        except KeyError:
+            return datum
 
     def _increment_counter(self):
         if self._counter is None:

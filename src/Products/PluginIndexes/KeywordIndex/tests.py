@@ -324,7 +324,33 @@ class TestKeywordIndex(unittest.TestCase):
 
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
-        self.assertIs(self._index._unindex.get(10), empty)
+        self.assertEqual(list(self._index._unindex.get(10)), [''])
+
+        index_len = len(self._index)
+        empty_len = len(self._index.getSpecialIndex(empty))
+        missing_len = len(self._index.getSpecialIndex(missing))
+
+        to_index = Dummy(tuple())
+        self._index._index_object(10, to_index, attr='foo')
+        self.assertEqual(self._index._unindex.get(10), empty)
+        self.assertEqual(len(self._index), index_len - 1)
+        self.assertEqual(len(self._index.getSpecialIndex(empty)),
+                         empty_len + 1)
+        self.assertEqual(len(self._index.getSpecialIndex(missing)),
+                         missing_len)
+
+        index_len = len(self._index)
+        empty_len = len(self._index.getSpecialIndex(empty))
+        missing_len = len(self._index.getSpecialIndex(missing))
+
+        to_index = Dummy(None)
+        self._index._index_object(10, to_index, attr='foo')
+        self.assertEqual(self._index._unindex.get(10), missing)
+        self.assertEqual(len(self._index), index_len)
+        self.assertEqual(len(self._index.getSpecialIndex(empty)),
+                         empty_len - 1)
+        self.assertEqual(len(self._index.getSpecialIndex(missing)),
+                         missing_len + 1)
 
     def test_getCounter(self):
         index = self._makeOne('foo')
