@@ -287,6 +287,9 @@ class TestUnIndex(unittest.TestCase):
         index.clear()
         # activate `not`, `operator`
         index.query_options = 'not', 'operator'
+        # define empty string as empty value
+        index.special_values.update({'': empty})
+
         apply = index._apply_index
 
         class Dummy(object):
