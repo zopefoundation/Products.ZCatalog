@@ -79,11 +79,11 @@ class KeywordIndex(UnIndex):
             if newKeywords in (missing, empty):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
             else:
-                keys = list()
+                keywords = OOSet()
                 for kw in newKeywords:
                     try:
                         self.insertForwardIndexEntry(kw, documentId)
-                        keys.append(kw)
+                        keywords.insert(kw)
                     except TypeError:
                         # key is not valid for this Btree so we have to
                         # roll back insertForwardIndexEntry
@@ -96,12 +96,7 @@ class KeywordIndex(UnIndex):
                                       doc_id=documentId,
                                       index=self.id))
 
-                        self.unindex_objectKeywords(documentId, keys)
-                        return 0
-
-                newKeywords = OOSet(newKeywords)
-
-            self._unindex[documentId] = newKeywords
+                newKeywords = keywords
 
         else:
             # we have an existing entry for this document, and we need
@@ -130,7 +125,7 @@ class KeywordIndex(UnIndex):
                     for kw in rdiff:
                         self.insertForwardIndexEntry(kw, documentId)
 
-            self._unindex[documentId] = newKeywords
+        self._unindex[documentId] = newKeywords
 
         return 1
 
