@@ -156,23 +156,22 @@ class KeywordIndex(UnIndex):
         except KeyError:
             pass
 
+        keywords = OOSet()
         # normalize datum
         if isinstance(newKeywords, basestring):
-            newKeywords = (newKeywords,)
+            keywords.insert(newKeywords)
         else:
             try:
                 # unique
-                newKeywords = set(newKeywords)
+                keywords.update(newKeywords)
             except TypeError:
                 # Not a sequence
-                newKeywords = (newKeywords,)
-            else:
-                newKeywords = tuple(newKeywords)
+                keywords.insert(newKeywords)
 
         try:
-            return _getSpecialValueFor(newKeywords)
+            return _getSpecialValueFor(tuple(keywords))
         except KeyError:
-            return newKeywords
+            return keywords
 
     def index_objectKeywords(self, documentId, keywords):
         """ carefully index the object with integer id 'documentId'"""
