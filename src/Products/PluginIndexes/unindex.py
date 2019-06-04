@@ -63,9 +63,7 @@ class UnIndex(SimpleItem):
     operators = ('or', 'and')
     useOperator = 'or'
     query_options = ()
-    special_values = {TypeError: missing,
-                      AttributeError: missing,
-                      None: missing}
+    exceptions_treated_as_missing = AttributeError, TypeError,
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -362,42 +360,26 @@ class UnIndex(SimpleItem):
 
         return (returnStatus, datum)
 
+    def map_value(self, value):
+        if value is None and self.providesSpecialIndex(missing):
+            return missing
+        else:
+            return value
+
     def _get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
-
-        def _getSpecialValueFor(datum):
-            try:
-                special_value = self.special_values[datum]
-            except TypeError:
-                raise KeyError(datum)
-
-            if self.providesSpecialIndex(special_value):
-                return special_value
-            raise KeyError(datum)
-
         try:
             datum = getattr(obj, attr)
             if safe_callable(datum):
                 datum = datum()
-        except (AttributeError, TypeError):
-            LOG.debug('%(context)s: Cannot determine datum for attribute '
-                      '%(attr)s of object %(obj)r',
-                      dict(context=self.__class__.__name__,
-                           attr=attr,
-                           obj=obj),
-                      exc_info=True)
-            datum = sys.exc_info()[0]
-            try:
-                return _getSpecialValueFor(datum)
-            except KeyError:
+            return self.map_value(datum)
+        except self.exceptions_treated_as_missing:
+            if self.providesSpecialIndex(missing):
+                return missing
+            else:
                 return _marker
-
-        try:
-            return _getSpecialValueFor(datum)
-        except KeyError:
-            return datum
 
     def _increment_counter(self):
         if self._counter is None:
