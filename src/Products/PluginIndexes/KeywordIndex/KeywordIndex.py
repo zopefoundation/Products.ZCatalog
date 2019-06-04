@@ -79,24 +79,12 @@ class KeywordIndex(UnIndex):
             if newKeywords in (missing, empty):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
             else:
-                keywords = OOSet()
-                for kw in newKeywords:
-                    try:
-                        self.insertForwardIndexEntry(kw, documentId)
-                        keywords.insert(kw)
-                    except TypeError:
-                        # key is not valid for this Btree so we have to
-                        # roll back insertForwardIndexEntry
-                        LOG.error('%(context)s: Unable to insert forward '
-                                  'index entry for document with id '
-                                  '%(doc_id)s and keyword %(kw)r '
-                                  'for index %{index}r.', dict(
-                                      context=self.__class__.__name__,
-                                      kw=kw,
-                                      doc_id=documentId,
-                                      index=self.id))
-
-                newKeywords = keywords
+                newKeywords = self.index_objectKeywords(documentId,
+                                                        newKeywords)
+                # TODO: What do we do if none of the keywords
+                # is indexable?
+                if not newKeywords:
+                    return 0
 
         else:
             # we have an existing entry for this document, and we need
@@ -122,8 +110,12 @@ class KeywordIndex(UnIndex):
                 if fdiff:
                     self.unindex_objectKeywords(documentId, fdiff)
                 if rdiff:
-                    for kw in rdiff:
-                        self.insertForwardIndexEntry(kw, documentId)
+                    newKeywords = self.index_objectKeywords(documentId,
+                                                            rdiff)
+                    # TODO: What do we do if none of the keywords
+                    # is indexable?
+                    if not newKeywords:
+                        return 0
 
         self._unindex[documentId] = newKeywords
 
@@ -181,6 +173,27 @@ class KeywordIndex(UnIndex):
             return _getSpecialValueFor(newKeywords)
         except KeyError:
             return newKeywords
+
+    def index_objectKeywords(self, documentId, keywords):
+        """ carefully index the object with integer id 'documentId'"""
+
+        indexed_keys = OOSet()
+        for kw in keywords:
+            try:
+                self.insertForwardIndexEntry(kw, documentId)
+                indexed_keys.insert(kw)
+            except TypeError:
+                # key is not valid for this Btree so we have to
+                # log and ignore keyword not indexable
+                LOG.error('%(context)s: Unable to insert forward '
+                          'index entry for document with id '
+                          '%(doc_id)s and keyword %(kw)r '
+                          'for index %{index}r.', dict(
+                              context=self.__class__.__name__,
+                              kw=kw,
+                              doc_id=documentId,
+                              index=self.id))
+        return indexed_keys
 
     def unindex_objectKeywords(self, documentId, keywords):
         """ carefully unindex the object with integer id 'documentId'"""
