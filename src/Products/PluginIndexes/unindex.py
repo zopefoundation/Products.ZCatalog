@@ -321,7 +321,7 @@ class UnIndex(SimpleItem):
 
             return (0, datum)
 
-        elif datum not in [missing, empty]:
+        elif not self.providesSpecialIndex(datum):
             datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
@@ -330,7 +330,7 @@ class UnIndex(SimpleItem):
         if datum != oldDatum:
             if oldDatum is not _marker:
 
-                if oldDatum in [missing, empty]:
+                if self.providesSpecialIndex(oldDatum):
                     self.removeSpecialIndexEntry(oldDatum, documentId)
                 else:
                     self.removeForwardIndexEntry(oldDatum, documentId)
@@ -351,7 +351,7 @@ class UnIndex(SimpleItem):
                                   exc_info=sys.exc_info())
 
             if datum is not _marker:
-                if datum in [missing, empty]:
+                if self.providesSpecialIndex(datum):
                     self.insertSpecialIndexEntry(datum, documentId)
                 else:
                     self.insertForwardIndexEntry(datum, documentId)
@@ -446,7 +446,7 @@ class UnIndex(SimpleItem):
         setlist = []
         for k in not_parm:
             # not indexed values are excluded by default
-            if k in [missing, empty]:
+            if self.providesSpecialIndex(k):
                 continue
             s = index.get(k, None)
             if s is None:
@@ -573,10 +573,9 @@ class UnIndex(SimpleItem):
                         not_parm = list(map(self._convert, not_parm))
 
                         excludes = []
-                        for sv in (missing, empty):
-                            if self.providesSpecialIndex(sv) \
-                               and sv in not_parm:
-                                excludes.append(self.getSpecialIndex(sv))
+                        for k in not_parm:
+                            if self.providesSpecialIndex(k):
+                                excludes.append(self.getSpecialIndex(k))
 
                         excludes.append(self._apply_not(not_parm, resultset))
                         cached = difference(cached, multiunion(excludes))
@@ -588,9 +587,9 @@ class UnIndex(SimpleItem):
             not_parm = list(map(self._convert, not_parm))
 
             excludes = []
-            for sv in (missing, empty):
-                if self.providesSpecialIndex(sv) and sv in not_parm:
-                    excludes.append(self.getSpecialIndex(sv))
+            for k in not_parm:
+                if self.providesSpecialIndex(k):
+                    excludes.append(self.getSpecialIndex(k))
 
             result = IISet(self._unindex)
             if cachekey is not None:
@@ -699,7 +698,7 @@ class UnIndex(SimpleItem):
                     continue
 
                 # query for MissingValue or EmptyValue
-                if k in (missing, empty):
+                if self.providesSpecialIndex(k):
                     s = self.getSpecialIndex(k)
                     setlist.append(s)
                     continue
