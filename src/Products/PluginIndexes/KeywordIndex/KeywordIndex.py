@@ -11,7 +11,6 @@
 #
 ##############################################################################
 
-import sys
 from logging import getLogger
 
 from BTrees.OOBTree import difference
