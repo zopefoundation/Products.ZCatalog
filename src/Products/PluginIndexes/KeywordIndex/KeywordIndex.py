@@ -20,7 +20,6 @@ from App.special_dtml import DTMLFile
 from zope.interface import implementer
 
 from Products.PluginIndexes.unindex import UnIndex
-from Products.PluginIndexes.util import safe_callable
 from Products.PluginIndexes.interfaces import (
     IIndexingMissingValue,
     missing,
@@ -71,7 +70,7 @@ class KeywordIndex(UnIndex):
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
 
-        newKeywords = self._get_object_keywords(obj, attr)
+        newKeywords = self.get_object_datum(obj, attr)
         oldKeywords = self._unindex.get(documentId, _marker)
 
         if oldKeywords is _marker:
@@ -121,60 +120,22 @@ class KeywordIndex(UnIndex):
 
         return 1
 
-    def _get_object_keywords(self, obj, attr):
-        newKeywords = getattr(obj, attr, None)
+    def map_value(self, value):
+        value = super(KeywordIndex, self).map_value(value)
+        if value is not missing:
+            # at this place, *value* is expected to be a sequence
+            if isinstance(value, basestring):
+                value = OOSet((value,))
+            if not value and self.providesSpecialIndex(empty):
+                value = empty
+            else:
+                value = OOSet(value)
 
-        def _getSpecialValueFor(datum):
-            try:
-                special_value = self.special_values[datum]
-            except TypeError:
-                raise KeyError(datum)
-
-            if self.providesSpecialIndex(special_value):
-                return special_value
-            raise KeyError(datum)
-
-        if safe_callable(newKeywords):
-            try:
-                newKeywords = newKeywords()
-            except (AttributeError, TypeError):
-                LOG.debug('%(context)s: Cannot determine datum for attribute '
-                          '%(attr)s of object %(obj)r', dict(
-                              context=self.__class__.__name__,
-                              attr=attr,
-                              obj=obj),
-                          exc_info=True)
-
-                newKeywords = sys.exc_info()[0]
-                try:
-                    return _getSpecialValueFor(newKeywords)
-                except KeyError:
-                    return _marker
-
-        try:
-            return _getSpecialValueFor(newKeywords)
-        except KeyError:
-            pass
-
-        keywords = OOSet()
-        # normalize datum
-        if isinstance(newKeywords, basestring):
-            keywords.insert(newKeywords)
-        else:
-            try:
-                # unique
-                keywords.update(newKeywords)
-            except TypeError:
-                # Not a sequence
-                keywords.insert(newKeywords)
-
-        try:
-            return _getSpecialValueFor(tuple(keywords))
-        except KeyError:
-            return keywords
+        return value
 
     def index_objectKeywords(self, documentId, keywords):
-        """ carefully index the object with integer id 'documentId'"""
+        """ carefully index keywords of object with integer id 'documentId'
+        """
 
         indexed_keys = OOSet()
         for kw in keywords:
@@ -195,7 +156,8 @@ class KeywordIndex(UnIndex):
         return indexed_keys
 
     def unindex_objectKeywords(self, documentId, keywords):
-        """ carefully unindex the object with integer id 'documentId'"""
+        """ carefully unindex keywords of object with integer id 'documentId'
+        """
 
         if keywords is not None:
             for kw in keywords:

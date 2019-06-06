@@ -36,10 +36,16 @@ from Products.PluginIndexes.interfaces import (
     missing,
     empty,
 )
+from Products.PluginIndexes.util import safe_callable
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
 
+try:
+    basestring
+except NameError:
+    # Python 3 compatibility
+    basestring = (bytes, str)
 
 LOG = logging.getLogger('CompositeIndex')
 
@@ -281,26 +287,40 @@ class CompositeIndex(KeywordIndex):
                 p = combinations(c, r)
                 pkl.extend(p)
 
-        return tuple(pkl)
+        return OOSet(pkl)
+
+    def get_object_datum(self, obj, attr):
+        # self.id is the name of the index, which is also the name of the
+        # attribute we're interested in.  If the attribute is callable,
+        # we'll do so.
+        try:
+            datum = getattr(obj, attr)
+            if safe_callable(datum):
+                datum = datum()
+        except (AttributeError, TypeError):
+            datum = _marker
+        return datum
 
     def _get_component_keywords(self, obj, component):
 
         if component.meta_type == 'FieldIndex':
             # last attribute is the winner if value is not None
             for attr in component.attributes:
-                datum = self._get_object_datum(obj, attr)
+                datum = self.get_object_datum(obj, attr)
                 if datum is None:
                     continue
             if datum is None:
                 return ()
-            if isinstance(datum, list):
-                datum = tuple(datum)
+            if isinstance(datum, (list, OOSet)):
+                return tuple(datum)
             return (datum,)
 
         elif component.meta_type == 'KeywordIndex':
             # last attribute is the winner
             attr = component.attributes[-1]
-            datum = self._get_object_keywords(obj, attr)
+            datum = self.get_object_datum(obj, attr)
+            if isinstance(datum, basestring):
+                datum = (datum,)
             if isinstance(datum, list):
                 datum = tuple(datum)
             return datum
@@ -308,7 +328,7 @@ class CompositeIndex(KeywordIndex):
         elif component.meta_type == 'BooleanIndex':
             # last attribute is the winner
             attr = component.attributes[-1]
-            datum = self._get_object_datum(obj, attr)
+            datum = self.get_object_datum(obj, attr)
             if datum is not _marker:
                 datum = int(bool(datum))
             return (datum,)

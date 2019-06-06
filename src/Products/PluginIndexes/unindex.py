@@ -31,6 +31,7 @@ from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from ZODB.POSException import ConflictError
+from zope.deprecation import deprecation
 from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
@@ -311,7 +312,7 @@ class UnIndex(SimpleItem):
         returnStatus = 0
 
         # First we need to see if there's anything interesting to look at
-        datum = self._get_object_datum(obj, attr)
+        datum = self.get_object_datum(obj, attr)
         if datum is None:
             # Prevent None from being indexed. None doesn't have a valid
             # ordering definition compared to any other object.
@@ -366,7 +367,7 @@ class UnIndex(SimpleItem):
         else:
             return value
 
-    def _get_object_datum(self, obj, attr):
+    def get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
@@ -380,6 +381,12 @@ class UnIndex(SimpleItem):
                 return missing
             else:
                 return _marker
+
+    _get_object_datum = get_object_datum
+    _get_object_datum = deprecation.deprecated(_get_object_datum,
+                                               '`_get_object_datum` is moved '
+                                               'to public method '
+                                               '`get_object_datum`')
 
     def _increment_counter(self):
         if self._counter is None:
