@@ -303,14 +303,19 @@ class _IIndexingSpecialValue(Interface):
     """Abstract marker interface to mark indexes which support a
     special value query term."""
 
-    special_values = Attribute('A dict which maps not regularly indexable '
-                               'values or errors on value calculation to '
-                               'a special value')
+    def map_value(value):
+        """ Map value, which is typically not generically indexable,
+        to a special value if required."""
 
 
 class IIndexingMissingValue(_IIndexingSpecialValue):
     """Marker interface to mark indexes which support the
     `missing` query term."""
+
+    exceptions_treated_as_missing = \
+        Attribute('Tuple of exceptions that are treated as '
+                  'special value `missing` when the request '
+                  'of an object attribute raises an exception')
 
 
 # `missing` can be used as query term to query
@@ -324,6 +329,6 @@ class IIndexingEmptyValue(_IIndexingSpecialValue):
     `empty` query term."""
 
 
-# `empty` Value can be used as query "term" to query
+# `empty` Value can be used as query term to query
 # for objects with an empty value (like an empty set)
 empty = _SpecialIndexValue('empty')
