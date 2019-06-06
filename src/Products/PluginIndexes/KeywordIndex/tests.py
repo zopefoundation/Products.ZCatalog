@@ -298,6 +298,8 @@ class TestKeywordIndex(unittest.TestCase):
         self._index._index_object(10, to_index, attr='UNKNOWN')
         self.assertIs(self._index._unindex.get(10), missing)
         self.assertIs(self._index.getEntryForObject(10), missing)
+        self._index.unindex_object(10)
+        self.assertIs(self._index.getEntryForObject(10), None)
 
     def test_missing_when_raising_attribute_error(self):
         class FauxObject:
@@ -351,7 +353,7 @@ class TestKeywordIndex(unittest.TestCase):
                          empty_len - 1)
         self.assertEqual(len(self._index.getSpecialIndex(missing)),
                          missing_len + 1)
-
+        
     def test_getCounter(self):
         index = self._makeOne('foo')
 

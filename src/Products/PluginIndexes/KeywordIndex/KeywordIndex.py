@@ -46,11 +46,6 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
-    special_values = {TypeError: missing,
-                      AttributeError: missing,
-                      None: missing,
-                      (): empty}
-
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
@@ -87,7 +82,7 @@ class KeywordIndex(UnIndex):
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
-            if oldKeywords in (missing, empty):
+            if self.providesSpecialIndex(oldKeywords):
                 self.removeSpecialIndexEntry(oldKeywords, documentId)
                 oldSet = OOSet()
             else:
@@ -95,7 +90,7 @@ class KeywordIndex(UnIndex):
                     oldKeywords = OOSet(oldKeywords)
                 oldSet = oldKeywords
 
-            if newKeywords in (missing, empty):
+            if self.providesSpecialIndex(newKeywords):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
                 newSet = OOSet()
             else:
@@ -172,30 +167,12 @@ class KeywordIndex(UnIndex):
 
         self._increment_counter()
 
-        if keywords in (missing, empty):
-            try:
-                if not self.removeSpecialIndexEntry(keywords, documentId):
-                    raise KeyError
-                del self._unindex[documentId]
+        if self.providesSpecialIndex(keywords):
+            self.removeSpecialIndexEntry(keywords, documentId)
+        else:
+            self.unindex_objectKeywords(documentId, keywords)
 
-            except KeyError:
-                LOG.debug('%(context)s: Attempt to unindex nonexistent '
-                          'document with id %(doc_id)s', dict(
-                              context=self.__class__.__name__,
-                              doc_id=documentId),
-                          exc_info=True)
-
-            return None
-
-        self.unindex_objectKeywords(documentId, keywords)
-        try:
-            del self._unindex[documentId]
-        except KeyError:
-            LOG.debug('%(context)s: Attempt to unindex nonexistent '
-                      'document with id %(doc_id)s', dict(
-                          context=self.__class__.__name__,
-                          doc_id=documentId),
-                      exc_info=True)
+        del self._unindex[documentId]
 
     manage = manage_main = DTMLFile('dtml/manageKeywordIndex', globals())
     manage_main._setName('manage_main')
