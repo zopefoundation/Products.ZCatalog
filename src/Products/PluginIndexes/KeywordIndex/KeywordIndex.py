@@ -72,13 +72,22 @@ class KeywordIndex(UnIndex):
             if self.providesSpecialIndex(newKeywords):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
             else:
-                newKeywords = self.index_objectKeywords(documentId,
-                                                        newKeywords)
-                # TODO: What do we do if none of the keywords
-                # is indexable?
-                if not newKeywords:
-                    return 0
-
+                try:
+                    self.index_objectKeywords(documentId, newKeywords)
+                except self.exceptions_treated_as_missing:
+                    LOG.error('%(context)s: Unable to insert forward '
+                              'index entry for document with id '
+                              '%(doc_id)s and keywords %(keywords)r '
+                              'for index %{index}r.', dict(
+                                  context=self.__class__.__name__,
+                                  keywords=newKeywords,
+                                  doc_id=documentId,
+                                  index=self.id))
+                    if self.providesSpecialIndex(missing):
+                        newKeywords = missing
+                        self.insertSpecialIndexEntry(missing, documentId)
+                    else:
+                        return 0
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
@@ -105,22 +114,35 @@ class KeywordIndex(UnIndex):
             else:
                 newSet = newKeywords = OOSet(newKeywords)
 
-            fdiff = difference(oldSet, newSet)
-            rdiff = difference(newSet, oldSet)
-            if fdiff or rdiff:
-                # if we've got forward or reverse changes
-                if fdiff:
-                    self.unindex_objectKeywords(documentId, fdiff)
-                if rdiff:
-                    newKeywords = self.index_objectKeywords(documentId,
-                                                            rdiff)
-                    # TODO: What do we do if none of the keywords
-                    # is indexable?
-                    if not newKeywords:
-                        return 0
-            else:
-                # return if no diff
-                return 0
+            try:
+                fdiff = difference(oldSet, newSet)
+                rdiff = difference(newSet, oldSet)
+                if fdiff or rdiff:
+                    # if we've got forward or reverse changes
+                    if fdiff:
+                        self.unindex_objectKeywords(documentId, fdiff)
+                    if rdiff:
+                        self.index_objectKeywords(documentId, rdiff)
+                else:
+                    # return if no difference
+                    return 0
+
+            except self.exceptions_treated_as_missing:
+                LOG.error('%(context)s: Unable to insert forward '
+                          'index entry for document with id '
+                          '%(doc_id)s and keywords %(keywords)r '
+                          'for index %{index}r.', dict(
+                              context=self.__class__.__name__,
+                              keywords=newKeywords,
+                              doc_id=documentId,
+                              index=self.id))
+
+                if self.providesSpecialIndex(missing):
+                    newKeywords = missing
+                    self.insertSpecialIndexEntry(missing, documentId)
+                else:
+                    del self._unindex[documentId]
+                    return 1
 
         self._unindex[documentId] = newKeywords
 
@@ -143,23 +165,8 @@ class KeywordIndex(UnIndex):
         """ carefully index keywords of object with integer id 'documentId'
         """
 
-        indexed_keys = OOSet()
         for kw in keywords:
-            try:
-                self.insertForwardIndexEntry(kw, documentId)
-                indexed_keys.insert(kw)
-            except TypeError:
-                # key is not valid for this Btree so we have to
-                # log and ignore keyword not indexable
-                LOG.error('%(context)s: Unable to insert forward '
-                          'index entry for document with id '
-                          '%(doc_id)s and keyword %(kw)r '
-                          'for index %{index}r.', dict(
-                              context=self.__class__.__name__,
-                              kw=kw,
-                              doc_id=documentId,
-                              index=self.id))
-        return indexed_keys
+            self.insertForwardIndexEntry(kw, documentId)
 
     def unindex_objectKeywords(self, documentId, keywords):
         """ carefully unindex keywords of object with integer id 'documentId'

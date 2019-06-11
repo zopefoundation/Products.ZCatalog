@@ -250,13 +250,32 @@ class TestKeywordIndex(unittest.TestCase):
 
     def testReindexNoChange(self):
         self._populateIndex()
+        self._index.unindex_object(8)
+        self._index.unindex_object(9)
+
         expected = Dummy(['foo', 'bar'])
 
-        self._index.index_object(8, expected)
+        res = self._index.index_object(8, expected)
+        self.assertEqual(res, True)
         self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
 
-        self._index.index_object(8, expected)
+        res = self._index.index_object(8, expected)
+        self.assertEqual(res, False)
         self._checkApply({'foo': ['foo', 'bar']}, [(8, expected), ])
+
+        class FauxObject:
+            def foo(self):
+                raise TypeError
+
+        expected = FauxObject()
+
+        res = self._index.index_object(9, expected)
+        self.assertEqual(res, True)
+        self._checkApply({'foo': [missing]}, [(9, expected), ])
+
+        res = self._index.index_object(9, expected)
+        self.assertEqual(res, False)
+        self._checkApply({'foo': [missing]}, [(9, expected), ])
 
     def testIntersectionWithRange(self):
         # Test an 'and' search, ensuring that 'range' doesn't mess it up.
@@ -311,9 +330,40 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertIs(self._index.getEntryForObject(10), missing)
 
     def test_missing_when_raising_type_error(self):
+        self._index.clear()
+
+        # BTrees or OOSet store types in sorted order. Keywords of
+        # mixed types cannot be sorted and should therefore raise
+        # a TypeError.
+        self._index.clear()
+        to_index = Dummy(['a', tuple('b')])
+        self._index._index_object(10, to_index, attr='foo')
+        self.assertIs(self._index._unindex.get(10), missing)
+        self.assertIs(self._index.getEntryForObject(10), missing)
+
+        # add keyword with different data type
+        self._index.clear()
+        to_index = Dummy(['a'])
+        self._index._index_object(10, Dummy(['a']), attr='foo')
+        to_index = Dummy([tuple('b')])
+        self._index._index_object(11, to_index, attr='foo')
+        self.assertIs(self._index._unindex.get(11), missing)
+        self.assertIs(self._index.getEntryForObject(11), missing)
+
+        # replace keyword with different data type
+        to_index = Dummy(['b'])
+        self._index._index_object(11, to_index, attr='foo')
+        to_index = Dummy([tuple('b')])
+        self._index._index_object(11, to_index, attr='foo')
+        self.assertIs(self._index._unindex.get(11), missing)
+        self.assertIs(self._index.getEntryForObject(11), missing)
+
+        # simplest case, call of attribute raises a TypeError
         class FauxObject:
-            def foo(self, name):
-                return 'foo'
+            def foo(self):
+                raise TypeError
+
+        self._index.clear()
         to_index = FauxObject()
         self._index._index_object(10, to_index, attr='foo')
         self.assertIs(self._index._unindex.get(10), missing)
@@ -353,7 +403,7 @@ class TestKeywordIndex(unittest.TestCase):
                          empty_len - 1)
         self.assertEqual(len(self._index.getSpecialIndex(missing)),
                          missing_len + 1)
-        
+
     def test_getCounter(self):
         index = self._makeOne('foo')
 
