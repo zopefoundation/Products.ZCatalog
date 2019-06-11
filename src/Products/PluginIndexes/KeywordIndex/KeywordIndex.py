@@ -69,7 +69,7 @@ class KeywordIndex(UnIndex):
 
         if oldKeywords is _marker:
             # we've got a new document, let's not futz around.
-            if newKeywords in (missing, empty):
+            if self.providesSpecialIndex(newKeywords):
                 self.insertSpecialIndexEntry(newKeywords, documentId)
             else:
                 newKeywords = self.index_objectKeywords(documentId,
@@ -82,6 +82,15 @@ class KeywordIndex(UnIndex):
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
+            if self.providesSpecialIndex(oldKeywords) and \
+               self.providesSpecialIndex(newKeywords):
+                if oldKeywords == newKeywords:
+                    return 0
+                self.removeSpecialIndexEntry(oldKeywords, documentId)
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+                self._unindex[documentId] = newKeywords
+                return 1
+
             if self.providesSpecialIndex(oldKeywords):
                 self.removeSpecialIndexEntry(oldKeywords, documentId)
                 oldSet = OOSet()
@@ -109,6 +118,9 @@ class KeywordIndex(UnIndex):
                     # is indexable?
                     if not newKeywords:
                         return 0
+            else:
+                # return if no diff
+                return 0
 
         self._unindex[documentId] = newKeywords
 
