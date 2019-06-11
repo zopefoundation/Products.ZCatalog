@@ -12,6 +12,7 @@
 ##############################################################################
 
 import unittest
+import sys
 
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
@@ -20,6 +21,8 @@ from Products.PluginIndexes.interfaces import (
     missing,
     empty,
 )
+
+PY3 = sys.version_info > (3, )
 
 
 class Dummy(object):
@@ -332,31 +335,32 @@ class TestKeywordIndex(unittest.TestCase):
     def test_missing_when_raising_type_error(self):
         self._index.clear()
 
-        # BTrees or OOSet store types in sorted order. Keywords of
-        # mixed types cannot be sorted and should therefore raise
-        # a TypeError.
-        self._index.clear()
-        to_index = Dummy(['a', tuple('b')])
-        self._index._index_object(10, to_index, attr='foo')
-        self.assertIs(self._index._unindex.get(10), missing)
-        self.assertIs(self._index.getEntryForObject(10), missing)
+        if PY3:
+            # PY3: BTrees or OOSet store types in sorted order. Keywords of
+            # mixed types cannot be sorted and should therefore raise
+            # a TypeError.
+            self._index.clear()
+            to_index = Dummy(['a', tuple('b')])
+            self._index._index_object(10, to_index, attr='foo')
+            self.assertIs(self._index._unindex.get(10), missing)
+            self.assertIs(self._index.getEntryForObject(10), missing)
 
-        # add keyword with different data type
-        self._index.clear()
-        to_index = Dummy(['a'])
-        self._index._index_object(10, Dummy(['a']), attr='foo')
-        to_index = Dummy([tuple('b')])
-        self._index._index_object(11, to_index, attr='foo')
-        self.assertIs(self._index._unindex.get(11), missing)
-        self.assertIs(self._index.getEntryForObject(11), missing)
+            # add keyword with different data type
+            self._index.clear()
+            to_index = Dummy(['a'])
+            self._index._index_object(10, Dummy(['a']), attr='foo')
+            to_index = Dummy([tuple('b')])
+            self._index._index_object(11, to_index, attr='foo')
+            self.assertIs(self._index._unindex.get(11), missing)
+            self.assertIs(self._index.getEntryForObject(11), missing)
 
-        # replace keyword with different data type
-        to_index = Dummy(['b'])
-        self._index._index_object(11, to_index, attr='foo')
-        to_index = Dummy([tuple('b')])
-        self._index._index_object(11, to_index, attr='foo')
-        self.assertIs(self._index._unindex.get(11), missing)
-        self.assertIs(self._index.getEntryForObject(11), missing)
+            # replace keyword with different data type
+            to_index = Dummy(['b'])
+            self._index._index_object(11, to_index, attr='foo')
+            to_index = Dummy([tuple('b')])
+            self._index._index_object(11, to_index, attr='foo')
+            self.assertIs(self._index._unindex.get(11), missing)
+            self.assertIs(self._index.getEntryForObject(11), missing)
 
         # simplest case, call of attribute raises a TypeError
         class FauxObject:
