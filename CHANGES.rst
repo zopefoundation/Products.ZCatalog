@@ -4,6 +4,12 @@ Changelog
 5.1 (unreleased)
 ----------------
 
+- Nothing changed yet.
+
+
+5.0.1 (2019-06-17)
+------------------
+
 Bug fixes
 +++++++++
 
