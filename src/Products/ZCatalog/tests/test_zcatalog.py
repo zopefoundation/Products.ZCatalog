@@ -39,8 +39,11 @@ class ZDummy(ExtensionClass.Base):
 
 class ZDummyFalse(ZDummy):
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
+
+    # python2.7 backward compatibility
+    __nonzero__ = __bool__
 
 
 class DummyLenFail(ZDummy):
@@ -53,14 +56,16 @@ class DummyLenFail(ZDummy):
         self.fail('__len__() was called')
 
 
-class DummyNonzeroFail(ZDummy):
+class DummyBoolFail(ZDummy):
 
     def __init__(self, num, fail):
-        super(DummyNonzeroFail, self).__init__(num)
+        super(DummyBoolFail, self).__init__(num)
         self.fail = fail
 
-    def __nonzero__(self):
-        self.fail('__nonzero__() was called')
+    def __bool__(self):
+        self.fail('__bool__() was called')
+
+    __nonzero__ = __bool__
 
 
 class FakeTraversalError(KeyError):
@@ -153,7 +158,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
 
     def testBooleanEvalOn_manage_catalogObject(self):
         self.d['11'] = DummyLenFail(11, self.fail)
-        self.d['12'] = DummyNonzeroFail(12, self.fail)
+        self.d['12'] = DummyBoolFail(12, self.fail)
 
         class MyResponse(object):
             # A fake response that doesn't bomb on manage_catalogObject().
@@ -172,7 +177,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         catalog = self._catalog.__of__(FakeParent(self.d))
         # replace entries to test refreshCatalog
         self.d['0'] = DummyLenFail(0, self.fail)
-        self.d['1'] = DummyNonzeroFail(1, self.fail)
+        self.d['1'] = DummyBoolFail(1, self.fail)
         # this next call should not fail
         catalog.refreshCatalog()
 

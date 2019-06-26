@@ -17,7 +17,16 @@ from BTrees.IIBTree import difference
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
+from zope.interface import directlyProvides
+
 from Products.ZCatalog.query import IndexQuery
+
+from Products.PluginIndexes.interfaces import (
+    missing,
+    IIndexingMissingValue,
+    empty,
+    IIndexingEmptyValue,
+)
 
 
 class TestUnIndex(unittest.TestCase):
@@ -71,12 +80,12 @@ class TestUnIndex(unittest.TestCase):
         idx = self._makeOne('interesting')
 
         dummy = object()
-        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx.get_object_datum(dummy, 'interesting'), _marker)
 
         class DummyContent2(object):
             interesting = 'GOT IT'
         dummy = DummyContent2()
-        self.assertEqual(idx._get_object_datum(dummy, 'interesting'),
+        self.assertEqual(idx.get_object_datum(dummy, 'interesting'),
                          'GOT IT')
 
         class DummyContent3(object):
@@ -87,14 +96,14 @@ class TestUnIndex(unittest.TestCase):
                     raise self.exc
                 return 'GOT IT'
         dummy = DummyContent3()
-        self.assertEqual(idx._get_object_datum(dummy, 'interesting'),
+        self.assertEqual(idx.get_object_datum(dummy, 'interesting'),
                          'GOT IT')
 
         dummy.exc = AttributeError
-        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx.get_object_datum(dummy, 'interesting'), _marker)
 
         dummy.exc = TypeError
-        self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
+        self.assertEqual(idx.get_object_datum(dummy, 'interesting'), _marker)
 
     def test_cache(self):
         idx = self._makeOne(id='foo')
@@ -231,3 +240,100 @@ class TestUnIndex(unittest.TestCase):
                     docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
                     tuple(apply(dict(idx=query))[0]),
                     "%s: %s" % (op, r))
+
+    def test_missingvalue(self):
+        index = self._makeOne('foo')
+        # enable MissingValue support
+        directlyProvides(index, IIndexingMissingValue)
+        # reinitialize Btrees & Sets
+        index.clear()
+        # activate `not`, `operator`
+        index.query_options = 'not', 'operator'
+        apply = index._apply_index
+
+        class Dummy(object):
+            def __init__(self, value):
+                # set attribute only if value is set
+                if value is not None:
+                    self.foo = value
+
+        values = ((0, Dummy('a')),
+                  (1, Dummy('b')),
+                  (2, Dummy(None)),
+                  (3, Dummy('')))
+
+        for i, obj in values:
+            index.index_object(i, obj)
+
+        req = {'foo': {'query': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (0,))
+
+        req = {'foo': {'query': ['a', missing]}}
+        self.assertEqual(tuple(apply(req)[0]), (0, 2))
+
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1, 2, 3,))
+
+        req = {'foo': {'not': ['a', missing]}}
+        self.assertEqual(tuple(apply(req)[0]), (1, 3,))
+
+        index.unindex_object(2)
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1, 3,))
+
+    def test_emptyvalue(self):
+        index = self._makeOne('foo')
+        # enable EmptyValue support
+        directlyProvides(index, IIndexingEmptyValue)
+        # reinitialize Btrees & Sets
+        index.clear()
+        # activate `not`, `operator`
+        index.query_options = 'not', 'operator'
+
+        # patch method `map_value` in order to map empty
+        # strings to special value `empty`
+        def map_value(self, value):
+            if value is None:
+                return value
+            elif not value:
+                return empty
+            return value
+
+        import types
+        index.map_value = types.MethodType(map_value, index)
+
+        apply = index._apply_index
+
+        class Dummy(object):
+            def __init__(self, value):
+                # set attribute only if value is set
+                if value is not None:
+                    self.foo = value
+
+        values = ((0, Dummy('a')),
+                  (1, Dummy('b')),
+                  (2, Dummy('')),
+                  (3, Dummy(None)))
+
+        for i, obj in values:
+            index.index_object(i, obj)
+
+        req = {'foo': {'query': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (0,))
+
+        req = {'foo': {'not': 'a'}}
+        self.assertEqual(tuple(apply(req)[0]), (1, 2))
+
+        req = {'foo': {'query': ['a', empty]}}
+        self.assertEqual(tuple(apply(req)[0]), (0, 2))
+
+        index.unindex_object(2)
+        self.assertEqual(tuple(apply(req)[0]), (0,))
+
+    def test_multiple_indexed_attr(self):
+        self.assertRaises(NotImplementedError,
+                          self._makeOne,
+                          'foo',
+                          extra={'indexed_attrs':
+                                 'foo, bar'}
+                          )

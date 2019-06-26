@@ -31,6 +31,7 @@ from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from ZODB.POSException import ConflictError
+from zope.deprecation import deprecation
 from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
@@ -40,6 +41,10 @@ from Products.PluginIndexes.interfaces import (
     ISortIndex,
     IUniqueValueIndex,
     IRequestCacheIndex,
+    IIndexingMissingValue,
+    missing,
+    IIndexingEmptyValue,
+    empty,
 )
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
@@ -59,6 +64,7 @@ class UnIndex(SimpleItem):
     operators = ('or', 'and')
     useOperator = 'or'
     query_options = ()
+    exceptions_treated_as_missing = AttributeError, TypeError,
 
     def __init__(self, id, ignore_ex=None, call_methods=None,
                  extra=None, caller=None):
@@ -109,17 +115,28 @@ class UnIndex(SimpleItem):
         self.call_methods = call_methods
 
         # allow index to index multiple attributes
-        ia = _get(extra, 'indexed_attrs', id)
-        if isinstance(ia, str):
-            self.indexed_attrs = ia.split(',')
-        else:
-            self.indexed_attrs = list(ia)
-        self.indexed_attrs = [
-            attr.strip() for attr in self.indexed_attrs if attr]
-        if not self.indexed_attrs:
-            self.indexed_attrs = [id]
-
+        self.indexed_attrs = _get(extra, 'indexed_attrs', id)
         self.clear()
+
+    @property
+    def indexed_attrs(self):
+        return self._indexed_attrs
+
+    @indexed_attrs.setter
+    def indexed_attrs(self, value):
+        if isinstance(value, str):
+            value = value.split(',')
+        else:
+            value = list(value)
+        value = [attr.strip() for attr in value if attr]
+        if not value:
+            value = [self.id]
+
+        if len(value) > 1:
+            raise NotImplementedError('Multiple indexed attributes'
+                                      ' are not supported')
+
+        self._indexed_attrs = value
 
     def __len__(self):
         return self._length()
@@ -131,14 +148,24 @@ class UnIndex(SimpleItem):
         self._length = Length()
         self._index = OOBTree()
         self._unindex = IOBTree()
+        self._special_index = OOBTree()
+
+        if self.providesSpecialIndex(missing):
+            self._special_index[missing] = IITreeSet()
+
+        if self.providesSpecialIndex(empty):
+            self._special_index[empty] = IITreeSet()
 
         if self._counter is None:
             self._counter = Length()
         else:
             self._increment_counter()
 
-    def __nonzero__(self):
-        return not not self._unindex
+    def __bool__(self):
+        return bool(self._unindex)
+
+    # python2.7 backward compatibility
+    __nonzero__ = __bool__
 
     def histogram(self):
         """Return a mapping which provides a histogram of the number of
@@ -165,6 +192,39 @@ class UnIndex(SimpleItem):
         if default is _marker:
             return self._unindex.get(documentId)
         return self._unindex.get(documentId, default)
+
+    def removeSpecialIndexEntry(self, valuetype, documentid):
+        special_indexed = self.getSpecialIndex(valuetype)
+        try:
+            special_indexed.remove(documentid)
+            return 1
+        except KeyError:
+            return 0
+
+    def insertSpecialIndexEntry(self, valuetype, documentid):
+        special_indexed = self.getSpecialIndex(valuetype)
+        return special_indexed.insert(documentid)
+
+    def providesSpecialIndex(self, valuetypes=[missing, empty]):
+
+        if not isinstance(valuetypes, (list, tuple)):
+            valuetypes = (valuetypes, )
+
+        if missing in valuetypes \
+           and IIndexingMissingValue.providedBy(self):
+            return True
+
+        if empty in valuetypes \
+           and IIndexingEmptyValue.providedBy(self):
+            return True
+
+        return False
+
+    def getSpecialIndex(self, valuetype):
+        try:
+            return self._special_index[valuetype]
+        except KeyError:
+            raise NotImplementedError
 
     def removeForwardIndexEntry(self, entry, documentId):
         """Take the entry provided and remove any reference to documentId
@@ -237,7 +297,10 @@ class UnIndex(SimpleItem):
         fields = self.getIndexSourceNames()
         res = 0
         for attr in fields:
-            res += self._index_object(documentId, obj, threshold, attr)
+            r = self._index_object(documentId, obj, threshold, attr)
+            if isinstance(r, tuple):
+                r, datum = r
+            res += r
 
         if res > 0:
             self._increment_counter()
@@ -249,22 +312,29 @@ class UnIndex(SimpleItem):
         returnStatus = 0
 
         # First we need to see if there's anything interesting to look at
-        datum = self._get_object_datum(obj, attr)
+        datum = self.get_object_datum(obj, attr)
         if datum is None:
             # Prevent None from being indexed. None doesn't have a valid
             # ordering definition compared to any other object.
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
-            return 0
 
-        datum = self._convert(datum, default=_marker)
+            return (0, datum)
+
+        elif not self.providesSpecialIndex(datum):
+            datum = self._convert(datum, default=_marker)
 
         # We don't want to do anything that we don't have to here, so we'll
         # check to see if the new and existing information is the same.
         oldDatum = self._unindex.get(documentId, _marker)
         if datum != oldDatum:
             if oldDatum is not _marker:
-                self.removeForwardIndexEntry(oldDatum, documentId)
+
+                if self.providesSpecialIndex(oldDatum):
+                    self.removeSpecialIndexEntry(oldDatum, documentId)
+                else:
+                    self.removeForwardIndexEntry(oldDatum, documentId)
+
                 if datum is _marker:
                     try:
                         del self._unindex[documentId]
@@ -281,14 +351,23 @@ class UnIndex(SimpleItem):
                                   exc_info=sys.exc_info())
 
             if datum is not _marker:
-                self.insertForwardIndexEntry(datum, documentId)
+                if self.providesSpecialIndex(datum):
+                    self.insertSpecialIndexEntry(datum, documentId)
+                else:
+                    self.insertForwardIndexEntry(datum, documentId)
                 self._unindex[documentId] = datum
 
             returnStatus = 1
 
-        return returnStatus
+        return (returnStatus, datum)
 
-    def _get_object_datum(self, obj, attr):
+    def map_value(self, value):
+        if value is None and self.providesSpecialIndex(missing):
+            return missing
+        else:
+            return value
+
+    def get_object_datum(self, obj, attr):
         # self.id is the name of the index, which is also the name of the
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
@@ -296,9 +375,18 @@ class UnIndex(SimpleItem):
             datum = getattr(obj, attr)
             if safe_callable(datum):
                 datum = datum()
-        except (AttributeError, TypeError):
-            datum = _marker
-        return datum
+            return self.map_value(datum)
+        except self.exceptions_treated_as_missing:
+            if self.providesSpecialIndex(missing):
+                return missing
+            else:
+                return _marker
+
+    _get_object_datum = get_object_datum
+    _get_object_datum = deprecation.deprecated(_get_object_datum,
+                                               '`_get_object_datum` is moved '
+                                               'to public method '
+                                               '`get_object_datum`')
 
     def _increment_counter(self):
         if self._counter is None:
@@ -322,12 +410,24 @@ class UnIndex(SimpleItem):
         raise an exception if we fail
         """
         unindexRecord = self._unindex.get(documentId, _marker)
+
         if unindexRecord is _marker:
             return None
 
         self._increment_counter()
 
-        self.removeForwardIndexEntry(unindexRecord, documentId)
+        if self.providesSpecialIndex(unindexRecord):
+            if not self.removeSpecialIndexEntry(unindexRecord, documentId):
+                LOG.debug('%(context)s: attempt to unindex nonexistent '
+                          'documentId %(doc_id)s from index %(index)r. '
+                          'This should not happen.', dict(
+                              context=self.__class__.__name__,
+                              doc_id=documentId,
+                              index=self.id),
+                          exc_info=True)
+        else:
+            self.removeForwardIndexEntry(unindexRecord, documentId)
+
         try:
             del self._unindex[documentId]
         except ConflictError:
@@ -345,6 +445,9 @@ class UnIndex(SimpleItem):
         index = self._index
         setlist = []
         for k in not_parm:
+            # not indexed values are excluded by default
+            if self.providesSpecialIndex(k):
+                continue
             s = index.get(k, None)
             if s is None:
                 continue
@@ -437,7 +540,7 @@ class UnIndex(SimpleItem):
         opr = None
 
         # not / exclude parameter
-        not_parm = record.get('not', None)
+        not_parm = record.get('not', _marker)
 
         operator = record.operator
 
@@ -466,18 +569,37 @@ class UnIndex(SimpleItem):
                     if isinstance(cached, int):
                         cached = IISet((cached, ))
 
-                    if not_parm:
+                    if not_parm is not _marker:
                         not_parm = list(map(self._convert, not_parm))
-                        exclude = self._apply_not(not_parm, resultset)
-                        cached = difference(cached, exclude)
+
+                        excludes = []
+                        for k in not_parm:
+                            if self.providesSpecialIndex(k):
+                                excludes.append(self.getSpecialIndex(k))
+
+                        excludes.append(self._apply_not(not_parm, resultset))
+                        cached = difference(cached, multiunion(excludes))
 
                     return cached
 
-        if not record.keys and not_parm:
+        if not record.keys and not_parm is not _marker:
             # convert into indexed format
             not_parm = list(map(self._convert, not_parm))
-            # we have only a 'not' query
-            record.keys = [k for k in index.keys() if k not in not_parm]
+
+            excludes = []
+            for k in not_parm:
+                if self.providesSpecialIndex(k):
+                    excludes.append(self.getSpecialIndex(k))
+
+            result = IISet(self._unindex)
+            if cachekey is not None:
+                cache[cachekey] = result
+
+            excludes.append(self._apply_not(not_parm, resultset))
+            result = difference(result, multiunion(excludes))
+
+            return result
+
         else:
             # convert query arguments into indexed format
             record.keys = list(map(self._convert, record.keys))
@@ -523,9 +645,10 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+
                 return result
 
             if operator == 'or':
@@ -573,6 +696,13 @@ class UnIndex(SimpleItem):
                     # other object. BTrees 4.0+ will throw a TypeError
                     # "object has default comparison".
                     continue
+
+                # query for MissingValue or EmptyValue
+                if self.providesSpecialIndex(k):
+                    s = self.getSpecialIndex(k)
+                    setlist.append(s)
+                    continue
+
                 try:
                     s = index.get(k, None)
                 except TypeError:
@@ -614,9 +744,10 @@ class UnIndex(SimpleItem):
                     else:
                         cache[cachekey] = [result]
 
-                if not_parm:
+                if not_parm is not _marker:
                     exclude = self._apply_not(not_parm, resultset)
                     result = difference(result, exclude)
+
                 return result
 
             if operator == 'or':
@@ -661,9 +792,10 @@ class UnIndex(SimpleItem):
             r = IISet((r, ))
         if r is None:
             return IISet()
-        if not_parm:
+        if not_parm is not _marker:
             exclude = self._apply_not(not_parm, resultset)
             r = difference(r, exclude)
+
         return r
 
     def hasUniqueValuesFor(self, name):

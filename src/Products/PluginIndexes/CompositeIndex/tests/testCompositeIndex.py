@@ -21,32 +21,29 @@ states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
 default_pages = [True, False, False, False, False, False]
 subjects = list(map(lambda x: 'subject_{0}'.format(x), range(6)))
-keywords = list(map(lambda x: 'keyword_{0}'.format(x), range(6)))
 
 
 class TestObject(object):
 
     def __init__(self, id, portal_type, review_state,
-                 is_default_page=False, subject=(), keyword=()):
+                 is_default_page=False, subject=()):
         self.id = id
         self.portal_type = portal_type
         self.review_state = review_state
         self.is_default_page = is_default_page
         self.subject = subject
-        self.keyword = keyword
 
     def getPhysicalPath(self):
         return ['', self.id, ]
 
     def __repr__(self):
         return ('< {id}, {portal_type}, {review_state},\
-        {is_default_page}, {subject} , {keyword}>'.format(
+        {is_default_page}, {subject}>'.format(
             id=self.id,
             portal_type=self.portal_type,
             review_state=self.review_state,
             is_default_page=self.is_default_page,
-            subject=self.subject,
-            keyword=self.keyword))
+            subject=self.subject))
 
 
 class RandomTestObject(TestObject):
@@ -63,11 +60,10 @@ class RandomTestObject(TestObject):
         is_default_page = default_pages[i]
 
         subject = random.sample(subjects, random.randint(1, len(subjects)))
-        keyword = random.sample(keywords, random.randint(1, len(keywords)))
 
         super(RandomTestObject, self).__init__(id, portal_type,
                                                review_state, is_default_page,
-                                               subject, keyword)
+                                               subject)
 
 
 # Pseudo ContentLayer class to support quick
@@ -92,7 +88,7 @@ class CompositeIndexTestMixin(object):
                          KeywordIndex('subject',
                                       extra={
                                           'indexed_attrs':
-                                          'keyword,subject'}
+                                          'subject'}
                                       ),
                          CompositeIndex('comp01',
                                         extra=[{'id': 'portal_type',
@@ -107,7 +103,7 @@ class CompositeIndexTestMixin(object):
                                                {'id': 'subject',
                                                 'meta_type': 'KeywordIndex',
                                                 'attributes':
-                                                'keyword,subject'}
+                                                'subject'}
                                                ])
                          ]
 
@@ -206,9 +202,6 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                    ('query02_default_two_indexes',
                     {'portal_type': {'query': 'Document'},
                      'subject': {'query': 'subject_2'}}),
-                   ('query02_default_two_indexes_zero_hits',
-                    {'portal_type': {'query': 'Document'},
-                     'subject': {'query': ['keyword_1', 'keyword_2']}}),
                    ('query03_default_two_indexes',
                     {'portal_type': {'query': 'Document'},
                      'subject': {'query': ['subject_1', 'subject_3']}}),
@@ -340,8 +333,7 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
                          subject=('subject_1', 'subject_2'))
         self.populateIndexes(3, obj)
         obj = TestObject('obj_4', 'Event', 'private',
-                         subject=('subject_1', 'subject_2'),
-                         keyword=('keyword_1', ))
+                         subject=('subject_1', 'subject_2'))
         self.populateIndexes(4, obj)
 
         queries = [
@@ -379,12 +371,6 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
              'is_default_page': {'query': False},
              'subject': {'query': ('subject_1', 'subject_2'),
                          'operator': 'and'}},
-            # query on five attributes with
-            {'review_state': {'not': ('pending', 'visible')},
-             'portal_type': {'query': ('News', 'Document')},
-             'is_default_page': {'query': False},
-             'subject': {'query': ('subject_1', )},
-             'keyword': {'query': ('keyword_1',)}},
         ]
 
         for query in queries:

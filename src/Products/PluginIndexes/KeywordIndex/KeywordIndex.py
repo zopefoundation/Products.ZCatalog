@@ -16,10 +16,17 @@ from logging import getLogger
 from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from App.special_dtml import DTMLFile
+from zope.interface import implementer
 
 from Products.PluginIndexes.unindex import UnIndex
-from Products.PluginIndexes.util import safe_callable
+from Products.PluginIndexes.interfaces import (
+    IIndexingMissingValue,
+    missing,
+    IIndexingEmptyValue,
+    empty,
+)
 
+_marker = []
 LOG = getLogger('Zope.KeywordIndex')
 
 try:
@@ -29,6 +36,7 @@ except NameError:
     basestring = (bytes, str)
 
 
+@implementer(IIndexingMissingValue, IIndexingEmptyValue)
 class KeywordIndex(UnIndex):
     """Like an UnIndex only it indexes sequences of items.
 
@@ -38,7 +46,6 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
-
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
@@ -57,63 +64,113 @@ class KeywordIndex(UnIndex):
         # attribute we're interested in.  If the attribute is callable,
         # we'll do so.
 
-        newKeywords = self._get_object_keywords(obj, attr)
+        newKeywords = self.get_object_datum(obj, attr)
+        oldKeywords = self._unindex.get(documentId, _marker)
 
-        oldKeywords = self._unindex.get(documentId, None)
-
-        if oldKeywords is None:
+        if oldKeywords is _marker:
             # we've got a new document, let's not futz around.
-            try:
-                for kw in newKeywords:
-                    self.insertForwardIndexEntry(kw, documentId)
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
-            except TypeError:
-                return 0
+            if self.providesSpecialIndex(newKeywords):
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+            else:
+                try:
+                    self.index_objectKeywords(documentId, newKeywords)
+                except self.exceptions_treated_as_missing:
+                    LOG.error('%(context)s: Unable to insert forward '
+                              'index entry for document with id '
+                              '%(doc_id)s and keywords %(keywords)r '
+                              'for index %{index}r.', dict(
+                                  context=self.__class__.__name__,
+                                  keywords=newKeywords,
+                                  doc_id=documentId,
+                                  index=self.id))
+                    if self.providesSpecialIndex(missing):
+                        newKeywords = missing
+                        self.insertSpecialIndexEntry(missing, documentId)
+                    else:
+                        return 0
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
-            if type(oldKeywords) is not OOSet:
-                oldKeywords = OOSet(oldKeywords)
-            newKeywords = OOSet(newKeywords)
-            fdiff = difference(oldKeywords, newKeywords)
-            rdiff = difference(newKeywords, oldKeywords)
-            if fdiff or rdiff:
-                # if we've got forward or reverse changes
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
+            if self.providesSpecialIndex(oldKeywords) and \
+               self.providesSpecialIndex(newKeywords):
+                if oldKeywords == newKeywords:
+                    return 0
+                self.removeSpecialIndexEntry(oldKeywords, documentId)
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+                self._unindex[documentId] = newKeywords
+                return 1
+
+            if self.providesSpecialIndex(oldKeywords):
+                self.removeSpecialIndexEntry(oldKeywords, documentId)
+                oldSet = OOSet()
+            else:
+                if not isinstance(oldKeywords, OOSet):
+                    oldKeywords = OOSet(oldKeywords)
+                oldSet = oldKeywords
+
+            if self.providesSpecialIndex(newKeywords):
+                self.insertSpecialIndexEntry(newKeywords, documentId)
+                newSet = OOSet()
+            else:
+                newSet = newKeywords = OOSet(newKeywords)
+
+            try:
+                fdiff = difference(oldSet, newSet)
+                rdiff = difference(newSet, oldSet)
+                if fdiff or rdiff:
+                    # if we've got forward or reverse changes
+                    if fdiff:
+                        self.unindex_objectKeywords(documentId, fdiff)
+                    if rdiff:
+                        self.index_objectKeywords(documentId, rdiff)
+                else:
+                    # return if no difference
+                    return 0
+
+            except self.exceptions_treated_as_missing:
+                LOG.error('%(context)s: Unable to insert forward '
+                          'index entry for document with id '
+                          '%(doc_id)s and keywords %(keywords)r '
+                          'for index %{index}r.', dict(
+                              context=self.__class__.__name__,
+                              keywords=newKeywords,
+                              doc_id=documentId,
+                              index=self.id))
+
+                if self.providesSpecialIndex(missing):
+                    newKeywords = missing
+                    self.insertSpecialIndexEntry(missing, documentId)
                 else:
                     del self._unindex[documentId]
-                if fdiff:
-                    self.unindex_objectKeywords(documentId, fdiff)
-                if rdiff:
-                    for kw in rdiff:
-                        self.insertForwardIndexEntry(kw, documentId)
+                    return 1
+
+        self._unindex[documentId] = newKeywords
+
         return 1
 
-    def _get_object_keywords(self, obj, attr):
-        newKeywords = getattr(obj, attr, ())
-        if safe_callable(newKeywords):
-            try:
-                newKeywords = newKeywords()
-            except (AttributeError, TypeError):
-                return ()
-        if not newKeywords:
-            return ()
-        elif isinstance(newKeywords, basestring):
-            return (newKeywords,)
-        else:
-            try:
-                # unique
-                newKeywords = set(newKeywords)
-            except TypeError:
-                # Not a sequence
-                return (newKeywords,)
+    def map_value(self, value):
+        value = super(KeywordIndex, self).map_value(value)
+        if value is not missing:
+            # at this place, *value* is expected to be a sequence
+            if isinstance(value, basestring):
+                value = OOSet((value,))
+            if not value and self.providesSpecialIndex(empty):
+                value = empty
             else:
-                return tuple(newKeywords)
+                value = OOSet(value)
+
+        return value
+
+    def index_objectKeywords(self, documentId, keywords):
+        """ carefully index keywords of object with integer id 'documentId'
+        """
+
+        for kw in keywords:
+            self.insertForwardIndexEntry(kw, documentId)
 
     def unindex_objectKeywords(self, documentId, keywords):
-        """ carefully unindex the object with integer id 'documentId'"""
+        """ carefully unindex keywords of object with integer id 'documentId'
+        """
 
         if keywords is not None:
             for kw in keywords:
@@ -122,23 +179,19 @@ class KeywordIndex(UnIndex):
     def unindex_object(self, documentId):
         """ carefully unindex the object with integer id 'documentId'"""
 
-        keywords = self._unindex.get(documentId, None)
+        keywords = self._unindex.get(documentId, _marker)
 
-        # Couldn't we return 'None' immediately
-        # if keywords is 'None' (or _marker)???
+        if keywords is _marker:
+            return
 
-        if keywords is not None:
-            self._increment_counter()
+        self._increment_counter()
 
-        self.unindex_objectKeywords(documentId, keywords)
-        try:
-            del self._unindex[documentId]
-        except KeyError:
-            LOG.debug('%(context)s: Attempt to unindex nonexistent '
-                      'document with id %(doc_id)s', dict(
-                          context=self.__class__.__name__,
-                          doc_id=documentId),
-                      exc_info=True)
+        if self.providesSpecialIndex(keywords):
+            self.removeSpecialIndexEntry(keywords, documentId)
+        else:
+            self.unindex_objectKeywords(documentId, keywords)
+
+        del self._unindex[documentId]
 
     manage = manage_main = DTMLFile('dtml/manageKeywordIndex', globals())
     manage_main._setName('manage_main')

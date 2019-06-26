@@ -155,7 +155,7 @@ class BooleanIndex(UnIndex):
         returnStatus = 0
 
         # First we need to see if there's anything interesting to look at
-        datum = self._get_object_datum(obj, attr)
+        datum = self.get_object_datum(obj, attr)
 
         # Make it boolean, int as an optimization
         if datum is not _marker:

@@ -283,3 +283,63 @@ class ITransposeQuery(Interface):
 
     def getIndexNames():
         """ returns index names that are optimized by index """
+
+
+class SpecialIndexValue(object):
+    """generic marker class for values that cannot be indexed regularly"""
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<{0}: {1}>'.format(self.__class__.__name__, self.name)
+
+    def __iter__(self):
+        # don't treat _SpecialIndexValue as iterable string
+        yield self
+
+    def __bool__(self):
+        return False
+
+    # python2.7 backward compatibility
+    __nonzero__ = __bool__
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+
+class _IIndexingSpecialValue(Interface):
+    """Abstract marker interface to mark indexes which support a
+    special value query term."""
+
+    def map_value(value):
+        """ Map value, which is typically not generically indexable,
+        to a special value if required."""
+
+
+class IIndexingMissingValue(_IIndexingSpecialValue):
+    """Marker interface to mark indexes which support the
+    `missing` query term."""
+
+    exceptions_treated_as_missing = \
+        Attribute('Tuple of exceptions that are treated as '
+                  'special value `missing` when the request '
+                  'of an object attribute raises an exception')
+
+
+# `missing` can be used as query term to query
+# for objects the index does not have a value for
+# (like a not defined value)
+missing = SpecialIndexValue('missing')
+
+
+class IIndexingEmptyValue(_IIndexingSpecialValue):
+    """Marker interface to mark indexes with support the
+    `empty` query term."""
+
+
+# `empty` Value can be used as query term to query
+# for objects with an empty value (like an empty set)
+empty = SpecialIndexValue('empty')

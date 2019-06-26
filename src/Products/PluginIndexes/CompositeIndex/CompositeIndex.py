@@ -21,15 +21,30 @@ import transaction
 from Acquisition import aq_parent
 from Acquisition import aq_inner
 from App.special_dtml import DTMLFile
-from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
 from Persistence import PersistentMapping
-from zope.interface import implementer
+from zope.interface import implementer_only
 
-from Products.PluginIndexes.interfaces import ITransposeQuery
+from Products.PluginIndexes.interfaces import (
+    ILimitedResultIndex,
+    IQueryIndex,
+    ISortIndex,
+    IUniqueValueIndex,
+    IRequestCacheIndex,
+    ITransposeQuery,
+    missing,
+    empty,
+)
+from Products.PluginIndexes.util import safe_callable
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
+
+try:
+    basestring
+except NameError:
+    # Python 3 compatibility
+    basestring = (bytes, str)
 
 LOG = logging.getLogger('CompositeIndex')
 
@@ -172,7 +187,8 @@ class Component(object):
                 'attributes: {0.attributes}>').format(self)
 
 
-@implementer(ITransposeQuery)
+@implementer_only(ILimitedResultIndex, IQueryIndex, IUniqueValueIndex,
+                  ISortIndex, IRequestCacheIndex, ITransposeQuery)
 class CompositeIndex(KeywordIndex):
 
     """Index for composition of simple fields.
@@ -209,45 +225,8 @@ class CompositeIndex(KeywordIndex):
                                                    c_attributes)
         self.clear()
 
-    def _index_object(self, documentId, obj, threshold=None, attr=''):
-
-        # get permuted keywords
-        newKeywords = self._get_permuted_keywords(obj)
-
-        oldKeywords = self._unindex.get(documentId, None)
-
-        if oldKeywords is None:
-            # we've got a new document, let's not futz around.
-            try:
-                for kw in newKeywords:
-                    self.insertForwardIndexEntry(kw, documentId)
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
-            except TypeError:
-                return 0
-        else:
-            # we have an existing entry for this document, and we need
-            # to figure out if any of the keywords have actually changed
-            if type(oldKeywords) is not OOSet:
-                oldKeywords = OOSet(oldKeywords)
-            newKeywords = OOSet(newKeywords)
-            fdiff = difference(oldKeywords, newKeywords)
-            rdiff = difference(newKeywords, oldKeywords)
-            if fdiff or rdiff:
-                # if we've got forward or reverse changes
-                if newKeywords:
-                    self._unindex[documentId] = list(newKeywords)
-                else:
-                    del self._unindex[documentId]
-                if fdiff:
-                    self.unindex_objectKeywords(documentId, fdiff)
-                if rdiff:
-                    for kw in rdiff:
-                        self.insertForwardIndexEntry(kw, documentId)
-        return 1
-
-    def _get_permuted_keywords(self, obj):
-        """ returns permutation tuple of object keywords """
+    def get_object_datum(self, obj, attr):
+        """ returns permutation of object keywords """
 
         components = self.getIndexComponents()
         kw_list = []
@@ -270,26 +249,40 @@ class CompositeIndex(KeywordIndex):
                 p = combinations(c, r)
                 pkl.extend(p)
 
-        return tuple(pkl)
+        return OOSet(pkl)
+
+    def _get_component_datum(self, obj, attr):
+        # self.id is the name of the index, which is also the name of the
+        # attribute we're interested in.  If the attribute is callable,
+        # we'll do so.
+        try:
+            datum = getattr(obj, attr)
+            if safe_callable(datum):
+                datum = datum()
+        except (AttributeError, TypeError):
+            datum = _marker
+        return datum
 
     def _get_component_keywords(self, obj, component):
 
         if component.meta_type == 'FieldIndex':
             # last attribute is the winner if value is not None
             for attr in component.attributes:
-                datum = self._get_object_datum(obj, attr)
+                datum = self._get_component_datum(obj, attr)
                 if datum is None:
                     continue
             if datum is None:
                 return ()
-            if isinstance(datum, list):
-                datum = tuple(datum)
+            if isinstance(datum, (list, OOSet)):
+                return tuple(datum)
             return (datum,)
 
         elif component.meta_type == 'KeywordIndex':
             # last attribute is the winner
             attr = component.attributes[-1]
-            datum = self._get_object_keywords(obj, attr)
+            datum = self._get_component_datum(obj, attr)
+            if isinstance(datum, basestring):
+                datum = (datum,)
             if isinstance(datum, list):
                 datum = tuple(datum)
             return datum
@@ -297,7 +290,7 @@ class CompositeIndex(KeywordIndex):
         elif component.meta_type == 'BooleanIndex':
             # last attribute is the winner
             attr = component.attributes[-1]
-            datum = self._get_object_datum(obj, attr)
+            datum = self._get_component_datum(obj, attr)
             if datum is not _marker:
                 datum = int(bool(datum))
             return (datum,)
@@ -379,6 +372,14 @@ class CompositeIndex(KeywordIndex):
             # convert rec keys to int for BooleanIndex
             if c.meta_type == 'BooleanIndex':
                 rec.keys = [int(bool(v)) for v in rec.keys[:]]
+
+            # cannot currently support KeywordIndex's
+            # missing/empty feature
+            if c.meta_type == 'KeywordIndex':
+                if missing in rec.keys:
+                    continue
+                if empty in rec.keys:
+                    continue
 
             # rec with 'not' parameter
             not_parm = rec.get('not', None)
