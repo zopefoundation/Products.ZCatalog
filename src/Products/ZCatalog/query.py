@@ -89,8 +89,8 @@ class IndexQuery(object):
             for field in request.keys():
                 if field.startswith(iid + '_'):
                     iid_tmp, op = field.split('_')
-
-                    self.set(op, request[field])
+                    if op in self.options:
+                        self.set(op, request[field])
 
         self.keys = keys
         not_value = getattr(self, 'not', None)
