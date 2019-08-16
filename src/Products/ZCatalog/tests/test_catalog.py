@@ -755,12 +755,20 @@ class TestCatalogSortBatch(unittest.TestCase):
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
 
-    def test_sort_on_two2(self):
+    def test_sort_on_two_limit_10(self):
         catalog = self._make_one(cls=Dummy2)
         upper = self.upper
         a = catalog(sort_on=('att1', 'num'), att1='att1',  b_start=0, b_size=10)
         self.assertEqual(len(a), 10)
         for x in range(10):
+            self.assertEqual(a[x].num, x)
+
+    def test_sort_on_two_limit_50(self):
+        catalog = self._make_one(cls=Dummy2)
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',  b_start=0, b_size=50)
+        self.assertEqual(len(a), 50)
+        for x in range(50):
             self.assertEqual(a[x].num, x)
 
     def test_sort_on_two_reverse(self):
