@@ -55,6 +55,31 @@ class Dummy(ExtensionClass.Base):
         return ['col3']
 
 
+class Dummy2(ExtensionClass.Base):
+
+    att1 = 'att1'
+    att2 = 'att2'
+    att3 = ['att3']
+    foo = 'foo'
+
+    def __init__(self, num):
+        self.num = num
+        if isinstance(num, int) and (self.num % 10) == 0:
+            self.ends_in_zero = True
+        if isinstance(num, int) and self.num >= 50 :
+            self.att1 = 'other'
+
+    def col1(self):
+        return 'col1'
+
+    def col2(self):
+        return 'col2'
+
+    def col3(self):
+        return ['col3']
+
+
+
 class MultiFieldIndex(FieldIndex):
 
     def getIndexQueryNames(self):
@@ -210,7 +235,7 @@ class TestCatalog(unittest.TestCase):
         nums[i] = nums[j]
         nums[j] = tmp
 
-    def _make_one(self, extra=None):
+    def _make_one(self, extra=None, cls=Dummy):
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
@@ -229,8 +254,8 @@ class TestCatalog(unittest.TestCase):
             extra(catalog)
 
         for x in range(0, self.upper):
-            catalog.catalogObject(Dummy(self.nums[x]), repr(x))
-        return catalog.__of__(Dummy('foo'))
+            catalog.catalogObject(cls(self.nums[x]), repr(x))
+        return catalog.__of__(cls('foo'))
 
     def test_clear(self):
         catalog = self._make_one()
@@ -400,7 +425,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         nums[i] = nums[j]
         nums[j] = tmp
 
-    def _make_one(self, extra=None):
+    def _make_one(self, extra=None, cls=Dummy):
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
@@ -421,8 +446,8 @@ class TestCatalogSortBatch(unittest.TestCase):
             extra(catalog)
 
         for x in range(0, self.upper):
-            catalog.catalogObject(Dummy(self.nums[x]), repr(x))
-        return catalog.__of__(Dummy('foo'))
+            catalog.catalogObject(cls(self.nums[x]), repr(x))
+        return catalog.__of__(cls('foo'))
 
     def test_sorted_search_indexes_empty(self):
         catalog = self._make_one()
@@ -728,6 +753,14 @@ class TestCatalogSortBatch(unittest.TestCase):
         a = catalog(sort_on=('att1', 'num'), att1='att1')
         self.assertEqual(len(a), upper)
         for x in range(self.upper):
+            self.assertEqual(a[x].num, x)
+
+    def test_sort_on_two2(self):
+        catalog = self._make_one(cls=Dummy2)
+        upper = self.upper
+        a = catalog(sort_on=('att1', 'num'), att1='att1',  b_start=0, b_size=10)
+        self.assertEqual(len(a), 10)
+        for x in range(10):
             self.assertEqual(a[x].num, x)
 
     def test_sort_on_two_reverse(self):
