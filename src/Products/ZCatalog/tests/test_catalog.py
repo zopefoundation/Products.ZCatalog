@@ -40,7 +40,7 @@ class Dummy(ExtensionClass.Base):
     att3 = ['att3']
     foo = 'foo'
 
-    def __init__(self, num):
+    def __init__(self, num, val, val2):
         self.num = num
         if isinstance(num, int) and (self.num % 10) == 0:
             self.ends_in_zero = True
@@ -77,7 +77,6 @@ class Dummy2(ExtensionClass.Base):
 
     def col3(self):
         return ['col3']
-
 
 
 class MultiFieldIndex(FieldIndex):
@@ -414,9 +413,20 @@ class TestCatalog(unittest.TestCase):
         self.assertEqual(len(a), 0)
 
 
+class Name(ExtensionClass.Base):
+
+
+
+    def __init__(self, num, first_name, last_name):
+        self.num = num
+        self.first = first_name
+        self.last = last_name
+
+
+
 class TestCatalogSortBatch(unittest.TestCase):
 
-    upper = 100
+    upper = 20
 
     nums = list(range(upper))
     for i in range(upper):
@@ -425,29 +435,72 @@ class TestCatalogSortBatch(unittest.TestCase):
         nums[i] = nums[j]
         nums[j] = tmp
 
-    def _make_one(self, extra=None, cls=Dummy):
+    def _make_one(self):
+        first_names = [
+            'abel',
+            'bert',
+            'cinder',
+            'dolores',
+            'ethel',
+            'fran',
+            'geralt'
+        ]
+        last_names = [
+            'smith',
+            'lopez',
+            'meier',
+        ]
+        names = [
+            (0, 'bert', 'meier'),
+            (1, 'ethel', 'lopez'),
+            (2, 'abel', 'meier'),
+            (3, 'cinder', 'meier'),
+            (4, 'abel', 'meier'),
+            (5, 'cinder', 'lopez'),
+            (6, 'ethel', 'meier'),
+            (7, 'dolores', 'smith'),
+            (8, 'bert', 'smith'),
+            (9, 'fran', 'lopez'),
+            (10, 'dolores', 'lopez'),
+            (11, 'dolores', 'lopez'),
+            (12, 'ethel', 'meier'),
+            (13, 'ethel', 'smith'),
+            (14, 'geralt', 'meier'),
+            (15, 'bert', 'smith'),
+            (16, 'abel', 'lopez'),
+            (17, 'cinder', 'lopez'),
+            (18, 'ethel', 'smith'),
+            (19, 'geralt', 'smith')
+        ]
+
         from Products.ZCatalog.Catalog import Catalog
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
-        att1 = FieldIndex('att1')
-        att2 = ZCTextIndex('att2', caller=catalog,
+        # firstname index
+        first = FieldIndex('att1')
+        catalog.addIndex('att1', first)
+
+        # lastname index
+        last = ZCTextIndex('last', caller=catalog,
                            index_factory=OkapiIndex, lexicon_id='lexicon')
-        catalog.addIndex('att2', att2)
+        catalog.addIndex('last', last)
+
+        # id index
         num = FieldIndex('num')
-
-        catalog.addIndex('att1', att1)
         catalog.addIndex('num', num)
-        catalog.addColumn('num')
 
-        foo = MultiFieldIndex('foo')
-        catalog.addIndex('foo', foo)
+        for i in range(20):
+            num = names[i][0]
+            first = names[i][1]
+            last = names[i][2]
+            name = Name(num, first, last)
+            catalog.catalogObject(name, str(num))
 
-        if extra is not None:
-            extra(catalog)
+        return catalog.__of__(Name('foo', 'foo', 'bar'))
 
-        for x in range(0, self.upper):
-            catalog.catalogObject(cls(self.nums[x]), repr(x))
-        return catalog.__of__(cls('foo'))
+    def print_results(self, results):
+        for result in results:
+            print(result.num, result.first, result.last )
 
     def test_sorted_search_indexes_empty(self):
         catalog = self._make_one()
@@ -456,22 +509,22 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sorted_search_indexes_one(self):
         catalog = self._make_one()
-        result = catalog._sorted_search_indexes({'att1': 'a'})
-        self.assertEqual(result, ['att1'])
+        result = catalog._sorted_search_indexes({'first': 'a'})
+        self.assertEqual(result, ['first'])
 
     def test_sorted_search_indexes_many(self):
         catalog = self._make_one()
-        query = {'att1': 'a', 'att2': 'b', 'num': 1}
+        query = {'first': 'a', 'last': 'b', 'num': 1}
         result = catalog._sorted_search_indexes(query)
-        self.assertEqual(set(result), set(['att1', 'att2', 'num']))
+        self.assertEqual(set(result), set(['first', 'last', 'num']))
 
     def test_sorted_search_indexes_priority(self):
         # att2 and col2 don't support ILimitedResultIndex, att1 does
         catalog = self._make_one()
-        query = {'att1': 'a', 'att2': 'b', 'col2': 'c'}
+        query = {'first': 'a', 'last': 'b', 'col2': 'c'}
         result = catalog._sorted_search_indexes(query)
-        self.assertEqual(result.index('att2'), 0)
-        self.assertEqual(result.index('att1'), 1)
+        self.assertEqual(result.index('last'), 0)
+        self.assertEqual(result.index('first'), 1)
 
     def test_sorted_search_indexes_match_alternate_attr(self):
         catalog = self._make_one()
@@ -486,7 +539,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sortResults(self):
         catalog = self._make_one()
-        brains = catalog({'att1': 'att1'})
+        brains = catalog({'first': 'first'})
         rs = IISet([b.getRID() for b in brains])
         si = catalog.getIndex('num')
         result = catalog.sortResults(rs, si)
@@ -494,7 +547,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sortResults_reversed(self):
         catalog = self._make_one()
-        brains = catalog({'att1': 'att1'})
+        brains = catalog({'first': 'first'})
         rs = IISet([b.getRID() for b in brains])
         si = catalog.getIndex('num')
         result = catalog.sortResults(rs, si, reverse=True)
@@ -502,7 +555,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sortResults_limit(self):
         catalog = self._make_one()
-        brains = catalog({'att1': 'att1'})
+        brains = catalog({'first': 'first'})
         rs = IISet([b.getRID() for b in brains])
         si = catalog.getIndex('num')
         result = catalog.sortResults(rs, si, limit=10)
@@ -512,7 +565,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sortResults_limit_reversed(self):
         catalog = self._make_one()
-        brains = catalog({'att1': 'att1'})
+        brains = catalog({'first': 'first'})
         rs = IISet([b.getRID() for b in brains])
         si = catalog.getIndex('num')
         result = catalog.sortResults(rs, si, reverse=True, limit=10)
@@ -526,17 +579,17 @@ class TestCatalogSortBatch(unittest.TestCase):
         # over the sort index rather than the result set when the result
         # set is much larger than the sort index.
         catalog = self._make_one()
-        a = catalog(att1='att1', sort_on='att1')
+        a = catalog(first='first', sort_on='first')
         self.assertEqual(len(a), self.upper)
         self.assertEqual(a.actual_result_count, self.upper)
 
     def testSortLimit(self):
         catalog = self._make_one()
-        full = list(catalog(att1='att1', sort_on='num'))
-        a = catalog(att1='att1', sort_on='num', sort_limit=10)
+        full = list(catalog(first='first', sort_on='num'))
+        a = catalog(first='first', sort_on='num', sort_limit=10)
         self.assertEqual([r.num for r in a], [r.num for r in full[:10]])
         self.assertEqual(a.actual_result_count, self.upper)
-        a = catalog(att1='att1', sort_on='num',
+        a = catalog(first='first', sort_on='num',
                     sort_limit=10, sort_order='reverse')
         rev = [r.num for r in full[-10:]]
         rev.reverse()
@@ -547,58 +600,59 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         a = catalog(
             att1='att1', sort_on='num', sort_limit=self.upper * 3)
-        self.assertEqual(a.actual_result_count, self.upper)
-        self.assertEqual(a[0].num, 0)
-        a = catalog(att1='att1', sort_on='num',
+        self.assertEqual(a.actual_result_count, 7)
+        self.assertEqual(a[0].num, 1)
+        a = catalog(first='geralt', sort_on='num',
                     sort_limit=self.upper * 3, sort_order='reverse')
-        self.assertEqual(a.actual_result_count, self.upper)
+        self.assertEqual(a.actual_result_count, 7)
+
         self.assertEqual(a[0].num, self.upper - 1)
 
     def testSortLimitViaBatchingArgsBeforeStart(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=-5, b_size=8)
+        query = dict(first='first', sort_on='num', b_start=-5, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(0, 3)))
 
     def testSortLimitViaBatchingArgsStart(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=0, b_size=5)
+        query = dict(first='first', sort_on='num', b_start=0, b_size=5)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(0, 5)))
 
     def testSortLimitViaBatchingEarlyFirstHalf(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=11, b_size=17)
+        query = dict(first='first', sort_on='num', b_start=11, b_size=17)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(11, 28)))
 
     def testSortLimitViaBatchingArgsLateFirstHalf(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=30, b_size=15)
+        query = dict(first='first', sort_on='num', b_start=30, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(30, 45)))
 
     def testSortLimitViaBatchingArgsLeftMiddle(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=45, b_size=8)
+        query = dict(first='first', sort_on='num', b_start=45, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(45, 53)))
 
     def testSortLimitViaBatchingArgsRightMiddle(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=48, b_size=8)
+        query = dict(first='first', sort_on='num', b_start=48, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(48, 56)))
 
     def testSortLimitViaBatchingArgsRightMiddleSortOnTwoSecond(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on=('att1', 'num'),
+        query = dict(first='first', sort_on=('first', 'num'),
                      sort_order=('', 'reverse'), b_start=48, b_size=8)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
@@ -606,14 +660,14 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def testSortLimitViaBatchingArgsEarlySecondHalf(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=55, b_size=15)
+        query = dict(first='first', sort_on='num', b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(55, 70)))
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoFirst(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on=('att1', 'num'),
+        query = dict(first='first', sort_on=('first', 'num'),
                      sort_order=('reverse', ''), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
@@ -621,7 +675,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoSecond(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on=('att1', 'num'),
+        query = dict(first='first', sort_on=('first', 'num'),
                      sort_order=('', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
@@ -629,7 +683,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def testSortLimitViaBatchingArgsEarlySecondHalfSortOnTwoBoth(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on=('att1', 'num'),
+        query = dict(first='first', sort_on=('first', 'num'),
                      sort_order=('reverse', 'reverse'), b_start=55, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
@@ -637,28 +691,28 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def testSortLimitViaBatchingArgsSecondHalf(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=70, b_size=15)
+        query = dict(first='first', sort_on='num', b_start=70, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(70, 85)))
 
     def testSortLimitViaBatchingArgsEnd(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=90, b_size=10)
+        query = dict(first='first', sort_on='num', b_start=90, b_size=10)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(90, 100)))
 
     def testSortLimitViaBatchingArgsOverEnd(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=90, b_size=15)
+        query = dict(first='first', sort_on='num', b_start=90, b_size=15)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], list(range(90, 100)))
 
     def testSortLimitViaBatchingArgsOutside(self):
         catalog = self._make_one()
-        query = dict(att1='att1', sort_on='num', b_start=110, b_size=10)
+        query = dict(first='first', sort_on='num', b_start=110, b_size=10)
         result = catalog(query)
         self.assertEqual(result.actual_result_count, 100)
         self.assertEqual([r.num for r in result], [])
@@ -674,7 +728,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         # make sure it was removed
         self.assertEqual(len(num_index), 99)
         # sort over the smaller num index
-        query = dict(att1='att1', sort_on='num', sort_limit=10)
+        query = dict(first='first', sort_on='num', sort_limit=10)
         result = catalog(query)
         # the `0` document was removed
         self.assertEqual(result[0].num, 1)
@@ -687,7 +741,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_search_not(self):
         catalog = self._make_one()
-        query = dict(att1='att1', num={'not': [0, 1]})
+        query = dict(first='first', num={'not': [0, 1]})
         result = catalog(query)
         self.assertEqual(len(result), self.upper - 2)
 
@@ -696,7 +750,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col1 = FieldIndex('col1')
             catalog.addIndex('col1', col1)
         catalog = self._make_one(extra)
-        query = dict(att1='att1', col1={'not': 'col1'})
+        query = dict(first='first', col1={'not': 'col1'})
         result = catalog(query)
         self.assertEqual(len(result), 0)
 
@@ -705,14 +759,14 @@ class TestCatalogSortBatch(unittest.TestCase):
             ends_in_zero = FieldIndex('ends_in_zero')
             catalog.addIndex('ends_in_zero', ends_in_zero)
         catalog = self._make_one(extra=extra)
-        query = dict(att1='att1', ends_in_zero={'not': False})
+        query = dict(first='first', ends_in_zero={'not': False})
         result = catalog(query)
         self.assertEqual(len(result), 10)
 
     def test_sort_on_good_index(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(att1='att1', sort_on='num')
+        a = catalog(first='first', sort_on='num')
         self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
@@ -730,13 +784,13 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
 
         def wrongsortindex():
-            catalog(sort_on='att2')
+            catalog(sort_on='last')
         self.assertRaises(CatalogError, wrongsortindex)
 
     def test_sort_on(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on='num', att2='att2')
+        a = catalog(sort_on='num', att2='last')
         self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
@@ -744,13 +798,13 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_missing(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(att2='att2')
+        a = catalog(att2='last')
         self.assertEqual(len(a), upper)
 
     def test_sort_on_two(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1')
+        a = catalog(sort_on=('first', 'num'), first='first')
         self.assertEqual(len(a), upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
@@ -758,7 +812,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_limit_10(self):
         catalog = self._make_one(cls=Dummy2)
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',  b_start=0, b_size=10)
+        a = catalog(sort_on=('first', 'num'), first='first',  b_start=0, b_size=10)
         self.assertEqual(len(a), 10)
         for x in range(10):
             self.assertEqual(a[x].num, x)
@@ -766,7 +820,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_limit_50(self):
         catalog = self._make_one(cls=Dummy2)
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',  b_start=0, b_size=50)
+        a = catalog(sort_on=('first', 'num'), first='first',  b_start=0, b_size=50)
         self.assertEqual(len(a), 50)
         for x in range(50):
             self.assertEqual(a[x].num, x)
@@ -774,7 +828,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order='reverse')
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -783,7 +837,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse_neither(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order=('', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -792,7 +846,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse_first(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order=('reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -801,7 +855,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse_second(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order=('', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -810,7 +864,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse_both(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order=('reverse', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -819,7 +873,7 @@ class TestCatalogSortBatch(unittest.TestCase):
     def test_sort_on_two_reverse_too_many(self):
         catalog = self._make_one()
         upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_order=('', '', 'reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
@@ -827,14 +881,14 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1', sort_limit=10)
+        a = catalog(sort_on=('first', 'num'), first='first', sort_limit=10)
         self.assertEqual(len(a), 10)
         for x in range(9):
             self.assertTrue(a[x].num < a[x + 1].num)
 
     def test_sort_on_two_small_limit_reverse(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_limit=10, sort_order='reverse')
         self.assertEqual(len(a), 10)
         for x in range(9):
@@ -842,7 +896,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sort_on_two_big_limit(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
@@ -850,7 +904,7 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sort_on_two_big_limit_reverse(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'num'), first='first',
                     sort_limit=self.upper * 3, sort_order='reverse')
         self.assertEqual(len(a), 100)
         for x in range(99):
@@ -861,7 +915,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col2 = FieldIndex('col2')
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1')
+        a = catalog(sort_on=('first', 'col2', 'num'), first='first')
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper):
             self.assertEqual(a[x].num, x)
@@ -871,7 +925,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col2 = FieldIndex('col2')
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'col2', 'num'), first='first',
                     sort_order='reverse')
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
@@ -882,7 +936,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col2 = FieldIndex('col2')
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'col2', 'num'), first='first',
                     sort_order=('', '', 'reverse'))
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
@@ -893,7 +947,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col2 = FieldIndex('col2')
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'col2', 'num'), first='first',
                     sort_limit=10)
         self.assertEqual(len(a), 10)
         for x in range(9):
@@ -904,7 +958,7 @@ class TestCatalogSortBatch(unittest.TestCase):
             col2 = FieldIndex('col2')
             catalog.addIndex('col2', col2)
         catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
+        a = catalog(sort_on=('first', 'col2', 'num'), first='first',
                     sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
@@ -920,11 +974,11 @@ class TestUnCatalog(unittest.TestCase):
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
         att1 = FieldIndex('att1')
-        att2 = ZCTextIndex('att2', caller=catalog,
+        att2 = ZCTextIndex('last', caller=catalog,
                            index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         catalog.addIndex('att1', att1)
-        catalog.addIndex('att2', att2)
+        catalog.addIndex('last', att2)
         catalog.addIndex('att3', att3)
 
         for x in range(0, self.upper):
@@ -944,7 +998,7 @@ class TestUnCatalog(unittest.TestCase):
     def test_uncatalog_text_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
-        a = catalog(att2='att2')
+        a = catalog(att2='last')
         self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
 
     def test_uncatalog_keyword_index(self):
