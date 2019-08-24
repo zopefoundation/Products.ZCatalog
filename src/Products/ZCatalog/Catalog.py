@@ -907,8 +907,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     # This document is not in the sort key index, skip it.
                     actual_result_count -= 1
                 else:
-                    if n >= limit and key >= best:
-                        continue
+                    try:
+                        if n >= limit and key >= best:
+                            continue
+                    except:
+                        pass
                     i = bisect(keys, key)
                     keys.insert(i, key)
                     result.insert(i, (full_key, did, self.__getitem__))
@@ -997,7 +1000,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Choose one of the sort algorithms.
         if iterate_sort_index:
             sort_func = self._sort_iterate_index
-        elif limit is None or second_indexes or (limit * 4 > rlen):
+        elif limit is None or (limit * 4 > rlen):
             sort_func = self._sort_iterate_resultset
         elif first_reverse:
             sort_func = self._sort_nbest
