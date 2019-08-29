@@ -887,7 +887,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     best = keys[-1]
         else:
             # we have multi index sorting
-            result, actual_result_count  = self._multi_index_nbest(
+            result, actual_result_count = self._multi_index_nbest(
                 actual_result_count,
                 result,
                 rs,
