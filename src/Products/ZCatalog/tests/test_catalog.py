@@ -55,7 +55,6 @@ class Dummy(ExtensionClass.Base):
         return ['col3']
 
 
-
 class Name(ExtensionClass.Base):
 
     first = 'first'
@@ -72,8 +71,8 @@ class Name(ExtensionClass.Base):
     def __of__(self, parent):
         return self
 
-class MultiFieldIndex(FieldIndex):
 
+class MultiFieldIndex(FieldIndex):
 
     def getIndexQueryNames(self):
         return [self.id, 'bar']
@@ -746,20 +745,6 @@ class TestCatalogSortMulti(unittest.TestCase):
     upper = 20
 
     def _make_one(self):
-        first_names = [
-            'abel',
-            'bert',
-            'cinder',
-            'dolores',
-            'ethel',
-            'fran',
-            'geralt'
-        ]
-        last_names = [
-            'smith',
-            'lopez',
-            'meier',
-        ]
         names = [
             (0, 'bert', 'meier'),
             (1, 'ethel', 'lopez'),
@@ -784,9 +769,9 @@ class TestCatalogSortMulti(unittest.TestCase):
         ]
 
         self.map = {
-            'n':'num',
-            'f':'first',
-            'l':'last',
+            'n': 'num',
+            'f': 'first',
+            'l': 'last',
         }
 
         from Products.ZCatalog.Catalog import Catalog
@@ -838,7 +823,7 @@ class TestCatalogSortMulti(unittest.TestCase):
 
         for x in range(N):
             for idx, col in enumerate(order):
-                self.assertEqual(getattr(result[x],col), reference[x][idx])
+                self.assertEqual(getattr(result[x], col), reference[x][idx])
 
     def check_result_batch(self, batch, reference, b_start, b_size, order):
 
@@ -857,16 +842,16 @@ class TestCatalogSortMulti(unittest.TestCase):
         if len(batch) != b_size:
             self.assertEqual(len(batch), b_size, msg())
 
-        def msg2( line, column ):
+        def msg2(line, column):
             # produce readable assert message
             import pprint
             batch_lines = []
             reference_lines = []
-            for batch_idx, x in enumerate(range(b_start, b_start+b_size)):
+            for batch_idx, x in enumerate(range(b_start, b_start + b_size)):
                 batch_line = []
                 reference_line = []
                 for idx, col in enumerate(order):
-                    batch_line.append( getattr(batch[batch_idx],col))
+                    batch_line.append(getattr(batch[batch_idx], col))
                     reference_line.append(reference[x][idx])
                 batch_lines.append(batch_line)
                 reference_lines.append(reference_line)
@@ -882,20 +867,21 @@ class TestCatalogSortMulti(unittest.TestCase):
 
             return assert_str
 
-        # Compare the reference with the result line for line, attribute for attribute
-        for batch_idx, x in enumerate(range(b_start, b_start+b_size)):
+        # Compare the reference with the result line for line,
+        # attribute for attribute
+        for batch_idx, x in enumerate(range(b_start, b_start + b_size)):
             for idx, col in enumerate(order):
-                result = getattr(batch[batch_idx],col)
+                result = getattr(batch[batch_idx], col)
                 expected = reference[x][idx]
                 # this "if" is not call msg2 without need
                 if result != expected:
-                    self.assertEqual(result,expected , msg2(batch_idx, col))
+                    self.assertEqual(result, expected, msg2(batch_idx, col))
 
-
-    def batch_test(self, catalog, reference, sort_on=None, sort_order=None, sort_limit=None):
+    def batch_test(self, catalog, reference, sort_on=None,
+                   sort_order=None, sort_limit=None):
 
         sort_params = {}
-        if sort_on :
+        if sort_on:
             sort_params['sort_on'] = sort_on
         if sort_order:
             sort_params['sort_order'] = sort_order
@@ -904,7 +890,7 @@ class TestCatalogSortMulti(unittest.TestCase):
 
         limit = self.upper
         if sort_limit and sort_limit <= self.upper:
-            limit =  sort_limit
+            limit = sort_limit
         else:
             limit = self.upper
         # test without batching
@@ -917,14 +903,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             # for b_size for all possible batch sozes
             for b_size in range(1, self.upper - b_start):
                 # query the catalog
-                if b_start == 15 and b_size == 1:
-                    xxx = 0
-                a = catalog(
-                        all='all',
-                        b_start=b_start,
-                        b_size=b_size,
-                        **sort_params
-                )
+                a = catalog(all='all', b_start=b_start,
+                            b_size=b_size, **sort_params)
                 # cheeck the results against the reference
                 self.check_result_batch(a, reference, b_start, b_size, sort_on)
 
@@ -956,7 +936,6 @@ class TestCatalogSortMulti(unittest.TestCase):
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'))
 
-
     def test_sort_on_two_reverse(self):
         catalog = self._make_one()
 
@@ -982,8 +961,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('abel', 4, 'meier'),
             ('abel', 2, 'meier')
         ]
-        self.batch_test(catalog, reference, sort_on=('first', 'num'), sort_order='reverse')
-
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order='reverse')
 
     def test_sort_on_two_reverse_neither(self):
         catalog = self._make_one()
@@ -1010,8 +989,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('geralt', 14, 'meier'),
             ('geralt', 19, 'smith')]
 
-        self.batch_test(catalog, reference, sort_on=('first', 'num'), sort_order=('', ''))
-
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', ''))
 
     def test_sort_on_two_reverse_first(self):
         catalog = self._make_one()
@@ -1038,7 +1017,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('abel', 4, 'meier'),
             ('abel', 16, 'lopez')]
 
-        self.batch_test(catalog, reference, sort_on=('first', 'num'), sort_order=('reverse', ''))
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('reverse', ''))
 
     def test_sort_on_two_reverse_second(self):
         catalog = self._make_one()
@@ -1065,8 +1045,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('geralt', 19, 'smith'),
             ('geralt', 14, 'meier')]
 
-        self.batch_test(catalog, reference, sort_on=('first', 'num'), sort_order=('', 'reverse'))
-
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', 'reverse'))
 
     def test_sort_on_two_reverse_both(self):
         catalog = self._make_one()
@@ -1094,13 +1074,11 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('abel', 2, 'meier')]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-            sort_order=('reverse', 'reverse'))
-
+                        sort_order=('reverse', 'reverse'))
 
     def test_sort_on_two_reverse_too_many(self):
         # IMHO THis case have to fail!
         catalog = self._make_one()
-        upper = self.upper
 
         reference = [
             ('abel', 2, 'meier'),
@@ -1125,9 +1103,7 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('geralt', 19, 'smith')]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-            sort_order=('','', 'reverse'))
-
-
+                        sort_order=('', '', 'reverse'))
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
@@ -1155,8 +1131,7 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('geralt', 19, 'smith')]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-            sort_order=('',''), sort_limit=10)
-
+                        sort_order=('', ''), sort_limit=10)
 
     def test_sort_on_two_small_limit_reverse(self):
         catalog = self._make_one()
@@ -1185,8 +1160,7 @@ class TestCatalogSortMulti(unittest.TestCase):
         ]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-            sort_order='reverse', sort_limit=10)
-
+                        sort_order='reverse', sort_limit=10)
 
     def test_sort_on_two_big_limit(self):
         catalog = self._make_one()
@@ -1214,8 +1188,7 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('geralt', 19, 'smith')]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-            sort_limit=self.upper * 3)
-
+                        sort_limit=self.upper * 3)
 
     def test_sort_on_two_big_limit_reverse(self):
         catalog = self._make_one()
@@ -1244,8 +1217,7 @@ class TestCatalogSortMulti(unittest.TestCase):
         ]
 
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
-                sort_order='reverse', sort_limit=self.upper * 3)
-
+                        sort_order='reverse', sort_limit=self.upper * 3)
 
     def test_sort_on_three(self):
         catalog = self._make_one()
@@ -1273,7 +1245,7 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('smith', 'geralt', 19)
         ]
 
-        self.batch_test(catalog, reference, sort_on=('last','first', 'num'))
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'))
 
     def test_sort_on_three_reverse(self):
         catalog = self._make_one()
@@ -1301,7 +1273,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('lopez', 'abel', 16)
         ]
 
-        self.batch_test(catalog, reference, sort_on=('last','first', 'num'), sort_order='reverse')
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_order='reverse')
 
     def test_sort_on_three_reverse_last(self):
         catalog = self._make_one()
@@ -1329,7 +1302,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('smith', 'geralt', 19)
         ]
 
-        self.batch_test(catalog, reference, sort_on=('last','first', 'num'), sort_order=('', '', 'reverse'))
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_order=('', '', 'reverse'))
 
     def test_sort_on_three_small_limit(self):
         catalog = self._make_one()
@@ -1357,7 +1331,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('smith', 'geralt', 19)
         ]
 
-        self.batch_test(catalog, reference, sort_on=('last','first', 'num'), sort_limit=10)
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_limit=10)
 
     def test_sort_on_three_big_limit(self):
         catalog = self._make_one()
@@ -1385,7 +1360,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             ('smith', 'geralt', 19)
         ]
 
-        self.batch_test(catalog, reference, sort_on=('last','first', 'num'), sort_limit=self.upper * 3)
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_limit=self.upper * 3)
 
 
 class TestUnCatalog(unittest.TestCase):

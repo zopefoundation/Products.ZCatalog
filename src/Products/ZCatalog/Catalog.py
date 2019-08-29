@@ -846,8 +846,15 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result.reverse()
         else:
             # we have multi index sorting
-            result = self._multi_index_nbest(actual_result_count, result, rs,
-                    limit, sort_index, sort_spec, second_indexes_key_map, reverse=True)
+            result = self._multi_index_nbest(
+                actual_result_count,
+                result,
+                rs,
+                limit,
+                sort_index,
+                sort_spec,
+                second_indexes_key_map,
+                reverse=True)
 
         return (actual_result_count, 0, result)
 
@@ -880,13 +887,22 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     best = keys[-1]
         else:
             # we have multi index sorting
-            result = self._multi_index_nbest(actual_result_count, result, rs,
-                            limit, sort_index, sort_spec, second_indexes_key_map, reverse=False)
+            result = self._multi_index_nbest(
+                actual_result_count,
+                result,
+                rs,
+                limit,
+                sort_index,
+                sort_spec,
+                second_indexes_key_map,
+                reverse=False
+            )
 
         return (actual_result_count, 0, result)
 
-
-    def _multi_index_nbest(self, actual_result_count, result, rs, limit, sort_index, sort_spec, second_indexes_key_map, reverse=True):
+    def _multi_index_nbest(self, actual_result_count, result,
+                           rs, limit, sort_index, sort_spec,
+                           second_indexes_key_map, reverse=True):
         """
         For multiple indexes.
         1) Categorize documents as lists by the first index values in the
@@ -918,7 +934,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 did_by_index_value[index_value].append(did)
         # All documents are now categorized after the first sort index values.
         # Sort the sort index_values
-        sorted_index_values = sorted(did_by_index_value.keys(), reverse=reverse)
+        sorted_index_values = sorted(
+            did_by_index_value.keys(),
+            reverse=reverse)
         # How many documents do we have
         result_count = 0
         # for all index_values in sorted order
@@ -945,7 +963,6 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Sort after the secondary indexes.
         result = multisort(result, sort_spec)
         return result
-
 
     def sortResults(self, rs, sort_index,
                     reverse=False, limit=None, merge=True,
