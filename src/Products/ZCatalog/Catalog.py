@@ -846,7 +846,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             result.reverse()
         else:
             # we have multi index sorting
-            result = self._multi_index_nbest(
+            result, actual_result_count = self._multi_index_nbest(
                 actual_result_count,
                 result,
                 rs,
@@ -887,7 +887,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     best = keys[-1]
         else:
             # we have multi index sorting
-            result = self._multi_index_nbest(
+            result, actual_result_count  = self._multi_index_nbest(
                 actual_result_count,
                 result,
                 rs,
@@ -962,7 +962,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         # Sort after the secondary indexes.
         result = multisort(result, sort_spec)
-        return result
+        return result, actual_result_count
 
     def sortResults(self, rs, sort_index,
                     reverse=False, limit=None, merge=True,
