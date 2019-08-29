@@ -819,7 +819,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     sort_index, sort_index_length, sort_spec,
                     second_indexes_key_map):
         # Limit / sort results using N-Best algorithm
-        # This is faster for large sets then a full sort
+        # This is faster for large sets than a full sort
         # And uses far less memory
         index_key_map = sort_index.documentToKeyMap()
         keys = []
@@ -845,27 +845,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     worst = keys[0]
             result.reverse()
         else:
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    full_key = (key, )
-                    for km in second_indexes_key_map:
-                        full_key += (km[did], )
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    actual_result_count -= 1
-                else:
-                    if n >= limit and key <= worst:
-                        continue
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, (full_key, did, self.__getitem__))
-                    if n == limit:
-                        del keys[0], result[0]
-                    else:
-                        n += 1
-                    worst = keys[0]
-            result = multisort(result, sort_spec)
+            # we have multi index sorting
+            result = self._multi_index_nbest(actual_result_count, result, rs,
+                    limit, sort_index, sort_spec, second_indexes_key_map, reverse=True)
 
         return (actual_result_count, 0, result)
 
@@ -874,11 +856,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             sort_index, sort_index_length, sort_spec,
                             second_indexes_key_map):
         # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
-        index_key_map = sort_index.documentToKeyMap()
-        keys = []
-        n = 0
-        best = None
         if sort_index_length == 1:
+            index_key_map = sort_index.documentToKeyMap()
+            keys = []
+            n = 0
+            best = None
             for did in rs:
                 try:
                     key = index_key_map[did]
@@ -897,32 +879,73 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         n += 1
                     best = keys[-1]
         else:
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    full_key = (key, )
-                    for km in second_indexes_key_map:
-                        full_key += (km[did], )
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    actual_result_count -= 1
-                else:
-                    try:
-                        if n >= limit and key >= best:
-                            continue
-                    except:
-                        pass
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, (full_key, did, self.__getitem__))
-                    if n == limit:
-                        del keys[-1], result[-1]
-                    else:
-                        n += 1
-                    best = keys[-1]
-            result = multisort(result, sort_spec)
+            # we have multi index sorting
+            result = self._multi_index_nbest(actual_result_count, result, rs,
+                            limit, sort_index, sort_spec, second_indexes_key_map, reverse=False)
 
         return (actual_result_count, 0, result)
+
+
+    def _multi_index_nbest(self, actual_result_count, result, rs, limit, sort_index, sort_spec, second_indexes_key_map, reverse=True):
+        """
+        For multiple indexes.
+        1) Categorize documents as lists by the first index values in the
+        did_by_index_value dict.
+        2) Sort the index_values
+        3) Collect from the did_by_index_value dict by the sorted
+        index_values till limit is exeeded.
+        """
+        # A dict of lists categorize the documents after the first sort
+        # index value.
+        did_by_index_value = {}
+        # get the index' keymap
+        index_key_map = sort_index.documentToKeyMap()
+        # for all documents
+        for did in rs:
+            # get the index value of the current document id
+            try:
+                index_value = index_key_map[did]
+            except KeyError:
+                # This document is not in the sort key index, skip it.
+                # ToDo: Is this the correct/intended behavior???
+                actual_result_count -= 1
+            else:
+                # do we already have a list for this index_value? If not
+                # create one.
+                if index_value not in did_by_index_value:
+                    did_by_index_value[index_value] = []
+                # add document id for the index value
+                did_by_index_value[index_value].append(did)
+        # All documents are now categorized after the first sort index values.
+        # Sort the sort index_values
+        sorted_index_values = sorted(did_by_index_value.keys(), reverse=reverse)
+        # How many documents do we have
+        result_count = 0
+        # for all index_values in sorted order
+        for index_value in sorted_index_values:
+            # for all documents for this index_value
+            for did in did_by_index_value[index_value]:
+                # get additional index metadata for the other sort indexes
+                try:
+                    full_key = (index_value,)
+                    for km in second_indexes_key_map:
+                        full_key += (km[did],)
+                except KeyError:
+                    # This document is not in the sort key index, skip it.
+                    # ToDo: Is this the correct/intended behavior???
+                    actual_result_count -= 1
+                else:
+                    # Add the document to the result set
+                    result.append((full_key, did, self.__getitem__))
+                    result_count += 1
+            # Check if we have enough datasets to fullfill the limit
+            if result_count >= limit:
+                break
+
+        # Sort after the secondary indexes.
+        result = multisort(result, sort_spec)
+        return result
+
 
     def sortResults(self, rs, sort_index,
                     reverse=False, limit=None, merge=True,

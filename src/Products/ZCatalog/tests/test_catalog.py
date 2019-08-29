@@ -917,6 +917,8 @@ class TestCatalogSortMulti(unittest.TestCase):
             # for b_size for all possible batch sozes
             for b_size in range(1, self.upper - b_start):
                 # query the catalog
+                if b_start == 15 and b_size == 1:
+                    xxx = 0
                 a = catalog(
                         all='all',
                         b_start=b_start,
