@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-
+import heapq
 import logging
 from bisect import bisect
 from collections import defaultdict
@@ -901,23 +901,56 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         return (actual_result_count, 0, result)
 
     def _multi_index_nbest(self, actual_result_count, result,
-                           rs, limit, sort_index, sort_spec,
+                           result_set, limit, sort_index, sort_spec,
                            second_indexes_key_map, reverse=True):
         """
-        For multiple indexes.
-        1) Categorize documents as lists by the first index values in the
-        did_by_index_value dict.
-        2) Sort the index_values
-        3) Collect from the did_by_index_value dict by the sorted
-        index_values till limit is exeeded.
+        Example:
+            Limit = 2
+            Sorton = (last_name, num)
+            SortOrder = smallest first
+        Example data:
+            meier 3
+            lopez 4
+            meier 2
+            smith 1
+
+        Expected sort result:
+            lopez 4
+            meier 2
+
+        Even if the two first data sets suffice for the requirement limit=2 the third dataset have to be take into account
+        when sorting on both indexes.
+
+        For multiple indexes the strategy is :
+        1) For the first index get the index_values for all documents
+            Result :
+            ['meier', 'lopez', 'meier', 'smith']
+
+        2) Sort the index_values using heapq to get the 'limit' largest/smallest index_values
+            Result :
+            ['lopez', 'meier']
+
+        3) Find all documents having index_values 'lopez' or 'meier'
+            meier 3
+            lopez 4
+            meier 2
+
+        4) Get the index_value for the other search indexes
+
+        5) Sort these documents on all indexes.
+
         """
-        # A dict of lists categorize the documents after the first sort
-        # index value.
-        did_by_index_value = {}
-        # get the index' keymap
+
+        # ToDo Shortcut for limit>="all"
+
+        # Step 1)
+        # All index_values as a non unique list
+        index_values = []
+        # get the mapping of document ID to index value
         index_key_map = sort_index.documentToKeyMap()
-        # for all documents
-        for did in rs:
+
+        # get index values for all document IDs (did) of the result set
+        for did in result_set:
             # get the index value of the current document id
             try:
                 index_value = index_key_map[did]
@@ -926,42 +959,50 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # ToDo: Is this the correct/intended behavior???
                 actual_result_count -= 1
             else:
-                # do we already have a list for this index_value? If not
-                # create one.
-                if index_value not in did_by_index_value:
-                    did_by_index_value[index_value] = []
-                # add document id for the index value
-                did_by_index_value[index_value].append(did)
-        # All documents are now categorized after the first sort index values.
-        # Sort the sort index_values
-        sorted_index_values = sorted(
-            did_by_index_value.keys(),
-            reverse=reverse)
-        # How many documents do we have
-        result_count = 0
-        # for all index_values in sorted order
-        for index_value in sorted_index_values:
-            # for all documents for this index_value
-            for did in did_by_index_value[index_value]:
-                # get additional index metadata for the other sort indexes
-                try:
-                    full_key = (index_value,)
-                    for km in second_indexes_key_map:
-                        full_key += (km[did],)
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    # ToDo: Is this the correct/intended behavior???
-                    actual_result_count -= 1
-                else:
-                    # Add the document to the result set
-                    result.append((full_key, did, self.__getitem__))
-                    result_count += 1
-            # Check if we have enough datasets to fullfill the limit
-            if result_count >= limit:
-                break
+                # We found a valid document
+                index_values.append(index_value)
 
-        # Sort after the secondary indexes.
-        result = multisort(result, sort_spec)
+        # Step 2)
+        # Get the 'limit' smallest/largest of index_values
+        if reverse:
+            limited_index_values = heapq.nlargest(limit, index_values)
+        else:
+            limited_index_values = heapq.nsmallest(limit, index_values)
+            # we have to revert the results since the following code expect
+            # the index_values in descending order
+            limited_index_values.reverse()
+
+        # Step 3)
+
+        # get the first index_value
+        last_index_value = limited_index_values[0]
+        # store all belonging documents
+        all_documents_for_sorting = list(sort_index._index[last_index_value])
+        # for all aother index values
+        for idx, current_index_value in enumerate(limited_index_values[1:]):
+            # Duplicate checking
+            if last_index_value != current_index_value:
+                # We have a fresh index_value
+                # store all belonging documents
+                all_documents_for_sorting += list(sort_index._index[current_index_value])
+                # remenber the index_value for duplicate checking
+                last_index_value = current_index_value
+
+        # Step 4) Get the index_values for the other search indexes
+        # The sort_set includes the list of index_values per document
+        sort_set = []
+        for did in  all_documents_for_sorting:
+            # get the primary index_value
+            idx = index_key_map[did]
+            # add the secondary index values
+            full_key = (idx, )
+            for km in second_indexes_key_map:
+                    full_key += (km[did], )
+            sort_set.append((full_key, did, self.__getitem__))
+
+        # Step 5) Sort after the secondary indexes.
+        result = multisort(sort_set, sort_spec)
+
         return result, actual_result_count
 
     def sortResults(self, rs, sort_index,
