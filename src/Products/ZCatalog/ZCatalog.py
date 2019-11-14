@@ -863,6 +863,17 @@ class ZCatalog(Folder, Persistent, Implicit):
         self._catalog.addIndex(name, index)
 
     @security.protected(manage_zcatalog_indexes)
+    def availableIndexes(self):
+        """Return a sorted list of indexes.
+
+        Only indexes get returned for which the user has adequate
+        permission to add them.
+        """
+        return sorted(
+            self.Indexes.filtered_meta_types(),
+            key=lambda meta_types: meta_types['name'])
+
+    @security.protected(manage_zcatalog_indexes)
     def delIndex(self, name):
         self._catalog.delIndex(name)
 
