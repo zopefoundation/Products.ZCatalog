@@ -411,13 +411,15 @@ class ZCatalog(Folder, Persistent, Implicit):
     @security.protected(manage_zcatalog_entries)
     def reindexIndex(self, name, REQUEST, pghandler=None):
         if isinstance(name, str):
-            name = (name, )
+            idxs = (name, )
+         else:
+            idxs = name
 
         paths = self._catalog.uids.keys()
 
         i = 0
         if pghandler:
-            pghandler.init('reindexing %s' % name, len(paths))
+            pghandler.init('reindexing {}'.format(idxs), len(paths))
 
         for p in paths:
             i += 1
@@ -433,7 +435,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             else:
                 # don't update metadata when only reindexing a single
                 # index via the UI
-                self.catalog_object(obj, p, idxs=name,
+                self.catalog_object(obj, p, idxs=idxs,
                                     update_metadata=0, pghandler=pghandler)
 
         if pghandler:
