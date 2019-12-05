@@ -410,11 +410,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     @security.protected(manage_zcatalog_entries)
     def reindexIndex(self, name, REQUEST, pghandler=None):
-        if isinstance(name, str):
-            idxs = (name, )
-         else:
-            idxs = name
-
+        idxs = (name, ) if isinstance(name, str) else name
         paths = self._catalog.uids.keys()
 
         i = 0
