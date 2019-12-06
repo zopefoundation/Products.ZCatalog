@@ -411,7 +411,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     @security.protected(manage_zcatalog_entries)
     def reindexIndex(self, name, REQUEST, pghandler=None):
         # This method does the actual reindexing of indexes.
-        # `name` can be the name of an index of a list of names.
+        # `name` can be the name of an index or a list of names.
         idxs = (name, ) if isinstance(name, str) else name
         paths = self._catalog.uids.keys()
 
