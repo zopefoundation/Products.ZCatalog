@@ -12,9 +12,6 @@ Changelog
 5.0.1 (2019-06-17)
 ------------------
 
-Bug fixes
-+++++++++
-
 - Fix sorting of index overview table in ZMI. Migrated the template from 
   to zpt.
   (`#62 <https://github.com/zopefoundation/Products.ZCatalog/issues/62>`_)
