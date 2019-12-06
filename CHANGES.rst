@@ -4,7 +4,9 @@ Changelog
 5.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix exception happening when reindexing multiple indexes while having a
+  progress handler.
+  (`#89 <https://github.com/zopefoundation/Products.ZCatalog/pull/89>`_)
 
 
 5.0.1 (2019-06-17)
