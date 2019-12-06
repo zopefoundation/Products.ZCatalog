@@ -1,8 +1,8 @@
 Changelog
 =========
 
-5.1 (unreleased)
-----------------
+5.0.2 (2019-12-06)
+------------------
 
 - Fix exception happening when reindexing multiple indexes while having a
   progress handler.
