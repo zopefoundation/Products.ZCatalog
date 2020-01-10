@@ -4,7 +4,9 @@ Changelog
 5.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix exception when viewing `Indexes` tab when Chameleon template
+  engine is deactivated.
+  (`#84 <https://github.com/zopefoundation/Products.ZCatalog/issues/84>`_)
 
 
 5.0.2 (2019-12-06)
