@@ -1,8 +1,8 @@
 Changelog
 =========
 
-5.1 (unreleased)
-----------------
+5.0.3 (2020-01-17)
+------------------
 
 - Fix exception when viewing `Indexes` tab when Chameleon template
   engine is deactivated.
