@@ -442,7 +442,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     @security.protected(manage_zcatalog_entries)
     def manage_reindexIndex(self, ids=None, REQUEST=None, RESPONSE=None,
                             URL1=None):
-        """Reindex indexe(s) from a ZCatalog"""
+        """Reindex index(es) from a ZCatalog"""
         if not ids:
             raise BadRequest('No items specified')
 
