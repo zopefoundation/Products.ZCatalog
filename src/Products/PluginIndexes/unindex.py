@@ -86,7 +86,7 @@ class UnIndex(SimpleItem):
           'call_methods' -- should be set to true if you want the index
           to call the attribute 'id' (note: 'id' should be callable!)
           You will also need to pass in an object in the index and
-          uninded methods for this to work.
+          unindex methods for this to work.
 
           'extra' -- a mapping object that keeps additional
           index-related parameters - subitem 'indexed_attrs'
