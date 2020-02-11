@@ -4,7 +4,9 @@ Changelog
 5.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix DeprecationWarning: "InstanceDict is deprecated.
+  Please import from DocumentTemplate._DocumentTemplate.
+  These shims will go away in DocumentTemplate 4.0. [...]"
 
 
 5.0.3 (2020-01-17)
@@ -26,7 +28,7 @@ Changelog
 5.0.1 (2019-06-17)
 ------------------
 
-- Fix sorting of index overview table in ZMI. Migrated the template from 
+- Fix sorting of index overview table in ZMI. Migrated the template from
   to zpt.
   (`#62 <https://github.com/zopefoundation/Products.ZCatalog/issues/62>`_)
 
