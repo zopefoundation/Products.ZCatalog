@@ -1,10 +1,10 @@
 Changelog
 =========
 
-5.1 (unreleased)
-----------------
+5.0.4 (2020-02-11)
+------------------
 
-- Nothing changed yet.
+- Fix some ``DocumentTemplate`` imports to prevent DeprecationWarnings
 
 
 5.0.3 (2020-01-17)
