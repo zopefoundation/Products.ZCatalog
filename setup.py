@@ -31,6 +31,7 @@ setup(
     classifiers=[
         "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
+        "Framework :: Zope",
         "Framework :: Zope :: 4",
         "License :: OSI Approved :: Zope Public License",
         "Operating System :: OS Independent",
@@ -62,7 +63,7 @@ setup(
         'RestrictedPython',
         'zExceptions',
         'ZODB',
-        'Zope2 >= 4.0a5',
+        'Zope >= 4',
         'zope.deferredimport',
         'zope.dottedname',
         'zope.globalrequest',
