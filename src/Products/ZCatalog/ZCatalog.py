@@ -31,8 +31,8 @@ from Acquisition import aq_parent
 from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from DateTime.DateTime import DateTime
-from DocumentTemplate.DT_Util import InstanceDict
-from DocumentTemplate.DT_Util import TemplateDict
+from DocumentTemplate._DocumentTemplate import InstanceDict
+from DocumentTemplate._DocumentTemplate import TemplateDict
 from DocumentTemplate.DT_Util import Eval
 from DocumentTemplate.security import RestrictedDTML
 from OFS.Folder import Folder
