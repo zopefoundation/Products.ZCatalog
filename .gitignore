@@ -9,9 +9,11 @@
 bin/
 build/
 coverage.xml
+default.profraw
 develop-eggs/
 dist/
 eggs/
 htmlcov/
 lib/
 parts/
+pyvenv.cfg
