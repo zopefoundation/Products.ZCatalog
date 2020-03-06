@@ -4,6 +4,14 @@ Changelog
 5.1 (unreleased)
 ----------------
 
+- rework request caching to avoid stale cache results in scripts (with
+  an artificial request).
+  For details:
+  `#94 <https://github.com/zopefoundation/Products.ZCatalog/issues/94>`_,
+  `Plone 5.2 mass migration: bad search results
+  <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
+
+
 
 5.0.4 (2020-02-11)
 ------------------
