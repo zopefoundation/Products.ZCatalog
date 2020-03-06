@@ -365,7 +365,7 @@ class UnIndex(SimpleItem):
 
         cache = None
         REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
+        if hasattr(REQUEST, "get"):
             cache_container = REQUEST.get("__catalog_cache__")
             if cache_container is None:
                 # we use a `WeakKeyDictionary` (rather than the
