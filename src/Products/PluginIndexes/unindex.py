@@ -373,7 +373,7 @@ class UnIndex(SimpleItem):
                 #   described in
                 #   "https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11"
                 cache_container = REQUEST["__catalog_cache__"] \
-                                  = WeakKeyDictionary()
+                    = WeakKeyDictionary()
             # we use the parent (of type `Products.ZCatalog.Catalog.Catalog`)
             #  as key to facilitate invalidation via its method
             #  in the future
