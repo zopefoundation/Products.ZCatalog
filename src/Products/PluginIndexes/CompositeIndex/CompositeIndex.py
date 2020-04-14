@@ -31,6 +31,12 @@ from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
 
+try:
+    from time import clock as process_time
+except ImportError:
+    from time import process_time
+
+
 LOG = logging.getLogger('CompositeIndex')
 
 QUERY_OPTIONS = {
@@ -530,12 +536,12 @@ class CompositeIndex(KeywordIndex):
             of matching field and keyword indexes """
 
         tt = time.time()
-        ct = time.clock()
+        ct = process_time()
 
         self.fastBuild(threshold)
 
         tt = time.time() - tt
-        ct = time.clock() - ct
+        ct = process_time() - ct
 
         if RESPONSE:
             msg = ('ComponentIndex fast reindexed '
