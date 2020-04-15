@@ -1,9 +1,12 @@
 Changelog
 =========
 
-5.1 (unreleased)
+5.0.5 (unreleased)
 ----------------
 
+- Fix with Python 3.8: Replace deprecated ``time.clock()`` use by
+  ``time.process_time``.
+  (`#96 <https://github.com/zopefoundation/Products.ZCatalog/issues/96>`_)
 
 5.0.4 (2020-02-11)
 ------------------
@@ -30,7 +33,7 @@ Changelog
 5.0.1 (2019-06-17)
 ------------------
 
-- Fix sorting of index overview table in ZMI. Migrated the template from 
+- Fix sorting of index overview table in ZMI. Migrated the template from
   to zpt.
   (`#62 <https://github.com/zopefoundation/Products.ZCatalog/issues/62>`_)
 
