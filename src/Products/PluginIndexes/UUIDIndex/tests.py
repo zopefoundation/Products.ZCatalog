@@ -69,6 +69,12 @@ class UUIDIndexTests(unittest.TestCase):
             self._backward[k] = v
             keys = self._forward.get(v, [])
             self._forward[v] = keys
+        self._not_1 = {'foo': {'query': 'a', 'not': 'a'}}
+        self._not_2 = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
+        self._not_3 = {'foo': {'not': 'a'}}
+        self._not_4 = {'foo': {'not': ['0']}}
+        self._not_5 = {'foo': {'not': ['a', 'b']}}
+        self._not_6 = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
     def tearDown(self):
         self._index.clear()
@@ -140,6 +146,13 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply({'foo': '0'}, [values[4]])
         self._checkApply({'foo': ['a', 'ab']}, values[:2])
 
+        self._checkApply(self._not_1, [])
+        self._checkApply(self._not_2, values[1:2])
+        self._checkApply(self._not_3, values[1:])
+        self._checkApply(self._not_4, values[:4])
+        self._checkApply(self._not_5, values[1:])
+        self._checkApply(self._not_6, values[0:1])
+        
     def test_none(self):
         # Make sure None is ignored.
         self._index.index_object(10, Dummy(None))

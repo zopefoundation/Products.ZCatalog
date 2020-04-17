@@ -8,6 +8,9 @@ Changelog
   ``time.process_time``.
   (`#96 <https://github.com/zopefoundation/Products.ZCatalog/issues/96>`_)
 
+- Add support for ``not`` queries in the ``UUIDIndex``
+  (`#98 <https://github.com/zopefoundation/Products.ZCatalog/issues/98>`_)
+
 5.0.4 (2020-02-11)
 ------------------
 
