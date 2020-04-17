@@ -152,7 +152,7 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply(self._not_4, values[:4])
         self._checkApply(self._not_5, values[1:])
         self._checkApply(self._not_6, values[0:1])
-        
+
     def test_none(self):
         # Make sure None is ignored.
         self._index.index_object(10, Dummy(None))
