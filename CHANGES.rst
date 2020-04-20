@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.0.5 (unreleased)
+5.2 (unreleased)
 ----------------
 
 - Rework request caching to avoid stale cache results in scripts (with
@@ -11,10 +11,16 @@ Changelog
   `Plone 5.2 mass migration: bad search results
   <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
 
+
+5.1 (2020-04-20)
+----------------
+
 - Fix with Python 3.8: Replace deprecated ``time.clock()`` use by
   ``time.process_time``.
   (`#96 <https://github.com/zopefoundation/Products.ZCatalog/issues/96>`_)
 
+- Add support for ``not`` queries in the ``UUIDIndex``
+  (`#98 <https://github.com/zopefoundation/Products.ZCatalog/issues/98>`_)
 
 5.0.4 (2020-02-11)
 ------------------
