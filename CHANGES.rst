@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.1 (unreleased)
+5.1 (2020-04-20)
 ----------------
 
 - Fix with Python 3.8: Replace deprecated ``time.clock()`` use by
