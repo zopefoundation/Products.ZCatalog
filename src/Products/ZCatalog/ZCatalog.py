@@ -57,6 +57,12 @@ except NameError:
     # Python 3 compatibility
     xrange = range
 
+try:
+    from time import clock as process_time
+except ImportError:
+    from time import process_time
+
+
 _marker = object()
 LOG = logging.getLogger('Zope.ZCatalog')
 
@@ -237,14 +243,14 @@ class ZCatalog(Folder, Persistent, Implicit):
         """ clear the catalog, then re-index everything """
 
         elapse = time.time()
-        c_elapse = time.clock()
+        c_elapse = process_time()
 
         pgthreshold = self._getProgressThreshold()
         handler = (pgthreshold > 0) and ZLogHandler(pgthreshold) or None
         self.refreshCatalog(clear=1, pghandler=handler)
 
         elapse = time.time() - elapse
-        c_elapse = time.clock() - c_elapse
+        c_elapse = process_time() - c_elapse
 
         RESPONSE.redirect(
             URL1
@@ -308,7 +314,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         """ Find object according to search criteria and Catalog them
         """
         elapse = time.time()
-        c_elapse = time.clock()
+        c_elapse = process_time()
 
         obj = REQUEST.PARENTS[1]
         path = '/'.join(obj.getPhysicalPath())
@@ -328,7 +334,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                               apply_path=path)
 
         elapse = time.time() - elapse
-        c_elapse = time.clock() - c_elapse
+        c_elapse = process_time() - c_elapse
 
         RESPONSE.redirect(
             URL1
