@@ -255,6 +255,11 @@ class UnIndex(SimpleItem):
             # ordering definition compared to any other object.
             # BTrees 4.0+ will throw a TypeError
             # "object has default comparison" and won't let it be indexed.
+            # Try to unindex first
+            oldDatum = self._unindex.get(documentId, _marker)
+            if oldDatum:
+                self.removeForwardIndexEntry(oldDatum, documentId)
+                del self._unindex[documentId]
             return 0
 
         datum = self._convert(datum, default=_marker)

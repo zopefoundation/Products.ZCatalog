@@ -4,7 +4,8 @@ Changelog
 5.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix case where index value is changed to None after previously being indexed.
+  (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
 
 
 5.1 (2020-04-20)
