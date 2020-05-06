@@ -251,11 +251,7 @@ class UnIndex(SimpleItem):
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
         if datum is None:
-            # Prevent None from being indexed. None doesn't have a valid
-            # ordering definition compared to any other object.
-            # BTrees 4.0+ will throw a TypeError
-            # "object has default comparison" and won't let it be indexed.
-            # Try to unindex first
+            # Remove previous index if it exists
             oldDatum = self._unindex.get(documentId, _marker)
             if oldDatum:
                 self.removeForwardIndexEntry(oldDatum, documentId)

@@ -232,7 +232,6 @@ class FieldIndexTests(unittest.TestCase):
         else:
             raise ValueError(repr(should_not_be))
 
-
     def testReindex(self):
         self._populateIndex()
         self._checkApply({'foo': 'abc'}, [self._values[2], ])
