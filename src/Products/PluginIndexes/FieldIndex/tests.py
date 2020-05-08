@@ -224,13 +224,8 @@ class FieldIndexTests(unittest.TestCase):
         d._foo = None
         self._index.index_object(2, d)
         self._checkApply({'foo': 'abc'}, [])
-        try:
-            should_not_be = self._index.keyForDocument(2)
-        except KeyError:
-            # As expected, that attribute is None
-            pass
-        else:
-            raise ValueError(repr(should_not_be))
+        with self.assertRaises(KeyError):
+            self._index.keyForDocument(2)
 
     def testReindex(self):
         self._populateIndex()
