@@ -216,6 +216,17 @@ class FieldIndexTests(unittest.TestCase):
         self.assertFalse(None in self._index.uniqueValues('foo'))
         self._checkApply({'foo': None}, [])
 
+    def testReindexNone(self):
+        d = Dummy('abc')
+        self._index.index_object(2, d)
+        self._checkApply({'foo': 'abc'}, [self._values[2], ])
+        assert self._index.keyForDocument(2) == 'abc'
+        d._foo = None
+        self._index.index_object(2, d)
+        self._checkApply({'foo': 'abc'}, [])
+        with self.assertRaises(KeyError):
+            self._index.keyForDocument(2)
+
     def testReindex(self):
         self._populateIndex()
         self._checkApply({'foo': 'abc'}, [self._values[2], ])
