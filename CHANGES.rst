@@ -4,6 +4,9 @@ Changelog
 5.2 (unreleased)
 ----------------
 
+- Update `catalogView.dtml` to changed behavior of empty searches
+  (`#101 <https://github.com/zopefoundation/Products.ZCatalog/issues/101>`_).
+
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
 

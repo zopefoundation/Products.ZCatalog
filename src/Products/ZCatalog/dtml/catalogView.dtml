@@ -3,8 +3,8 @@
 
 <main class="container-fluid">
 
-    <dtml-let filterpath="REQUEST.get('filterpath', '/')"
-              results="searchResults(path=filterpath)">
+    <dtml-let filterpath="REQUEST.get('filterpath', '')"
+              results="searchResults(path=filterpath) if filterpath else list(getAllBrains())">
 <dtml-if results>
 
 <h1 class="form-label section-bar">Path filter</h1>

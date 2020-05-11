@@ -19,6 +19,7 @@ from AccessControl import Unauthorized
 from Acquisition import Implicit
 import ExtensionClass
 from OFS.Folder import Folder as OFS_Folder
+from Testing.makerequest import makerequest
 
 
 class Folder(OFS_Folder):
@@ -306,6 +307,14 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
     # resolve_path
     # manage_setProgress
     # _getProgressThreshold
+
+    def test_catalogView(self):
+        catalog = makerequest(self._catalog)
+        # hack `getPhysicalPath` to avoid problem with the catalog plan
+        catalog.getPhysicalPath = None
+        vr = catalog.manage_catalogView()
+        self.assertTrue("There are no objects in the Catalog." not in vr,
+                        "catalogView wrongly reports `no objects`")
 
 
 class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
