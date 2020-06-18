@@ -44,6 +44,7 @@ import transaction
 from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
 from zope.interface import implementer
+from ZTUtils.Lazy import LazyMap
 
 from Products.ZCatalog.Catalog import Catalog, CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
@@ -565,6 +566,13 @@ class ZCatalog(Folder, Persistent, Implicit):
         # return a generator of brains for all cataloged objects
         for rid in self._catalog.data:
             yield self._catalog[rid]
+
+    @security.protected(search_zcatalog)
+    def searchAll(self):
+        # the result of a search for all documents
+        return LazyMap(self._catalog.__getitem__,
+                       self._catalog.data.keys(),
+                       len(self))
 
     @security.protected(search_zcatalog)
     def schema(self):

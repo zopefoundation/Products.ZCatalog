@@ -4,7 +4,7 @@
 <main class="container-fluid">
 
     <dtml-let filterpath="REQUEST.get('filterpath', '')"
-              results="searchResults(path=filterpath) if filterpath else list(getAllBrains())">
+              results="searchResults(path=filterpath) if filterpath else searchAll()">
 <dtml-if results>
 
 <h1 class="form-label section-bar">Path filter</h1>

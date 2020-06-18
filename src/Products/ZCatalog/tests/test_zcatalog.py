@@ -276,6 +276,12 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
             self.assertTrue(hasattr(brain, 'title'))
         self.assertEqual(len(brains), len(self._catalog))
 
+    def testSearchAll(self):
+        all = self._catalog.searchAll()
+        for b in all:
+            self.assertTrue(hasattr(b, 'title'))
+        self.assertEqual(len(all), len(self._catalog))
+
     # schema
     # indexes
     # index_objects
@@ -312,6 +318,8 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         catalog = makerequest(self._catalog)
         # hack `getPhysicalPath` to avoid problem with the catalog plan
         catalog.getPhysicalPath = None
+        # provide `ZopeVersion`
+        catalog.ZopeVersion = lambda *arg, **kw: 4
         vr = catalog.manage_catalogView()
         self.assertTrue("There are no objects in the Catalog." not in vr,
                         "catalogView wrongly reports `no objects`")
