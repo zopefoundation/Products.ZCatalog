@@ -296,12 +296,12 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                              len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
-        for l in lengths:
+        for length in lengths:
             self.clearIndexes()
             logger.info('************************************\n'
-                        'indexing %s objects', l)
+                        'indexing %s objects', length)
 
-            for i in range(l):
+            for i in range(length):
                 name = str(i)
                 obj = RandomTestObject(name)
                 self.populateIndexes(i, obj)

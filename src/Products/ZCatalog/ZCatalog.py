@@ -727,9 +727,8 @@ class ZCatalog(Folder, Persistent, Implicit):
                          or expr_match(ob, obj_expr))
                     and (not obj_mtime
                          or mtime_match(ob, obj_mtime, obj_mspec))
-                    and ((not obj_permission
-                          or not obj_roles)
-                    or role_match(ob, obj_permission, obj_roles))):
+                    and ((not obj_permission or not obj_roles)
+                         or role_match(ob, obj_permission, obj_roles))):
                 if apply_func:
                     apply_func(ob, (apply_path + '/' + p))
                 else:
