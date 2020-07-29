@@ -4,6 +4,13 @@ Changelog
 5.2 (unreleased)
 ----------------
 
+- Add new method ``searchAll`` to perform a search for all documents.
+
+- Document ``getAllBrains`` and ``searchAll`` in the interface.
+
+- Update `catalogView.dtml` to changed behavior of empty searches
+  (`#102 <https://github.com/zopefoundation/Products.ZCatalog/issues/102>`_).
+
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
 
