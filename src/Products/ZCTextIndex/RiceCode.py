@@ -155,7 +155,7 @@ class RiceCode(object):
         self.bits = bits
 
 
-def encode(m, l):
+def encode(m, l):  # noqa: E741
     c = RiceCode(m)
     for elt in l:
         c.append(elt)
@@ -163,7 +163,7 @@ def encode(m, l):
     return c
 
 
-def encode_deltas(l):
+def encode_deltas(l):  # noqa: E741
     if len(l) == 1:
         return l[0], []
     deltas = RiceCode(6)
