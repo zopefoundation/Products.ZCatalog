@@ -44,6 +44,7 @@ import transaction
 from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
 from zope.interface import implementer
+from ZTUtils.Lazy import LazyMap
 
 from Products.ZCatalog.Catalog import Catalog, CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
@@ -567,6 +568,13 @@ class ZCatalog(Folder, Persistent, Implicit):
             yield self._catalog[rid]
 
     @security.protected(search_zcatalog)
+    def searchAll(self):
+        # the result of a search for all documents
+        return LazyMap(self._catalog.__getitem__,
+                       self._catalog.data.keys(),
+                       len(self))
+
+    @security.protected(search_zcatalog)
     def schema(self):
         return self._catalog.schema.keys()
 
@@ -727,9 +735,8 @@ class ZCatalog(Folder, Persistent, Implicit):
                          or expr_match(ob, obj_expr))
                     and (not obj_mtime
                          or mtime_match(ob, obj_mtime, obj_mspec))
-                    and ((not obj_permission
-                          or not obj_roles)
-                    or role_match(ob, obj_permission, obj_roles))):
+                    and ((not obj_permission or not obj_roles)
+                         or role_match(ob, obj_permission, obj_roles))):
                 if apply_func:
                     apply_func(ob, (apply_path + '/' + p))
                 else:

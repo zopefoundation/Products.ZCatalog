@@ -19,6 +19,7 @@ from AccessControl import Unauthorized
 from Acquisition import Implicit
 import ExtensionClass
 from OFS.Folder import Folder as OFS_Folder
+from Testing.makerequest import makerequest
 
 
 class Folder(OFS_Folder):
@@ -275,6 +276,12 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
             self.assertTrue(hasattr(brain, 'title'))
         self.assertEqual(len(brains), len(self._catalog))
 
+    def testSearchAll(self):
+        all = self._catalog.searchAll()
+        for b in all:
+            self.assertTrue(hasattr(b, 'title'))
+        self.assertEqual(len(all), len(self._catalog))
+
     # schema
     # indexes
     # index_objects
@@ -306,6 +313,16 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
     # resolve_path
     # manage_setProgress
     # _getProgressThreshold
+
+    def test_catalogView(self):
+        catalog = makerequest(self._catalog)
+        # hack `getPhysicalPath` to avoid problem with the catalog plan
+        catalog.getPhysicalPath = None
+        # provide `ZopeVersion`
+        catalog.ZopeVersion = lambda *arg, **kw: 4
+        vr = catalog.manage_catalogView()
+        self.assertTrue("There are no objects in the Catalog." not in vr,
+                        "catalogView wrongly reports `no objects`")
 
 
 class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):

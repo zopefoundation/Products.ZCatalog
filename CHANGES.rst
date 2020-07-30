@@ -11,6 +11,16 @@ Changelog
   `Plone 5.2 mass migration: bad search results
   <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
 
+- Add new method ``searchAll`` to perform a search for all documents.
+
+- Document ``getAllBrains`` and ``searchAll`` in the interface.
+
+- Update `catalogView.dtml` to changed behavior of empty searches
+  (`#102 <https://github.com/zopefoundation/Products.ZCatalog/issues/102>`_).
+
+- Fix case where index value is changed to None after previously being indexed.
+  (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
+
 
 5.1 (2020-04-20)
 ----------------
