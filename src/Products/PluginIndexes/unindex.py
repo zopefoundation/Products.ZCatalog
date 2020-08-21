@@ -13,8 +13,10 @@
 
 from logging import getLogger
 import sys
+from weakref import WeakKeyDictionary
 
 from Acquisition import (
+    aq_base,
     aq_inner,
     aq_parent,
     aq_get,
@@ -364,15 +366,23 @@ class UnIndex(SimpleItem):
 
         cache = None
         REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
-            catalog = aq_parent(aq_parent(aq_inner(self)))
+        if hasattr(REQUEST, "get"):
+            cache_container = REQUEST.get("__catalog_cache__")
+            if cache_container is None:
+                # we use a `WeakKeyDictionary` (rather than the
+                #   request directly) to avoid the type of problem
+                #   described in
+                #   "https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11"
+                cache_container = REQUEST["__catalog_cache__"] \
+                    = WeakKeyDictionary()
+            # we use the parent (of type `Products.ZCatalog.Catalog.Catalog`)
+            #  as key to facilitate invalidation via its method
+            #  in the future
+            catalog = aq_base(aq_parent(aq_inner(self)))
             if catalog is not None:
-                # unique catalog identifier
-                key = '_catalogcache_{0}_{1}'.format(
-                    catalog.getId(), id(catalog))
-                cache = REQUEST.get(key, None)
+                cache = cache_container.get(catalog, None)
                 if cache is None:
-                    cache = REQUEST[key] = RequestCache()
+                    cache = cache_container[catalog] = RequestCache()
 
         return cache
 

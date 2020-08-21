@@ -4,6 +4,13 @@ Changelog
 5.2 (unreleased)
 ----------------
 
+- Rework request caching to avoid stale cache results in scripts (with
+  an artificial request).
+  For details:
+  `#94 <https://github.com/zopefoundation/Products.ZCatalog/issues/94>`_,
+  `Plone 5.2 mass migration: bad search results
+  <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
+
 - Add new method ``searchAll`` to perform a search for all documents.
 
 - Document ``getAllBrains`` and ``searchAll`` in the interface.
