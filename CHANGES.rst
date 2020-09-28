@@ -21,6 +21,9 @@ Changelog
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
 
+- Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
+  (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
+
 
 5.1 (2020-04-20)
 ----------------
