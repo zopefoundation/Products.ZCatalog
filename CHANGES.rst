@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.2 (unreleased)
+6.0 (unreleased)
 ----------------
 
 - Rework request caching to avoid stale cache results in scripts (with
