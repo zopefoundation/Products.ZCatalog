@@ -4,6 +4,22 @@ Changelog
 6.0 (unreleased)
 ----------------
 
+Backwards incompatible changes
+++++++++++++++++++++++++++++++
+
+- Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
+  (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
+
+Features
+++++++++
+
+- Add new method ``searchAll`` to perform a search for all documents.
+
+- Add support for Python 3.9.
+
+Changes
++++++++
+
 - Rework request caching to avoid stale cache results in scripts (with
   an artificial request).
   For details:
@@ -11,7 +27,8 @@ Changelog
   `Plone 5.2 mass migration: bad search results
   <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
 
-- Add new method ``searchAll`` to perform a search for all documents.
+Fixes
++++++
 
 - Document ``getAllBrains`` and ``searchAll`` in the interface.
 
@@ -20,11 +37,6 @@ Changelog
 
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
-
-- Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
-  (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
-
-- Add support for Python 3.9.
 
 
 5.1 (2020-04-20)
