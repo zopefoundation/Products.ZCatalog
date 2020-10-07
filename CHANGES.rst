@@ -24,6 +24,8 @@ Changelog
 - Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
   (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
 
+- Add support for Python 3.9.
+
 
 5.1 (2020-04-20)
 ----------------
