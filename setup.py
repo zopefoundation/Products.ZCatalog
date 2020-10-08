@@ -16,7 +16,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Products.ZCatalog',
-    version='5.2.dev0',
+    version='6.0.dev0',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope's indexing and search solution.",
@@ -43,6 +43,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
@@ -60,7 +61,7 @@ setup(
         'Missing',
         'Persistence',
         'Record',
-        'RestrictedPython',
+        'RestrictedPython >= 5.1',
         'zExceptions',
         'ZODB',
         'Zope >= 4',
