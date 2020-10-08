@@ -10,6 +10,9 @@ Backwards incompatible changes
 - Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
   (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
 
+- This version is only intend to be used in Zope >= 5.0, although it might
+  still work on Zope 4.
+
 Features
 ++++++++
 
