@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.2 (unreleased)
+5.2 (2020-10-09)
 ----------------
 
 - Rework request caching to avoid stale cache results in scripts (with
