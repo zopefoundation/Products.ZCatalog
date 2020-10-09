@@ -1,8 +1,48 @@
 Changelog
 =========
 
-5.2 (unreleased)
+6.1 (unreleased)
 ----------------
+
+- Nothing changed yet.
+
+
+6.0 (2020-10-08)
+----------------
+
+Backwards incompatible changes
+++++++++++++++++++++++++++++++
+
+- Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
+  (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
+
+- This version is only intend to be used in Zope >= 5.0, although it might
+  still work on Zope 4.
+
+Features
+++++++++
+
+- Add new method ``searchAll`` to perform a search for all documents.
+
+- Add support for Python 3.9.
+
+Changes
++++++++
+
+- Rework request caching to avoid stale cache results in scripts (with
+  an artificial request).
+  For details:
+  `#94 <https://github.com/zopefoundation/Products.ZCatalog/issues/94>`_,
+  `Plone 5.2 mass migration: bad search results
+  <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
+
+Fixes
++++++
+
+- Document ``getAllBrains`` and ``searchAll`` in the interface.
+
+- Update `catalogView.dtml` to changed behavior of empty searches
+  (`#102 <https://github.com/zopefoundation/Products.ZCatalog/issues/102>`_).
 
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)

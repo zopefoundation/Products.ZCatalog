@@ -50,7 +50,7 @@ def scaled_int(f, scale=SCALE_FACTOR):
     return int(f * scale + 0.5)
 
 
-def unique(l):
+def unique(l):  # noqa: E741
     """Return a list of the unique elements in l."""
     return IITreeSet(l).keys()
 
