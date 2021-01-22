@@ -4,7 +4,9 @@ Changelog
 5.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options.
+  Fixes #78.
+  [thet]
 
 
 5.2 (2020-10-09)
