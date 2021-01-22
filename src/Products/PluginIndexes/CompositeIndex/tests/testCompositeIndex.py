@@ -1,19 +1,17 @@
-import unittest
-
+import logging
 import random
-
+import sys
+import unittest
 from time import time
 
 from BTrees.IIBTree import weightedIntersection
 
-from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
 from Products.PluginIndexes.CompositeIndex.CompositeIndex import CompositeIndex
+from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
-import sys
-import logging
 
 logger = logging.getLogger('zope.testCompositeIndex')
 

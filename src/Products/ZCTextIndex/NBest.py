@@ -19,6 +19,7 @@ number of comparisons performed overall is M * log2(N).
 """
 
 from bisect import bisect
+
 from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import INBest

@@ -13,12 +13,13 @@
 
 from logging import getLogger
 
-from BTrees.OOBTree import difference
-from BTrees.OOBTree import OOSet
 from App.special_dtml import DTMLFile
+from BTrees.OOBTree import OOSet
+from BTrees.OOBTree import difference
 
 from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
+
 
 LOG = getLogger('Zope.KeywordIndex')
 

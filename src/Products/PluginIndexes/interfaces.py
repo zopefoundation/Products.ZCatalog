@@ -13,7 +13,8 @@
 """PluginIndexes interfaces.
 """
 
-from zope.interface import Attribute, Interface
+from zope.interface import Attribute
+from zope.interface import Interface
 from zope.schema import Bool
 
 

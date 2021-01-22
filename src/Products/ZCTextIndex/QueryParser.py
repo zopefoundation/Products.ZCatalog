@@ -59,8 +59,9 @@ import sys
 
 from zope.interface import implementer
 
-from Products.ZCTextIndex.interfaces import IQueryParser
 from Products.ZCTextIndex import ParseTree
+from Products.ZCTextIndex.interfaces import IQueryParser
+
 
 if sys.version_info > (3, 0):
     unicode = str

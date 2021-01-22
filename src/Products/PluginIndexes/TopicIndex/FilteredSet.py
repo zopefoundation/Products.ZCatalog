@@ -11,8 +11,8 @@
 #
 ##############################################################################
 
-from logging import getLogger
 import sys
+from logging import getLogger
 
 from BTrees.IIBTree import IITreeSet
 from Persistence import Persistent
@@ -21,6 +21,7 @@ from ZODB.POSException import ConflictError
 from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IFilteredSet
+
 
 LOG = getLogger('Zope.TopicIndex.FilteredSet')
 

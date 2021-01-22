@@ -14,26 +14,25 @@
 from logging import getLogger
 
 from App.special_dtml import DTMLFile
-from OFS.SimpleItem import SimpleItem
-from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import IISet
+from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import intersection
 from BTrees.IIBTree import multiunion
 from BTrees.IIBTree import union
 from BTrees.IOBTree import IOBTree
-from BTrees.OOBTree import OOBTree
 from BTrees.Length import Length
+from BTrees.OOBTree import OOBTree
+from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implementer
 
-from Products.PluginIndexes.interfaces import (
-    IPathIndex,
-    IQueryIndex,
-    ISortIndex,
-    IUniqueValueIndex,
-)
+from Products.PluginIndexes.interfaces import IPathIndex
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.PluginIndexes.interfaces import ISortIndex
+from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
+
 
 LOG = getLogger('Zope.PathIndex')
 

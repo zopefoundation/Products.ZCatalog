@@ -11,11 +11,11 @@
 #
 ##############################################################################
 
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_get
-from Acquisition import aq_parent
 from Acquisition import aq_inner
-from Acquisition import Implicit
+from Acquisition import aq_parent
 from Record import Record
 from zope.globalrequest import getRequest
 from zope.interface import implementer
