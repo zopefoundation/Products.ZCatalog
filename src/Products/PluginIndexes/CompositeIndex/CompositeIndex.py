@@ -12,17 +12,18 @@
 ##############################################################################
 
 import logging
-from itertools import product
-from itertools import combinations
-from six.moves import urllib
 import time
-import transaction
+from itertools import combinations
+from itertools import product
 
-from Acquisition import aq_parent
+from six.moves import urllib
+
+import transaction
 from Acquisition import aq_inner
+from Acquisition import aq_parent
 from App.special_dtml import DTMLFile
-from BTrees.OOBTree import difference
 from BTrees.OOBTree import OOSet
+from BTrees.OOBTree import difference
 from Persistence import PersistentMapping
 from zope.interface import implementer
 
@@ -30,6 +31,7 @@ from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
+
 
 try:
     from time import clock as process_time

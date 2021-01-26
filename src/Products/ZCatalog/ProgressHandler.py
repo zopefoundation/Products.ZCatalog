@@ -12,6 +12,7 @@
 ##############################################################################
 
 from __future__ import print_function
+
 import sys
 import time
 from logging import getLogger
@@ -21,6 +22,7 @@ from DateTime.DateTime import DateTime
 from zope.interface import implementer
 
 from .interfaces import IProgressHandler
+
 
 LOG = getLogger('ProgressHandler')
 

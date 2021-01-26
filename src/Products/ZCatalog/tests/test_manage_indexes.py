@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import Testing.testbrowser
 import Testing.ZopeTestCase
 import Zope2.App

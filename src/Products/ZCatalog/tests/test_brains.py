@@ -13,13 +13,14 @@
 
 import unittest
 
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_parent
-from Acquisition import Implicit
 from zExceptions import Unauthorized
 from ZODB.POSException import ConflictError
 from zope.globalrequest import clearRequest
 from zope.globalrequest import setRequest
+
 
 _marker = object()
 

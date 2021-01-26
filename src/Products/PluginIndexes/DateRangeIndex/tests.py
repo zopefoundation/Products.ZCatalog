@@ -13,8 +13,9 @@
 
 import unittest
 from datetime import datetime
-from DateTime.DateTime import DateTime
+
 from BTrees.IIBTree import IISet
+from DateTime.DateTime import DateTime
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
@@ -71,8 +72,8 @@ def matchingDummiesByUIDs(uids):
 class DateRangeIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
-            import DateRangeIndex
+        from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
+            DateRangeIndex
         return DateRangeIndex
 
     def _makeOne(self, id, since_field=None, until_field=None,
@@ -124,11 +125,12 @@ class DateRangeIndexTests(unittest.TestCase):
         return result, used
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IDateRangeIndex
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from zope.interface.verify import verifyClass
 
         verifyClass(IDateRangeIndex, self._getTargetClass())
         verifyClass(IPluggableIndex, self._getTargetClass())

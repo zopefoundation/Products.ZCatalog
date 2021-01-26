@@ -15,13 +15,14 @@
 import os
 from unittest import TestCase
 
-from BTrees.Length import Length
 import transaction
-from ZODB.FileStorage import FileStorage
+from BTrees.Length import Length
 from ZODB.DB import DB
+from ZODB.FileStorage import FileStorage
 
-from Products.ZCTextIndex.Lexicon import Lexicon, Splitter
 from Products.ZCTextIndex.CosineIndex import CosineIndex
+from Products.ZCTextIndex.Lexicon import Lexicon
+from Products.ZCTextIndex.Lexicon import Splitter
 from Products.ZCTextIndex.OkapiIndex import OkapiIndex
 
 

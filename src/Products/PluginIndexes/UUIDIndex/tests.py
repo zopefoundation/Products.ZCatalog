@@ -34,8 +34,7 @@ class Dummy:
 class UUIDIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.UUIDIndex.UUIDIndex \
-            import UUIDIndex
+        from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
         return UUIDIndex
 
     def _makeOne(self, id):
@@ -110,11 +109,12 @@ class UUIDIndexTests(unittest.TestCase):
         self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from Products.PluginIndexes.interfaces import IRequestCacheIndex
-        from zope.interface.verify import verifyClass
 
         klass = self._getTargetClass()
 

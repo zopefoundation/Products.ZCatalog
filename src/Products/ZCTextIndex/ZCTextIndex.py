@@ -25,10 +25,10 @@ from AccessControl.Permissions import manage_zcatalog_indexes
 from AccessControl.Permissions import query_vocabulary
 from AccessControl.Permissions import search_zcatalog
 from AccessControl.SecurityInfo import ClassSecurityInfo
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_inner
 from Acquisition import aq_parent
-from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
@@ -36,18 +36,18 @@ from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IPluggableIndex
 from Products.PluginIndexes.interfaces import IQueryIndex
-from Products.ZCatalog.query import IndexQuery
 from Products.PluginIndexes.util import safe_callable
-
-from Products.ZCTextIndex.Lexicon import Lexicon
-from Products.ZCTextIndex.NBest import NBest
-from Products.ZCTextIndex.QueryParser import QueryParser
+from Products.ZCatalog.query import IndexQuery
 from Products.ZCTextIndex.CosineIndex import CosineIndex
 from Products.ZCTextIndex.interfaces import ILexicon
 from Products.ZCTextIndex.interfaces import IZCLexicon
 from Products.ZCTextIndex.interfaces import IZCTextIndex
+from Products.ZCTextIndex.Lexicon import Lexicon
+from Products.ZCTextIndex.NBest import NBest
 from Products.ZCTextIndex.OkapiIndex import OkapiIndex
 from Products.ZCTextIndex.PipelineFactory import element_factory
+from Products.ZCTextIndex.QueryParser import QueryParser
+
 
 index_types = {'Okapi BM25 Rank': OkapiIndex,
                'Cosine Measure': CosineIndex}

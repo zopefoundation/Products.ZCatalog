@@ -13,9 +13,10 @@
 
 import os
 import os.path
-from six.moves._thread import LockType
 import time
 import unittest
+
+from six.moves._thread import LockType
 
 from zope.testing import cleanup
 
@@ -293,8 +294,8 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(plan.valueindexes(), frozenset())
 
     def test_valueindexes_set(self):
-        from ..plan import PriorityMap
         from ..plan import VALUE_INDEX_KEY
+        from ..plan import PriorityMap
         plan = self._makeOne()
         indexes = frozenset(['index1', 'index2'])
         PriorityMap.set_entry(plan.cid, VALUE_INDEX_KEY, indexes)

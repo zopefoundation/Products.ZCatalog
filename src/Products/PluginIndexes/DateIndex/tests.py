@@ -127,9 +127,10 @@ class DateIndexTests(unittest.TestCase):
         return index
 
     def _getValues(self):
-        from DateTime import DateTime
         from datetime import date
         from datetime import datetime
+
+        from DateTime import DateTime
         return [
             (0, Dummy('a', None)),                             # None
             (1, Dummy('b', DateTime(0))),                      # 1055335680
@@ -176,9 +177,10 @@ class DateIndexTests(unittest.TestCase):
         self.assertEqual(cache._hits, 1)
 
     def _convert(self, dt, precision=1):
-        from time import gmtime
         from datetime import date
         from datetime import datetime
+        from time import gmtime
+
         from Products.PluginIndexes.DateIndex.DateIndex import Local
         if isinstance(dt, (float, int)):
             yr, mo, dy, hr, mn = gmtime(dt)[:5]
@@ -196,12 +198,13 @@ class DateIndexTests(unittest.TestCase):
         return int(value)
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IDateIndex
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from Products.PluginIndexes.interfaces import IRequestCacheIndex
-        from zope.interface.verify import verifyClass
 
         klass = self._getTargetClass()
 

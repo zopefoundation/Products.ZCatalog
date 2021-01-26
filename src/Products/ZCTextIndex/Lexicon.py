@@ -14,20 +14,21 @@
 """Lexicon.
 """
 
-from random import randrange
 import re
+from random import randrange
+
 import six
 
 from BTrees.IOBTree import IOBTree
-from BTrees.OIBTree import OIBTree
 from BTrees.Length import Length
+from BTrees.OIBTree import OIBTree
 from Persistence import Persistent
 from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import ILexicon
-from Products.ZCTextIndex.StopDict import get_stopdict
 from Products.ZCTextIndex.ParseTree import QueryError
 from Products.ZCTextIndex.PipelineFactory import element_factory
+from Products.ZCTextIndex.StopDict import get_stopdict
 
 
 @implementer(ILexicon)
