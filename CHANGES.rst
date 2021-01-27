@@ -47,6 +47,10 @@ Fixes
 - Fix case where index value is changed to None after previously being indexed.
   (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
 
+- Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options.
+  Fixes #78.
+  [thet]
+
 
 5.1 (2020-04-20)
 ----------------

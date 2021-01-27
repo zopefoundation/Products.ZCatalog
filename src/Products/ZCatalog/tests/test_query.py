@@ -69,32 +69,43 @@ class TestIndexQuery(unittest.TestCase):
 
     def test_operator_dict(self):
         request = {'path': {'query': 'foo', 'operator': 'bar'}}
-        self.assertRaises(ValueError,
-                          self._makeOne,
-                          request,
-                          'path',
-                          ('query', 'operator'),
-                          ('or', 'and'))
+        with self.assertRaises(ValueError):
+            self._makeOne(
+                request, 'path', ('query', 'operator'), ('or', 'and'))
 
     def test_operator_string(self):
         request = {'path': 'foo', 'path_operator': 'bar'}
-        self.assertRaises(ValueError,
-                          self._makeOne,
-                          request, 'path',
-                          ('query', 'operator'),
-                          ('or', 'and'))
+        with self.assertRaises(ValueError):
+            self._makeOne(
+                request, 'path', ('query', 'operator'), ('or', 'and'))
 
     def test_options_dict(self):
         request = {'path': {'query': 'foo', 'baropt': 'dummy'}}
-        self.assertRaises(ValueError,
-                          self._makeOne,
-                          request,
-                          'path',
-                          ('query', 'operator'))
+        with self.assertRaises(ValueError):
+            self._makeOne(
+                request, 'path', ('query', 'operator'))
 
     def test_options_string(self):
         request = {'path': 'foo', 'path_baropt': 'dummy'}
-        self.assertRaises(ValueError,
-                          self._makeOne,
-                          request, 'path',
-                          ('query', 'operator'))
+        with self.assertRaises(ValueError):
+            self._makeOne(
+                request, 'path', ('query', 'operator'))
+
+    def test_get_string_with_underscores(self):
+        request = {
+            'extra_path': 'foo',
+            'extra_path_level': 0,
+            'extra_path_operator': 'and',
+        }
+        parser = self._makeOne(
+            request, 'extra_path', ('query', 'level', 'operator'))
+
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('level'), 0)
+        self.assertEqual(parser.get('operator'), 'and')
+
+    def test_operator_string_with_underscores(self):
+        request = {'extra_path': 'foo', 'extra_path_operator': 'bar'}
+        with self.assertRaises(ValueError):
+            self._makeOne(
+                request, 'extra_path', ('query', 'operator'), ('or', 'and'))

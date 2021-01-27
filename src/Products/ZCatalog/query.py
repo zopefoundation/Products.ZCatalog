@@ -88,8 +88,7 @@ class IndexQuery(object):
 
             for field in request.keys():
                 if field.startswith(iid + '_'):
-                    iid_tmp, op = field.split('_')
-
+                    op = field[len(iid) + 1:]
                     self.set(op, request[field])
 
         self.keys = keys
