@@ -1,0 +1,27 @@
+# Generated from:
+# https://github.com/zopefoundation/meta/tree/master/config/zope-product
+[meta]
+template = "zope-product"
+commit-id = "ae6fbae62663edb6a8b62d2dbdfe0589f64b8844"
+
+[python]
+with-appveyor = false
+with-pypy = false
+with-legacy-python = true
+with-docs = false
+with-sphinx-doctests = false
+
+[coverage]
+fail-under = 87
+
+[tox]
+testenv-commands-pre = [
+    "{envbindir}/buildout -nc {toxinidir}/buildout.cfg buildout:directory={envdir} buildout:develop={toxinidir} install test",
+    ]
+
+[manifest]
+additional-rules = [
+    "recursive-include src *.dtml",
+    "recursive-include src *.gif",
+    "recursive-include src *.zpt",
+    ]
