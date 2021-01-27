@@ -15,10 +15,10 @@
 def initialize(context):
 
     from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-    from Products.PluginIndexes.FieldIndex.FieldIndex \
-        import manage_addFieldIndex
-    from Products.PluginIndexes.FieldIndex.FieldIndex \
-        import manage_addFieldIndexForm
+    from Products.PluginIndexes.FieldIndex.FieldIndex import \
+        manage_addFieldIndex
+    from Products.PluginIndexes.FieldIndex.FieldIndex import \
+        manage_addFieldIndexForm
     context.registerClass(FieldIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addFieldIndexForm,
@@ -27,10 +27,10 @@ def initialize(context):
                           )
 
     from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
-    from Products.PluginIndexes.KeywordIndex.KeywordIndex \
-        import manage_addKeywordIndex
-    from Products.PluginIndexes.KeywordIndex.KeywordIndex \
-        import manage_addKeywordIndexForm
+    from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
+        manage_addKeywordIndex
+    from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
+        manage_addKeywordIndexForm
     context.registerClass(KeywordIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addKeywordIndexForm,
@@ -39,10 +39,10 @@ def initialize(context):
                           )
 
     from Products.PluginIndexes.TopicIndex.TopicIndex import TopicIndex
-    from Products.PluginIndexes.TopicIndex.TopicIndex \
-        import manage_addTopicIndex
-    from Products.PluginIndexes.TopicIndex.TopicIndex \
-        import manage_addTopicIndexForm
+    from Products.PluginIndexes.TopicIndex.TopicIndex import \
+        manage_addTopicIndex
+    from Products.PluginIndexes.TopicIndex.TopicIndex import \
+        manage_addTopicIndexForm
     context.registerClass(TopicIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addTopicIndexForm,
@@ -51,10 +51,9 @@ def initialize(context):
                           )
 
     from Products.PluginIndexes.DateIndex.DateIndex import DateIndex
-    from Products.PluginIndexes.DateIndex.DateIndex \
-        import manage_addDateIndex
-    from Products.PluginIndexes.DateIndex.DateIndex \
-        import manage_addDateIndexForm
+    from Products.PluginIndexes.DateIndex.DateIndex import manage_addDateIndex
+    from Products.PluginIndexes.DateIndex.DateIndex import \
+        manage_addDateIndexForm
     context.registerClass(DateIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addDateIndexForm,
@@ -62,12 +61,12 @@ def initialize(context):
                           visibility=None,
                           )
 
-    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
-        import DateRangeIndex
-    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
-        import manage_addDateRangeIndex
-    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex \
-        import manage_addDateRangeIndexForm
+    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
+        DateRangeIndex
+    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
+        manage_addDateRangeIndex
+    from Products.PluginIndexes.DateRangeIndex.DateRangeIndex import \
+        manage_addDateRangeIndexForm
     context.registerClass(DateRangeIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addDateRangeIndexForm,
@@ -76,10 +75,9 @@ def initialize(context):
                           )
 
     from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
-    from Products.PluginIndexes.PathIndex.PathIndex \
-        import manage_addPathIndex
-    from Products.PluginIndexes.PathIndex.PathIndex \
-        import manage_addPathIndexForm
+    from Products.PluginIndexes.PathIndex.PathIndex import manage_addPathIndex
+    from Products.PluginIndexes.PathIndex.PathIndex import \
+        manage_addPathIndexForm
     context.registerClass(PathIndex,
                           permission='Add Pluggable Index',
                           constructors=(manage_addPathIndexForm,
@@ -101,8 +99,7 @@ def initialize(context):
                           )
 
     from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
-    from Products.PluginIndexes.UUIDIndex.UUIDIndex import \
-        manage_addUUIDIndex
+    from Products.PluginIndexes.UUIDIndex.UUIDIndex import manage_addUUIDIndex
     from Products.PluginIndexes.UUIDIndex.UUIDIndex import \
         manage_addUUIDIndexForm
 
@@ -113,11 +110,12 @@ def initialize(context):
                           visibility=None,
                           )
 
-    from Products.PluginIndexes.CompositeIndex.CompositeIndex import (
-        CompositeIndex,
-        manage_addCompositeIndex,
-        manage_addCompositeIndexForm,
-    )
+    from Products.PluginIndexes.CompositeIndex.CompositeIndex import \
+        CompositeIndex
+    from Products.PluginIndexes.CompositeIndex.CompositeIndex import \
+        manage_addCompositeIndex
+    from Products.PluginIndexes.CompositeIndex.CompositeIndex import \
+        manage_addCompositeIndexForm
 
     context.registerClass(CompositeIndex,
                           permission='Add Pluggable Index',

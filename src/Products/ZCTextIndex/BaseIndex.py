@@ -17,11 +17,11 @@
 
 import math
 
-from BTrees.IOBTree import IOBTree
 from BTrees.IIBTree import IIBTree
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
+from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from Persistence import Persistent
 from zope.interface import implementer

@@ -13,6 +13,7 @@
 
 from zope.deferredimport import deprecated  # pragma: nocover
 
+
 # BBB ZCatalog 5.0
 deprecated(
     'Please import from Products.ZCatalog.query.',

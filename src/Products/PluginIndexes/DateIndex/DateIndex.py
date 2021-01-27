@@ -12,9 +12,11 @@
 ##############################################################################
 
 import time
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+from datetime import tzinfo
 from logging import getLogger
-from datetime import date, datetime
-from datetime import tzinfo, timedelta
 
 from App.special_dtml import DTMLFile
 from BTrees.IIBTree import IIBTree
@@ -26,6 +28,7 @@ from zope.interface import implementer
 
 from Products.PluginIndexes.interfaces import IDateIndex
 from Products.PluginIndexes.unindex import UnIndex
+
 
 LOG = getLogger('DateIndex')
 _marker = []

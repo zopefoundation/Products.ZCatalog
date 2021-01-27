@@ -13,8 +13,10 @@
 
 from datetime import datetime
 
-from DateTime.DateTime import DateTime
 import six
+
+from DateTime.DateTime import DateTime
+
 
 MAX32 = int(2 ** 31 - 1)
 

@@ -18,9 +18,9 @@ Plugin text index for ZCatalog.
 
 from AccessControl import ModuleSecurityInfo
 
-from Products.ZCTextIndex.PipelineFactory import element_factory
-from Products.ZCTextIndex import ZCTextIndex
 from Products.ZCTextIndex import HTMLSplitter  # NOQA
+from Products.ZCTextIndex import ZCTextIndex
+from Products.ZCTextIndex.PipelineFactory import element_factory
 
 
 def initialize(context):

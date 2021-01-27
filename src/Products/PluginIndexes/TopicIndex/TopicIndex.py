@@ -16,20 +16,19 @@ from logging import getLogger
 from App.special_dtml import DTMLFile
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import intersection
-from BTrees.IIBTree import union
 from BTrees.IIBTree import multiunion
+from BTrees.IIBTree import union
 from BTrees.OOBTree import OOBTree
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
 from zope.interface import implementer
 
-from Products.PluginIndexes.interfaces import (
-    IQueryIndex,
-    ITopicIndex,
-    IUniqueValueIndex,
-)
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.PluginIndexes.interfaces import ITopicIndex
+from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from Products.PluginIndexes.TopicIndex.FilteredSet import factory
 from Products.ZCatalog.query import IndexQuery
+
 
 _marker = []
 LOG = getLogger('Zope.TopicIndex')

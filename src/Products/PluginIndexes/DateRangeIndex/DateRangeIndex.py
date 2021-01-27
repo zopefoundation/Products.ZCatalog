@@ -33,6 +33,7 @@ from Products.PluginIndexes.util import datetime_to_minutes
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
 
+
 _dtmldir = os.path.join(package_home(globals()), 'dtml')
 MAX32 = int(2 ** 31 - 1)
 

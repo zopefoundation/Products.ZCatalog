@@ -4,7 +4,7 @@ Changelog
 5.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add support for Python 3.9.
 
 
 5.2 (2020-10-09)

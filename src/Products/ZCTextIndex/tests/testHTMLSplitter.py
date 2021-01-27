@@ -26,11 +26,13 @@ class HTMLWordSplitterTests(unittest.TestCase):
 
     def test_class_conforms_to_ISplitter(self):
         from zope.interface.verify import verifyClass
+
         from Products.ZCTextIndex.interfaces import ISplitter
         verifyClass(ISplitter, self._getTargetClass())
 
     def test_instance_conforms_to_ISplitter(self):
         from zope.interface.verify import verifyObject
+
         from Products.ZCTextIndex.interfaces import ISplitter
         verifyObject(ISplitter, self._makeOne())
 
