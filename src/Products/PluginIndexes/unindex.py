@@ -11,23 +11,19 @@
 #
 ##############################################################################
 
-from logging import getLogger
 import sys
+from logging import getLogger
 from weakref import WeakKeyDictionary
 
-from Acquisition import (
-    aq_base,
-    aq_inner,
-    aq_parent,
-    aq_get,
-)
-from BTrees.IIBTree import (
-    difference,
-    intersection,
-    IITreeSet,
-    IISet,
-    multiunion,
-)
+from Acquisition import aq_base
+from Acquisition import aq_get
+from Acquisition import aq_inner
+from Acquisition import aq_parent
+from BTrees.IIBTree import IISet
+from BTrees.IIBTree import IITreeSet
+from BTrees.IIBTree import difference
+from BTrees.IIBTree import intersection
+from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
@@ -36,15 +32,14 @@ from ZODB.POSException import ConflictError
 from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
-from Products.PluginIndexes.interfaces import (
-    ILimitedResultIndex,
-    IQueryIndex,
-    ISortIndex,
-    IUniqueValueIndex,
-    IRequestCacheIndex,
-)
+from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.PluginIndexes.interfaces import IRequestCacheIndex
+from Products.PluginIndexes.interfaces import ISortIndex
+from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
+
 
 _marker = []
 LOG = getLogger('Zope.UnIndex')

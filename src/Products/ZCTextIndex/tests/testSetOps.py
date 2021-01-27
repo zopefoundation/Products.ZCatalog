@@ -15,7 +15,8 @@
 import random
 from unittest import TestCase
 
-from BTrees.IIBTree import IIBTree, IIBucket
+from BTrees.IIBTree import IIBTree
+from BTrees.IIBTree import IIBucket
 
 from Products.ZCTextIndex.SetOps import mass_weightedIntersection
 from Products.ZCTextIndex.SetOps import mass_weightedUnion

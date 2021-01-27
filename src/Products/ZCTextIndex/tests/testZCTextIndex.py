@@ -18,24 +18,22 @@ import unittest
 import Acquisition
 from zExceptions import NotFound
 
-from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex, PLexicon
-from Products.ZCTextIndex.tests import (
-    testIndex,
-    testQueryEngine,
-    testQueryParser,
-)
-from Products.ZCTextIndex.BaseIndex import (
-    scaled_int,
-    SCALE_FACTOR,
-    inverse_doc_frequency,
-)
+from Products.ZCTextIndex.BaseIndex import SCALE_FACTOR
+from Products.ZCTextIndex.BaseIndex import inverse_doc_frequency
+from Products.ZCTextIndex.BaseIndex import scaled_int
 from Products.ZCTextIndex.CosineIndex import CosineIndex
-from Products.ZCTextIndex.OkapiIndex import OkapiIndex
+from Products.ZCTextIndex.Lexicon import CaseNormalizer
 from Products.ZCTextIndex.Lexicon import Splitter
-from Products.ZCTextIndex.Lexicon import CaseNormalizer, StopWordRemover
+from Products.ZCTextIndex.Lexicon import StopWordRemover
+from Products.ZCTextIndex.OkapiIndex import OkapiIndex
+from Products.ZCTextIndex.ParseTree import ParseError
 from Products.ZCTextIndex.QueryParser import QueryParser
 from Products.ZCTextIndex.StopDict import get_stopdict
-from Products.ZCTextIndex.ParseTree import ParseError
+from Products.ZCTextIndex.tests import testIndex
+from Products.ZCTextIndex.tests import testQueryEngine
+from Products.ZCTextIndex.tests import testQueryParser
+from Products.ZCTextIndex.ZCTextIndex import PLexicon
+from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex
 
 
 class Indexable(object):
@@ -305,9 +303,10 @@ class CosineIndexTests(ZCIndexTestsBase, testIndex.CosineIndexTest):
     # cosine indexer.
 
     def test_z3interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IPluggableIndex
         from Products.ZCTextIndex.interfaces import IZCTextIndex
-        from zope.interface.verify import verifyClass
 
         verifyClass(IPluggableIndex, ZCTextIndex)
         verifyClass(IZCTextIndex, ZCTextIndex)
@@ -630,23 +629,27 @@ class PLexiconTests(unittest.TestCase):
         return self._getTargetClass()(id, title, *pipeline)
 
     def test_class_conforms_to_ILexicon(self):
-        from Products.ZCTextIndex.interfaces import ILexicon
         from zope.interface.verify import verifyClass
+
+        from Products.ZCTextIndex.interfaces import ILexicon
         verifyClass(ILexicon, self._getTargetClass())
 
     def test_instance_conforms_to_ILexicon(self):
-        from Products.ZCTextIndex.interfaces import ILexicon
         from zope.interface.verify import verifyObject
+
+        from Products.ZCTextIndex.interfaces import ILexicon
         verifyObject(ILexicon, self._makeOne())
 
     def test_class_conforms_to_IZCLexicon(self):
-        from Products.ZCTextIndex.interfaces import IZCLexicon
         from zope.interface.verify import verifyClass
+
+        from Products.ZCTextIndex.interfaces import IZCLexicon
         verifyClass(IZCLexicon, self._getTargetClass())
 
     def test_instance_conforms_to_IZCLexicon(self):
-        from Products.ZCTextIndex.interfaces import IZCLexicon
         from zope.interface.verify import verifyObject
+
+        from Products.ZCTextIndex.interfaces import IZCLexicon
         verifyObject(IZCLexicon, self._makeOne())
 
     def test_queryLexicon_defaults_empty(self):

@@ -19,11 +19,11 @@ import math
 from BTrees.IIBTree import IIBucket
 from zope.interface import implementer
 
-from Products.ZCTextIndex.interfaces import IIndex
+from Products.ZCTextIndex.BaseIndex import SCALE_FACTOR
 from Products.ZCTextIndex.BaseIndex import BaseIndex
 from Products.ZCTextIndex.BaseIndex import inverse_doc_frequency
 from Products.ZCTextIndex.BaseIndex import scaled_int
-from Products.ZCTextIndex.BaseIndex import SCALE_FACTOR
+from Products.ZCTextIndex.interfaces import IIndex
 
 
 @implementer(IIndex)

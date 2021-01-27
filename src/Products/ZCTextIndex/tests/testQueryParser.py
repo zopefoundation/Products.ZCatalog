@@ -12,8 +12,9 @@
 #
 ##############################################################################
 
-import six
 from unittest import TestCase
+
+import six
 
 
 class FakeStopWordRemover(object):
@@ -26,6 +27,7 @@ class TestInterfaces(TestCase):
 
     def testInterfaces(self):
         from zope.interface.verify import verifyClass
+
         from Products.ZCTextIndex.interfaces import IQueryParser
         from Products.ZCTextIndex.QueryParser import QueryParser
         verifyClass(IQueryParser, QueryParser)
@@ -34,9 +36,9 @@ class TestInterfaces(TestCase):
 class TestQueryParserBase(TestCase):
 
     def setUp(self):
-        from Products.ZCTextIndex.QueryParser import QueryParser
         from Products.ZCTextIndex.Lexicon import Lexicon
         from Products.ZCTextIndex.Lexicon import Splitter
+        from Products.ZCTextIndex.QueryParser import QueryParser
         self.lexicon = Lexicon(Splitter())
         self.parser = QueryParser(self.lexicon)
 
@@ -302,9 +304,10 @@ class TestQueryParser(TestQueryParserBase):
 class StopWordTestQueryParser(TestQueryParserBase):
 
     def setUp(self):
-        from Products.ZCTextIndex.QueryParser import QueryParser
         from Products.ZCTextIndex.Lexicon import Lexicon
         from Products.ZCTextIndex.Lexicon import Splitter
+        from Products.ZCTextIndex.QueryParser import QueryParser
+
         # Only 'stop' is a stopword (but 'and' is still an operator)
         self.lexicon = Lexicon(Splitter(), FakeStopWordRemover())
         self.parser = QueryParser(self.lexicon)

@@ -19,8 +19,9 @@ from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OIBTree import OIBTree
 
-from Products.PluginIndexes.unindex import _marker
 from Products.PluginIndexes.unindex import UnIndex
+from Products.PluginIndexes.unindex import _marker
+
 
 logger = getLogger('Products.ZCatalog')
 
