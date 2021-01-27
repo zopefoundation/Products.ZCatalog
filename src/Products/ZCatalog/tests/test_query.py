@@ -98,3 +98,25 @@ class TestIndexQuery(unittest.TestCase):
                           self._makeOne,
                           request, 'path',
                           ('query', 'operator'))
+
+    def test_get_string_with_underscores(self):
+        request = {
+            'extra_path': 'foo',
+            'extra_path_level': 0,
+            'extra_path_operator': 'and',
+        }
+        parser = self._makeOne(request,
+                               'extra_path',
+                               ('query', 'level', 'operator'))
+
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('level'), 0)
+        self.assertEqual(parser.get('operator'), 'and')
+
+    def test_operator_string_with_underscores(self):
+        request = {'extra_path': 'foo', 'extra_path_operator': 'bar'}
+        self.assertRaises(ValueError,
+                          self._makeOne,
+                          request, 'extra_path',
+                          ('query', 'operator'),
+                          ('or', 'and'))
