@@ -13,14 +13,19 @@
 
 from logging import getLogger
 
-from App.special_dtml import DTMLFile
-from BTrees.IIBTree import IIBTree, IITreeSet, IISet
-from BTrees.IIBTree import union, intersection, difference
 import BTrees.Length
+from App.special_dtml import DTMLFile
+from BTrees.IIBTree import IIBTree
+from BTrees.IIBTree import IISet
+from BTrees.IIBTree import IITreeSet
+from BTrees.IIBTree import difference
+from BTrees.IIBTree import intersection
+from BTrees.IIBTree import union
 from ZODB.POSException import ConflictError
 
-from Products.PluginIndexes.unindex import _marker
 from Products.PluginIndexes.unindex import UnIndex
+from Products.PluginIndexes.unindex import _marker
+
 
 LOG = getLogger('BooleanIndex.UnIndex')
 

@@ -77,8 +77,9 @@ class LexiconTests(unittest.TestCase):
         return self._getTargetClass()(*args, **kw)
 
     def test_interfaces(self):
-        from Products.ZCTextIndex.interfaces import ILexicon
         from zope.interface.verify import verifyClass
+
+        from Products.ZCTextIndex.interfaces import ILexicon
 
         verifyClass(ILexicon, self._getTargetClass())
 
@@ -205,8 +206,9 @@ class LexiconTests(unittest.TestCase):
 
     def testSplitterLocaleAwareness(self):
         import locale
-        from Products.ZCTextIndex.Lexicon import Splitter
+
         from Products.ZCTextIndex.HTMLSplitter import HTMLWordSplitter
+        from Products.ZCTextIndex.Lexicon import Splitter
 
         loc = locale.setlocale(locale.LC_ALL)  # get current locale
         # set German locale

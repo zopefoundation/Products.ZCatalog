@@ -18,28 +18,31 @@ from operator import itemgetter
 from random import randint
 
 import Acquisition
+import BTrees.Length
+import ExtensionClass
 from Acquisition import aq_base
 from Acquisition import aq_parent
-import BTrees.Length
-from BTrees.IIBTree import intersection, IISet
+from BTrees.IIBTree import IISet
+from BTrees.IIBTree import intersection
 from BTrees.IIBTree import weightedIntersection
-from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOBTree
-import ExtensionClass
+from BTrees.OIBTree import OIBTree
 from Missing import MV
 from Persistence import Persistent
-from ZTUtils.Lazy import LazyMap, LazyCat, LazyValues
+from ZTUtils.Lazy import LazyCat
+from ZTUtils.Lazy import LazyMap
+from ZTUtils.Lazy import LazyValues
 
-from Products.PluginIndexes.interfaces import (
-    ILimitedResultIndex,
-    IQueryIndex,
-    ITransposeQuery,
-)
+from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.util import safe_callable
-from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain, NoBrainer
+from Products.ZCatalog.CatalogBrains import AbstractCatalogBrain
+from Products.ZCatalog.CatalogBrains import NoBrainer
 from Products.ZCatalog.plan import CatalogPlan
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.query import IndexQuery
+
 
 try:
     from functools import cmp_to_key

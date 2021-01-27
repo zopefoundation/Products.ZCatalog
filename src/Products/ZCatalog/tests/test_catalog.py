@@ -11,13 +11,13 @@
 #
 ##############################################################################
 
-import unittest
-
-from itertools import chain
 import random
+import unittest
+from itertools import chain
 
-from BTrees.IIBTree import IISet
 import ExtensionClass
+from BTrees.IIBTree import IISet
+
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.ZCTextIndex.OkapiIndex import OkapiIndex

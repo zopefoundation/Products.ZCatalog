@@ -13,11 +13,11 @@
 
 import unittest
 
-from AccessControl.SecurityManagement import setSecurityManager
-from AccessControl.SecurityManagement import noSecurityManager
-from AccessControl import Unauthorized
-from Acquisition import Implicit
 import ExtensionClass
+from AccessControl import Unauthorized
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.SecurityManagement import setSecurityManager
+from Acquisition import Implicit
 from OFS.Folder import Folder as OFS_Folder
 from Testing.makerequest import makerequest
 
@@ -140,9 +140,10 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         return self.d[num]
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.ZCatalog.interfaces import IZCatalog
         from Products.ZCatalog.ZCatalog import ZCatalog
-        from zope.interface.verify import verifyClass
 
         verifyClass(IZCatalog, ZCatalog)
 

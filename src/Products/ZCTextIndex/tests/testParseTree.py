@@ -19,6 +19,7 @@ class ParseTreeTests(unittest.TestCase):
 
     def _conforms(self, klass):
         from zope.interface.verify import verifyClass
+
         from Products.ZCTextIndex.interfaces import IQueryParseTree
         verifyClass(IQueryParseTree, klass)
 
