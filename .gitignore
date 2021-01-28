@@ -1,19 +1,24 @@
-*.egg-info
+# Generated from:
+# https://github.com/zopefoundation/meta/tree/master/config/zope-product
+*.egg-info/
+*.profraw
 *.pyc
 *.pyo
 .coverage
 .coverage.*
+.eggs/
 .installed.cfg
 .mr.developer.cfg
-.tox
+.tox/
+__pycache__/
 bin/
 build/
 coverage.xml
-default.profraw
 develop-eggs/
 dist/
+docs/_build
 eggs/
-htmlcov/
 lib/
+lib64
 parts/
 pyvenv.cfg

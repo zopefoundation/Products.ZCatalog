@@ -16,10 +16,10 @@ import sys
 import unittest
 
 import ExtensionClass
-from OFS.Folder import Folder
-from Testing.makerequest import makerequest
 import transaction
 import Zope2
+from OFS.Folder import Folder
+from Testing.makerequest import makerequest
 
 from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.ZCatalog.ZCatalog import ZCatalog

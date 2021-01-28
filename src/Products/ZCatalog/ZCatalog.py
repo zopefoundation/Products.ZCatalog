@@ -20,15 +20,16 @@ import time
 
 from six.moves.urllib.parse import quote
 
+import transaction
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permission import getPermissionIdentifier
 from AccessControl.Permissions import manage_zcatalog_entries
 from AccessControl.Permissions import manage_zcatalog_indexes
 from AccessControl.Permissions import search_zcatalog
 from AccessControl.SecurityInfo import ClassSecurityInfo
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_parent
-from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from DateTime.DateTime import DateTime
 from DocumentTemplate._DocumentTemplate import InstanceDict
@@ -39,18 +40,19 @@ from OFS.Folder import Folder
 from OFS.ObjectManager import ObjectManager
 from Persistence import Persistent
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Products.PluginIndexes.interfaces import IPluggableIndex
-import transaction
 from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
 from zope.interface import implementer
 from ZTUtils.Lazy import LazyMap
 
-from Products.ZCatalog.Catalog import Catalog, CatalogError
+from Products.PluginIndexes.interfaces import IPluggableIndex
+from Products.ZCatalog.Catalog import Catalog
+from Products.ZCatalog.Catalog import CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
 from Products.ZCatalog.plan import PriorityMap
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
+
 
 try:
     xrange
@@ -424,7 +426,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         i = 0
         if pghandler:
-            pghandler.init('reindexing {}'.format(idxs), len(paths))
+            pghandler.init('reindexing {0}'.format(idxs), len(paths))
 
         for p in paths:
             i += 1

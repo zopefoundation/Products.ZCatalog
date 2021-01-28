@@ -36,8 +36,8 @@ class TestKeywordIndex(unittest.TestCase):
     _old_log_write = None
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.KeywordIndex.KeywordIndex \
-            import KeywordIndex
+        from Products.PluginIndexes.KeywordIndex.KeywordIndex import \
+            KeywordIndex
         return KeywordIndex
 
     def _makeOne(self, id, extra=None):
@@ -116,11 +116,12 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from Products.PluginIndexes.interfaces import IRequestCacheIndex
-        from zope.interface.verify import verifyClass
 
         klass = self._getTargetClass()
 
