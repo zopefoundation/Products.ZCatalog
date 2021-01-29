@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.3 (unreleased)
+5.3 (2021-01-29)
 ----------------
 
 - Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options
