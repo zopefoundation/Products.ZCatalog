@@ -4,8 +4,10 @@ Changelog
 5.3 (unreleased)
 ----------------
 
-- Add support for Python 3.9.
+- Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options
+  (`#78 <https://github.com/zopefoundation/Products.ZCatalog/issues/78>`_).
 
+- Add support for Python 3.9.
 
 5.2 (2020-10-09)
 ----------------
