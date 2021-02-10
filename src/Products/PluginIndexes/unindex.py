@@ -11,21 +11,19 @@
 #
 ##############################################################################
 
-from logging import getLogger
 import sys
+from logging import getLogger
+from weakref import WeakKeyDictionary
 
-from Acquisition import (
-    aq_inner,
-    aq_parent,
-    aq_get,
-)
-from BTrees.IIBTree import (
-    difference,
-    intersection,
-    IITreeSet,
-    IISet,
-    multiunion,
-)
+from Acquisition import aq_base
+from Acquisition import aq_get
+from Acquisition import aq_inner
+from Acquisition import aq_parent
+from BTrees.IIBTree import IISet
+from BTrees.IIBTree import IITreeSet
+from BTrees.IIBTree import difference
+from BTrees.IIBTree import intersection
+from BTrees.IIBTree import multiunion
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OOBTree import OOBTree
@@ -34,15 +32,14 @@ from ZODB.POSException import ConflictError
 from zope.interface import implementer
 
 from Products.PluginIndexes.cache import RequestCache
-from Products.PluginIndexes.interfaces import (
-    ILimitedResultIndex,
-    IQueryIndex,
-    ISortIndex,
-    IUniqueValueIndex,
-    IRequestCacheIndex,
-)
+from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.interfaces import IQueryIndex
+from Products.PluginIndexes.interfaces import IRequestCacheIndex
+from Products.PluginIndexes.interfaces import ISortIndex
+from Products.PluginIndexes.interfaces import IUniqueValueIndex
 from Products.PluginIndexes.util import safe_callable
 from Products.ZCatalog.query import IndexQuery
+
 
 _marker = []
 LOG = getLogger('Zope.UnIndex')
@@ -86,7 +83,7 @@ class UnIndex(SimpleItem):
           'call_methods' -- should be set to true if you want the index
           to call the attribute 'id' (note: 'id' should be callable!)
           You will also need to pass in an object in the index and
-          uninded methods for this to work.
+          unindex methods for this to work.
 
           'extra' -- a mapping object that keeps additional
           index-related parameters - subitem 'indexed_attrs'
@@ -251,10 +248,11 @@ class UnIndex(SimpleItem):
         # First we need to see if there's anything interesting to look at
         datum = self._get_object_datum(obj, attr)
         if datum is None:
-            # Prevent None from being indexed. None doesn't have a valid
-            # ordering definition compared to any other object.
-            # BTrees 4.0+ will throw a TypeError
-            # "object has default comparison" and won't let it be indexed.
+            # Remove previous index if it exists
+            oldDatum = self._unindex.get(documentId, _marker)
+            if oldDatum:
+                self.removeForwardIndexEntry(oldDatum, documentId)
+                del self._unindex[documentId]
             return 0
 
         datum = self._convert(datum, default=_marker)
@@ -363,15 +361,23 @@ class UnIndex(SimpleItem):
 
         cache = None
         REQUEST = aq_get(self, 'REQUEST', None)
-        if REQUEST is not None:
-            catalog = aq_parent(aq_parent(aq_inner(self)))
+        if hasattr(REQUEST, "get"):
+            cache_container = REQUEST.get("__catalog_cache__")
+            if cache_container is None:
+                # we use a `WeakKeyDictionary` (rather than the
+                #   request directly) to avoid the type of problem
+                #   described in
+                #   "https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11"
+                cache_container = REQUEST["__catalog_cache__"] \
+                    = WeakKeyDictionary()
+            # we use the parent (of type `Products.ZCatalog.Catalog.Catalog`)
+            #  as key to facilitate invalidation via its method
+            #  in the future
+            catalog = aq_base(aq_parent(aq_inner(self)))
             if catalog is not None:
-                # unique catalog identifier
-                key = '_catalogcache_{0}_{1}'.format(
-                    catalog.getId(), id(catalog))
-                cache = REQUEST.get(key, None)
+                cache = cache_container.get(catalog, None)
                 if cache is None:
-                    cache = REQUEST[key] = RequestCache()
+                    cache = cache_container[catalog] = RequestCache()
 
         return cache
 

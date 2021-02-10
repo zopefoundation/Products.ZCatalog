@@ -36,9 +36,9 @@ class Dummy(object):
 class FieldIndexTests(unittest.TestCase):
     """Test FieldIndex objects.
     """
+
     def _getTargetClass(self):
-        from Products.PluginIndexes.FieldIndex.FieldIndex \
-            import FieldIndex
+        from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
         return FieldIndex
 
     def _makeOne(self, id, extra=None):
@@ -134,11 +134,12 @@ class FieldIndexTests(unittest.TestCase):
         self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from Products.PluginIndexes.interfaces import IRequestCacheIndex
-        from zope.interface.verify import verifyClass
 
         klass = self._getTargetClass()
 
@@ -215,6 +216,17 @@ class FieldIndexTests(unittest.TestCase):
         self._index.index_object(10, Dummy(None))
         self.assertFalse(None in self._index.uniqueValues('foo'))
         self._checkApply({'foo': None}, [])
+
+    def testReindexNone(self):
+        d = Dummy('abc')
+        self._index.index_object(2, d)
+        self._checkApply({'foo': 'abc'}, [self._values[2], ])
+        assert self._index.keyForDocument(2) == 'abc'
+        d._foo = None
+        self._index.index_object(2, d)
+        self._checkApply({'foo': 'abc'}, [])
+        with self.assertRaises(KeyError):
+            self._index.keyForDocument(2)
 
     def testReindex(self):
         self._populateIndex()

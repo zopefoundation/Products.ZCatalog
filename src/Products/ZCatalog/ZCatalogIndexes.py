@@ -14,19 +14,21 @@
 """
 
 from AccessControl.class_init import InitializeClass
-from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl.Permissions import manage_zcatalog_indexes
 from AccessControl.Permissions import view_management_screens
+from AccessControl.SecurityInfo import ClassSecurityInfo
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_inner
 from Acquisition import aq_parent
-from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from OFS.Folder import Folder
 from OFS.ObjectManager import IFAwareObjectManager
 from OFS.SimpleItem import SimpleItem
 from Persistence import Persistent
+
 from Products.PluginIndexes.interfaces import IPluggableIndex
+
 
 _marker = []
 

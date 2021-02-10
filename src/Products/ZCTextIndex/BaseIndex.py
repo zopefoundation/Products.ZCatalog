@@ -17,11 +17,11 @@
 
 import math
 
-from BTrees.IOBTree import IOBTree
 from BTrees.IIBTree import IIBTree
 from BTrees.IIBTree import IITreeSet
 from BTrees.IIBTree import difference
 from BTrees.IIBTree import intersection
+from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from Persistence import Persistent
 from zope.interface import implementer
@@ -50,7 +50,7 @@ def scaled_int(f, scale=SCALE_FACTOR):
     return int(f * scale + 0.5)
 
 
-def unique(l):
+def unique(l):  # noqa: E741
     """Return a list of the unique elements in l."""
     return IITreeSet(l).keys()
 

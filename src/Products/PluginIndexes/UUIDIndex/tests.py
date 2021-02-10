@@ -34,8 +34,7 @@ class Dummy:
 class UUIDIndexTests(unittest.TestCase):
 
     def _getTargetClass(self):
-        from Products.PluginIndexes.UUIDIndex.UUIDIndex \
-            import UUIDIndex
+        from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
         return UUIDIndex
 
     def _makeOne(self, id):
@@ -69,6 +68,12 @@ class UUIDIndexTests(unittest.TestCase):
             self._backward[k] = v
             keys = self._forward.get(v, [])
             self._forward[v] = keys
+        self._not_1 = {'foo': {'query': 'a', 'not': 'a'}}
+        self._not_2 = {'foo': {'query': ['a', 'ab'], 'not': 'a'}}
+        self._not_3 = {'foo': {'not': 'a'}}
+        self._not_4 = {'foo': {'not': ['0']}}
+        self._not_5 = {'foo': {'not': ['a', 'b']}}
+        self._not_6 = {'foo': 'a', 'bar': {'query': 123, 'not': 1}}
 
     def tearDown(self):
         self._index.clear()
@@ -104,11 +109,12 @@ class UUIDIndexTests(unittest.TestCase):
         self.assertEqual(cache._hits, 1)
 
     def test_interfaces(self):
+        from zope.interface.verify import verifyClass
+
         from Products.PluginIndexes.interfaces import IPluggableIndex
+        from Products.PluginIndexes.interfaces import IRequestCacheIndex
         from Products.PluginIndexes.interfaces import ISortIndex
         from Products.PluginIndexes.interfaces import IUniqueValueIndex
-        from Products.PluginIndexes.interfaces import IRequestCacheIndex
-        from zope.interface.verify import verifyClass
 
         klass = self._getTargetClass()
 
@@ -139,6 +145,13 @@ class UUIDIndexTests(unittest.TestCase):
         self._checkApply({'foo': 'a'}, [values[0]])
         self._checkApply({'foo': '0'}, [values[4]])
         self._checkApply({'foo': ['a', 'ab']}, values[:2])
+
+        self._checkApply(self._not_1, [])
+        self._checkApply(self._not_2, values[1:2])
+        self._checkApply(self._not_3, values[1:])
+        self._checkApply(self._not_4, values[:4])
+        self._checkApply(self._not_5, values[1:])
+        self._checkApply(self._not_6, values[0:1])
 
     def test_none(self):
         # Make sure None is ignored.

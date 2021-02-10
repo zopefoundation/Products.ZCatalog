@@ -16,9 +16,10 @@ from unittest import TestCase
 
 from BTrees.IIBTree import IIBucket
 
-from Products.ZCTextIndex.QueryParser import QueryParser
+from Products.ZCTextIndex.Lexicon import Lexicon
+from Products.ZCTextIndex.Lexicon import Splitter
 from Products.ZCTextIndex.ParseTree import QueryError
-from Products.ZCTextIndex.Lexicon import Lexicon, Splitter
+from Products.ZCTextIndex.QueryParser import QueryParser
 
 
 class FauxIndex(object):
@@ -63,6 +64,7 @@ class TestQueryEngine(TestCase):
         self.compareQuery("ham AND foo AND bar", {1: 3})
 
     def testInvalidQuery(self):
-        from Products.ZCTextIndex.ParseTree import NotNode, AtomNode
+        from Products.ZCTextIndex.ParseTree import AtomNode
+        from Products.ZCTextIndex.ParseTree import NotNode
         tree = NotNode(AtomNode("foo"))
         self.assertRaises(QueryError, tree.executeQuery, self.index)

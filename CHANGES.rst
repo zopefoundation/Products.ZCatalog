@@ -1,19 +1,90 @@
 Changelog
 =========
 
-5.1 (unreleased)
+6.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options.
+  (`#78 <https://github.com/zopefoundation/Products.ZCatalog/issues/78>`_)
+
+
+6.0 (2020-10-08)
+----------------
+
+Backwards incompatible changes
+++++++++++++++++++++++++++++++
+
+- Remove deprecated ``Products.PluginIndexes.common`` module and ``Products.ZCatalog.Lazy``.
+  (`#54 <https://github.com/zopefoundation/Products.ZCatalog/issues/54>`_)
+
+- This version is only intend to be used in Zope >= 5.0, although it might
+  still work on Zope 4.
+
+Features
+++++++++
+
+- Add new method ``searchAll`` to perform a search for all documents.
+
+- Add support for Python 3.9.
+
+Changes
++++++++
+
+- Rework request caching to avoid stale cache results in scripts (with
+  an artificial request).
+  For details:
+  `#94 <https://github.com/zopefoundation/Products.ZCatalog/issues/94>`_,
+  `Plone 5.2 mass migration: bad search results
+  <https://community.plone.org/t/potential-memory-corruption-during-migration-plone-4-2-5-2/11655/11>`_
+
+Fixes
++++++
+
+- Document ``getAllBrains`` and ``searchAll`` in the interface.
+
+- Update `catalogView.dtml` to changed behavior of empty searches
+  (`#102 <https://github.com/zopefoundation/Products.ZCatalog/issues/102>`_).
+
+- Fix case where index value is changed to None after previously being indexed.
+  (`#100 <https://github.com/zopefoundation/Products.ZCatalog/issues/100>`_)
+
+
+5.1 (2020-04-20)
+----------------
+
+- Fix with Python 3.8: Replace deprecated ``time.clock()`` use by
+  ``time.process_time``.
+  (`#96 <https://github.com/zopefoundation/Products.ZCatalog/issues/96>`_)
+
+- Add support for ``not`` queries in the ``UUIDIndex``
+  (`#98 <https://github.com/zopefoundation/Products.ZCatalog/issues/98>`_)
+
+5.0.4 (2020-02-11)
+------------------
+
+- Fix some ``DocumentTemplate`` imports to prevent DeprecationWarnings
+
+
+5.0.3 (2020-01-17)
+------------------
+
+- Fix exception when viewing `Indexes` tab when Chameleon template
+  engine is deactivated.
+  (`#84 <https://github.com/zopefoundation/Products.ZCatalog/issues/84>`_)
+
+
+5.0.2 (2019-12-06)
+------------------
+
+- Fix exception happening when reindexing multiple indexes while having a
+  progress handler.
+  (`#89 <https://github.com/zopefoundation/Products.ZCatalog/pull/89>`_)
 
 
 5.0.1 (2019-06-17)
 ------------------
 
-Bug fixes
-+++++++++
-
-- Fix sorting of index overview table in ZMI. Migrated the template from 
+- Fix sorting of index overview table in ZMI. Migrated the template from
   to zpt.
   (`#62 <https://github.com/zopefoundation/Products.ZCatalog/issues/62>`_)
 

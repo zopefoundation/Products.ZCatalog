@@ -12,7 +12,7 @@
 		added index. You may want to update the whole Catalog.
 	</p>
 	<tal:indexes define="indexes context/Indexes">
-		<tal:add define="filtered_meta_types python:sorted(indexes.filtered_meta_types(), key=lambda mt: mt['name'])">
+		<tal:add define="filtered_meta_types context/availableIndexes">
 			<form tal:attributes="action context/absolute_url" method="get">
 				<div class="form-group mt-4 mb-4">
 					<div class="input-group">

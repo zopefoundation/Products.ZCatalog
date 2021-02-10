@@ -12,12 +12,14 @@
 #
 ##############################################################################
 import re
+
 import six
 
 from zope.interface import implementer
 
 from Products.ZCTextIndex.interfaces import ISplitter
 from Products.ZCTextIndex.PipelineFactory import element_factory
+
 
 if six.PY2:
     word_pattern = r"(?L)\w+"

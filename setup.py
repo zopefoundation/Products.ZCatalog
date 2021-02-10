@@ -12,11 +12,13 @@
 #
 ##############################################################################
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
+
 
 setup(
     name='Products.ZCatalog',
-    version='5.1.dev0',
+    version='6.1.dev0',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope's indexing and search solution.",
@@ -31,7 +33,8 @@ setup(
     classifiers=[
         "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
-        "Framework :: Zope :: 4",
+        "Framework :: Zope",
+        "Framework :: Zope :: 5",
         "License :: OSI Approved :: Zope Public License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
@@ -42,6 +45,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
@@ -59,10 +63,10 @@ setup(
         'Missing',
         'Persistence',
         'Record',
-        'RestrictedPython',
+        'RestrictedPython >= 5.1',
         'zExceptions',
         'ZODB',
-        'Zope2 >= 4.0a5',
+        'Zope >= 4',
         'zope.deferredimport',
         'zope.dottedname',
         'zope.globalrequest',

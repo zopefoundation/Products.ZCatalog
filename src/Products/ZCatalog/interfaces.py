@@ -222,6 +222,12 @@ class IZCatalog(Interface):
         queries (even across catalogs) and merge and sort the combined results.
         """
 
+    def searchAll():
+        """the result of a search for all documents as a sequence."""
+
+    def getAllBrains():
+        """the result of a search for all documents as an iterator."""
+
     def refreshCatalog(clear=0, pghandler=None):
         """Reindex every object we can find, removing the unreachable
         ones from the index.

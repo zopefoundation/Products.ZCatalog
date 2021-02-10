@@ -1,19 +1,17 @@
-import unittest
-
+import logging
 import random
-
+import sys
+import unittest
 from time import time
 
 from BTrees.IIBTree import weightedIntersection
 
-from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
-from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.BooleanIndex.BooleanIndex import BooleanIndex
 from Products.PluginIndexes.CompositeIndex.CompositeIndex import CompositeIndex
+from Products.PluginIndexes.FieldIndex.FieldIndex import FieldIndex
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
+from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 
-import sys
-import logging
 
 logger = logging.getLogger('zope.testCompositeIndex')
 
@@ -296,12 +294,12 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                              len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
-        for l in lengths:
+        for length in lengths:
             self.clearIndexes()
             logger.info('************************************\n'
-                        'indexing %s objects', l)
+                        'indexing %s objects', length)
 
-            for i in range(l):
+            for i in range(length):
                 name = str(i)
                 obj = RandomTestObject(name)
                 self.populateIndexes(i, obj)

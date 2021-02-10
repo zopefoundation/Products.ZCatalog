@@ -20,42 +20,51 @@ import time
 
 from six.moves.urllib.parse import quote
 
+import transaction
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permission import getPermissionIdentifier
 from AccessControl.Permissions import manage_zcatalog_entries
 from AccessControl.Permissions import manage_zcatalog_indexes
 from AccessControl.Permissions import search_zcatalog
 from AccessControl.SecurityInfo import ClassSecurityInfo
+from Acquisition import Implicit
 from Acquisition import aq_base
 from Acquisition import aq_parent
-from Acquisition import Implicit
 from App.special_dtml import DTMLFile
 from DateTime.DateTime import DateTime
-from DocumentTemplate.DT_Util import InstanceDict
-from DocumentTemplate.DT_Util import TemplateDict
+from DocumentTemplate._DocumentTemplate import InstanceDict
+from DocumentTemplate._DocumentTemplate import TemplateDict
 from DocumentTemplate.DT_Util import Eval
 from DocumentTemplate.security import RestrictedDTML
 from OFS.Folder import Folder
 from OFS.ObjectManager import ObjectManager
 from Persistence import Persistent
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
-from Products.PluginIndexes.interfaces import IPluggableIndex
-import transaction
 from zExceptions import BadRequest
 from ZODB.POSException import ConflictError
 from zope.interface import implementer
+from ZTUtils.Lazy import LazyMap
 
-from Products.ZCatalog.Catalog import Catalog, CatalogError
+from Products.PluginIndexes.interfaces import IPluggableIndex
+from Products.ZCatalog.Catalog import Catalog
+from Products.ZCatalog.Catalog import CatalogError
 from Products.ZCatalog.interfaces import IZCatalog
 from Products.ZCatalog.plan import PriorityMap
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
+
 
 try:
     xrange
 except NameError:
     # Python 3 compatibility
     xrange = range
+
+try:
+    from time import clock as process_time
+except ImportError:
+    from time import process_time
+
 
 _marker = object()
 LOG = logging.getLogger('Zope.ZCatalog')
@@ -237,14 +246,14 @@ class ZCatalog(Folder, Persistent, Implicit):
         """ clear the catalog, then re-index everything """
 
         elapse = time.time()
-        c_elapse = time.clock()
+        c_elapse = process_time()
 
         pgthreshold = self._getProgressThreshold()
         handler = (pgthreshold > 0) and ZLogHandler(pgthreshold) or None
         self.refreshCatalog(clear=1, pghandler=handler)
 
         elapse = time.time() - elapse
-        c_elapse = time.clock() - c_elapse
+        c_elapse = process_time() - c_elapse
 
         RESPONSE.redirect(
             URL1
@@ -308,7 +317,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         """ Find object according to search criteria and Catalog them
         """
         elapse = time.time()
-        c_elapse = time.clock()
+        c_elapse = process_time()
 
         obj = REQUEST.PARENTS[1]
         path = '/'.join(obj.getPhysicalPath())
@@ -328,7 +337,7 @@ class ZCatalog(Folder, Persistent, Implicit):
                               apply_path=path)
 
         elapse = time.time() - elapse
-        c_elapse = time.clock() - c_elapse
+        c_elapse = process_time() - c_elapse
 
         RESPONSE.redirect(
             URL1
@@ -410,14 +419,14 @@ class ZCatalog(Folder, Persistent, Implicit):
 
     @security.protected(manage_zcatalog_entries)
     def reindexIndex(self, name, REQUEST, pghandler=None):
-        if isinstance(name, str):
-            name = (name, )
-
+        # This method does the actual reindexing of indexes.
+        # `name` can be the name of an index or a list of names.
+        idxs = (name, ) if isinstance(name, str) else name
         paths = self._catalog.uids.keys()
 
         i = 0
         if pghandler:
-            pghandler.init('reindexing %s' % name, len(paths))
+            pghandler.init('reindexing {0}'.format(idxs), len(paths))
 
         for p in paths:
             i += 1
@@ -433,7 +442,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             else:
                 # don't update metadata when only reindexing a single
                 # index via the UI
-                self.catalog_object(obj, p, idxs=name,
+                self.catalog_object(obj, p, idxs=idxs,
                                     update_metadata=0, pghandler=pghandler)
 
         if pghandler:
@@ -442,7 +451,7 @@ class ZCatalog(Folder, Persistent, Implicit):
     @security.protected(manage_zcatalog_entries)
     def manage_reindexIndex(self, ids=None, REQUEST=None, RESPONSE=None,
                             URL1=None):
-        """Reindex indexe(s) from a ZCatalog"""
+        """Reindex index(es) from a ZCatalog"""
         if not ids:
             raise BadRequest('No items specified')
 
@@ -559,6 +568,13 @@ class ZCatalog(Folder, Persistent, Implicit):
         # return a generator of brains for all cataloged objects
         for rid in self._catalog.data:
             yield self._catalog[rid]
+
+    @security.protected(search_zcatalog)
+    def searchAll(self):
+        # the result of a search for all documents
+        return LazyMap(self._catalog.__getitem__,
+                       self._catalog.data.keys(),
+                       len(self))
 
     @security.protected(search_zcatalog)
     def schema(self):
@@ -721,9 +737,8 @@ class ZCatalog(Folder, Persistent, Implicit):
                          or expr_match(ob, obj_expr))
                     and (not obj_mtime
                          or mtime_match(ob, obj_mtime, obj_mspec))
-                    and ((not obj_permission
-                          or not obj_roles)
-                    or role_match(ob, obj_permission, obj_roles))):
+                    and ((not obj_permission or not obj_roles)
+                         or role_match(ob, obj_permission, obj_roles))):
                 if apply_func:
                     apply_func(ob, (apply_path + '/' + p))
                 else:
@@ -861,6 +876,17 @@ class ZCatalog(Folder, Persistent, Implicit):
             index = base(name)
 
         self._catalog.addIndex(name, index)
+
+    @security.protected(manage_zcatalog_indexes)
+    def availableIndexes(self):
+        """Return a sorted list of indexes.
+
+        Only indexes get returned for which the user has adequate
+        permission to add them.
+        """
+        return sorted(
+            self.Indexes.filtered_meta_types(),
+            key=lambda meta_types: meta_types['name'])
 
     @security.protected(manage_zcatalog_indexes)
     def delIndex(self, name):
