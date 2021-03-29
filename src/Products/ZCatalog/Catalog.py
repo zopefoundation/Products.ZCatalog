@@ -1000,7 +1000,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
         # Choose one of the sort algorithms.
         if iterate_sort_index:
             sort_func = self._sort_iterate_index
-        elif limit is None or (limit * 4 > rlen):
+        elif limit is None or (limit * 4 > rlen) or sort_index_length > 1:
             sort_func = self._sort_iterate_resultset
         elif first_reverse:
             sort_func = self._sort_nbest

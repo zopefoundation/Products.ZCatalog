@@ -6,6 +6,9 @@ Changelog
 
 - Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options.
   (`#78 <https://github.com/zopefoundation/Products.ZCatalog/issues/78>`_)
+- Fix reversed sorting by multiple index by forcing the ``_sort_iterate_resultset``
+  sorting method when we have more than one sorting index
+  (`#108 <https://github.com/zopefoundation/Products.ZCatalog/issues/108>`_)
 
 
 6.0 (2020-10-08)
