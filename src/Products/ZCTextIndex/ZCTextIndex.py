@@ -59,7 +59,7 @@ except NameError:
 
 
 @implementer(IZCTextIndex, IQueryIndex, IPluggableIndex)
-class ZCTextIndex(Persistent, Implicit, SimpleItem):
+class ZCTextIndex(SimpleItem):
 
     """Persistent text index.
     """
@@ -319,7 +319,7 @@ LexiconMgmtPerm = manage_vocabulary
 
 
 @implementer(IZCLexicon)
-class PLexicon(Lexicon, Implicit, SimpleItem):
+class PLexicon(Lexicon, SimpleItem):
 
     """Lexicon for ZCTextIndex.
     """

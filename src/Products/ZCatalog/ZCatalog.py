@@ -84,7 +84,7 @@ def manage_addZCatalog(self, id, title, vocab_id=None, REQUEST=None):
 
 
 @implementer(IZCatalog)
-class ZCatalog(Folder, Persistent, Implicit):
+class ZCatalog(Folder):
     """ZCatalog object
 
     A ZCatalog contains arbirary index like references to Zope

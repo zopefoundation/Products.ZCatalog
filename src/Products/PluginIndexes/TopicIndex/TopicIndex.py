@@ -35,7 +35,7 @@ LOG = getLogger('Zope.TopicIndex')
 
 
 @implementer(ITopicIndex, IQueryIndex, IUniqueValueIndex)
-class TopicIndex(Persistent, SimpleItem):
+class TopicIndex(SimpleItem):
     """A TopicIndex maintains a set of FilteredSet objects.
 
     Every FilteredSet object consists of an expression and and IISet with all

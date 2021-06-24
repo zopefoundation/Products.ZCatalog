@@ -38,7 +38,7 @@ LOG = getLogger('Zope.PathIndex')
 
 
 @implementer(IPathIndex, IQueryIndex, IUniqueValueIndex, ISortIndex)
-class PathIndex(Persistent, SimpleItem):
+class PathIndex(SimpleItem):
 
     """Index for paths returned by getPhysicalPath.
 

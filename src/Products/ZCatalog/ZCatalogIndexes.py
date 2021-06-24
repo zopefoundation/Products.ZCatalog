@@ -33,7 +33,7 @@ from Products.PluginIndexes.interfaces import IPluggableIndex
 _marker = []
 
 
-class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
+class ZCatalogIndexes(IFAwareObjectManager, Folder):
     """A mapping object, responding to getattr requests by looking up
     the requested indexes in an object manager."""
 
