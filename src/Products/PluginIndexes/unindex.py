@@ -504,7 +504,12 @@ class UnIndex(SimpleItem):
                 i_not_parm = self._apply_not(not_parm, resultset)
                 if i_not_parm:
                     return difference(resultset, i_not_parm)
-            record.keys = [k for k in index.keys() if k not in not_parm]
+            record.keys = list(index)
+            for parm in not_parm:
+                try:
+                    record.keys.remove(parm)
+                except ValueError:
+                    pass
         else:
             # convert query arguments into indexed format
             record.keys = list(map(self._convert, record.keys))
