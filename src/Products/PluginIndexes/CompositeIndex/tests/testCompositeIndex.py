@@ -285,7 +285,7 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                 # search must be roughly faster than default search
                 if res1 and res2:
                     self.assertLess(
-                        0.5 * duration2,
+                        0.4 * duration2,
                         duration1,
                         (duration2, duration1, query))
 
