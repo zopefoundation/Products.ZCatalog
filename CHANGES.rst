@@ -16,7 +16,7 @@ Changelog
   index.
   (`#108 <https://github.com/zopefoundation/Products.ZCatalog/issues/108>`_)
 
-- Add support for Python 3.9.
+- Add support for Python 3.10.
 
 
 6.0 (2020-10-08)
