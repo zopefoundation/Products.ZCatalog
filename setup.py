@@ -20,6 +20,11 @@ setup(
     name='Products.ZCatalog',
     version='6.1.dev0',
     url='https://github.com/zopefoundation/Products.ZCatalog',
+    project_urls={
+        'Issue Tracker': 'https://github.com/zopefoundation/'
+                         'Products.ZCatalog/issues',
+        'Sources': 'https://github.com/zopefoundation/Products.ZCatalog',
+    },
     license='ZPL 2.1',
     description="Zope's indexing and search solution.",
     author='Zope Foundation and Contributors',
@@ -46,6 +51,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
