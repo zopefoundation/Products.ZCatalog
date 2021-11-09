@@ -1,7 +1,7 @@
 Changelog
 =========
 
-6.1 (unreleased)
+6.1 (2021-11-09)
 ----------------
 
 - Improve performance of simple ``not`` queries on large catalogs.
