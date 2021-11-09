@@ -7,7 +7,7 @@ Changelog
 - Improve performance of simple ``not`` queries on large catalogs.
   (`#124 <https://github.com/zopefoundation/Products.ZCatalog/pull/124>`_)
 
-- Fix case where multiple indexes with similar name seperated by ``_``
+- Fix case where multiple indexes with similar name separated by ``_``
   were interpreted as options.
   (`#78 <https://github.com/zopefoundation/Products.ZCatalog/issues/78>`_)
 
