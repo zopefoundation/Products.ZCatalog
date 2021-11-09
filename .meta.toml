@@ -12,7 +12,7 @@ with-windows = false
 with-future-python = false
 
 [coverage]
-fail-under = 87
+fail-under = 85
 
 [manifest]
 additional-rules = [
