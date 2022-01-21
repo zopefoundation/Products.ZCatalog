@@ -25,7 +25,7 @@
 
 			<h2 class="zmi-title mt-4">Objects in this catalog</h2>
 
-			<form action="&dtml-URL1;" name="objectItems">
+			<form action="&dtml-URL1;" name="objectItems" id="objectItems">
 				<p class="help-text">
 					The catalog <em>&dtml-id;</em> contains 
 					<span class="badge badge-success">
@@ -56,46 +56,45 @@
 						</dtml-in>
 					</div>
 				</nav>
-				<div title="Cataloged Objects">
-					<table class="table table-sm table-striped table-bordered table-hover m-1 mb-3">
-						<dtml-in results size=20 start=query_start >
-							<dtml-if name="sequence-start">
-								<thead class="thead-light">
-									<tr>
-										<th scope="col" class="zmi-object-check text-center">
-											<input type="checkbox" id="checkAll" onclick="checkbox_all();"/>
-										</th>
-										<th scope="col">
-											Object Identifier
-										</th>
-										<th scope="col">
-											Type
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-							</dtml-if>
+				<table class="table table-sm table-striped table-hover objectItems">
+					<dtml-in results size=20 start=query_start >
+						<dtml-if name="sequence-start">
+							<thead class="thead-light">
 								<tr>
-									<td class="zmi-object-check text-center">
-										<input class="checkbox-list-item" type="checkbox" name="urls:list" value="&dtml-getPath;" />
-									</td>
-									<td>
-										<a href="&dtml-URL1;/manage_objectInformation?rid=&dtml-getRID;"
-											target="_objectinfo_&dtml-getRID;">&dtml-getPath;
-										</a>
-									</td>
-									<td>
-										<dtml-if expr="has_key('meta_type') and meta_type">
-											<dtml-var name="meta_type" size="15" html_quote>
-										<dtml-else>
-											<em>Unknown</em>
-										</dtml-if>
-									</td>
+									<th scope="col" class="zmi-object-check text-right">
+										<input type="checkbox" id="checkAll" onclick="checkbox_all();" />
+									</th>
+									<th scope="col" class="zmi-object-id">
+										Object Identifier
+									</th>
+									<th scope="col">
+										Type
+									</th>
 								</tr>
-							</dtml-in>
-						</tbody>
-					</table>
-				</div>
+							</thead>
+							<tbody>
+						</dtml-if>
+						<tr>
+							<td class="zmi-object-check text-right" onclick="$(this).children('input').trigger('click');">
+								<input class="checkbox-list-item" type="checkbox" name="urls:list" value="&dtml-getPath;"
+									onclick="event.stopPropagation();select_objectitem($(this));" />
+							</td>
+							<td class="zmi-object-id">
+								<a href="#" onclick="showItem('&dtml-URL1;/manage_objectInformation?rid=&dtml-getRID;')">
+									&dtml-getPath;
+								</a>
+							</td>
+							<td>
+								<dtml-if expr="has_key('meta_type') and meta_type">
+									<dtml-var name="meta_type" size="15" html_quote>
+								<dtml-else>
+									<em>Unknown</em>
+								</dtml-if>
+							</td>
+						</tr>
+					</dtml-in>
+					</tbody>
+				</table>
 				<div class="zmi-controls">
 					<input class="btn btn-primary" type="submit" value=" Remove " name="manage_uncatalogObject:method" />
 					<input class="btn btn-primary" type="submit" value=" Update " name="manage_catalogObject:method" />
@@ -128,6 +127,41 @@
 			checkboxes[i].checked = document.getElementById('checkAll').checked;
 		}
 	};
+	function select_objectitem(ob) {
+		ob.parent().parent().toggleClass('checked');
+		if ( !zmicontrols_visible() ) {
+			$('form#objectItems').addClass('selected');
+		}
+		// Anything selected?
+		var checkboxes = document.getElementsByClassName('checkbox-list-item');
+		var selected = false;
+		for (i = 0; i < checkboxes.length; i++) {
+			if ( checkboxes[i].checked ) {
+			selected = true;
+			break;
+			}
+		}
+		if ( !selected ) {
+			$('form#objectItems').removeClass('selected');
+			console.log('form#objectItems removed .selected');
+		}
+	};
+	function showItem( url ) {
+		$('#zmi-modal').modal('show');
+		$('#zmi-modal').modal({ focus: true });
+		// Load Modal Form by AJAX
+		$('#zmi-modal .modal-body').load( url );
+		// Clean up Modal DOM on Close
+		$('#zmi-modal').on('hide.bs.modal', function (event) {
+			$('#zmi-modal .modal-header h2').remove();
+			$('#zmi-modal .modal-body').empty();
+		});
+	};
+//-->
+</script>
+
+
+
 //-->
 </script>
 

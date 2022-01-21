@@ -9,13 +9,13 @@
 		When objects get cataloged, the values of any attributes they may have 
 		which match a name in this list will get stored in a table in the 
 		Catalog.  The Catalog then uses this information to create result 
-		objects that are returned whenever the catalog is searched.  It is 
+		objects that are returned whenever the catalog is searched. It is 
 		important to understand that when the Catalog is searched, it returns 
 		a list of result objects, <em>not the cataloged objects themselves</em>, 
 		so if you want to use the value of an object's attribute in the result 
-		of a search, that attribute must be in this list
+		of a search, that attribute must be in this list.
 		<br />
-		It is generally a good idea to keep this list lightweight.  It is 
+		It is generally a good idea to keep this list lightweight. It is 
 		useful, for example, to keep the 'summary' meta data of a text 
 		document (like the first 200 characters) but <i>not</i> the text 
 		content in it's entirety (it is useful in this example to <em>index</em> 
@@ -39,17 +39,16 @@
 			<div class="alert alert-info">There are currently no metadata elements.</div>
 		</dtml-in>
 
-
-		<div class="form-group mt-4 mb-4">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text">Add Metadata</span>
-						</div>
-						<input class="form-control" type="text" name="name" value="" />
-						<div class="input-group-append">
-							<input class="btn btn-primary"" type="submit" name="manage_addColumn:method" value="Add" />
-					</div>
+		<div class="form-group my-4">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text">Add Metadata</span>
 				</div>
+				<input class="form-control" type="text" name="name" value="" />
+				<div class="input-group-append">
+					<input class="btn btn-primary" type="submit" name="manage_addColumn:method" value="Add" />
+				</div>
+			</div>
 		</div>
 
 	</form>
