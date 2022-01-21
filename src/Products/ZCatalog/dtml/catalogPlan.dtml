@@ -3,14 +3,14 @@
 
 <main class="container-fluid">
 
-<p class="form-help"> 
-    The <strong>query plan</strong> shows the actual query plan of the
-    current process.
-</p>
+	<p class="form-help"> 
+		The <strong>query plan</strong> shows the actual query plan of the
+		current process.
+	</p>
 
-<textarea name="queryplan" cols="70" rows="25" readonly="readonly">
-&dtml-getCatalogPlan;
-</textarea>
+	<textarea  name="queryplan" cols="70" rows="25" readonly="readonly" 
+		class="form-control text-monospace code">&dtml-getCatalogPlan;
+	</textarea>
 
 </main>
 
