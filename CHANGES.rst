@@ -4,7 +4,8 @@ Changelog
 6.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Refactored and improved ZMI templates
+  (`#128 <https://github.com/zopefoundation/Products.ZCatalog/pull/128>`_)
 
 
 6.1 (2021-11-09)
