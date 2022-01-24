@@ -1,67 +1,67 @@
 <h3 class="mt-2">
-	Catalog record at 
-	<code>
-		<dtml-var expr="getpath(_.int(rid))" html_quote>
-	</code>
+    Catalog record at 
+    <code>
+        <dtml-var expr="getpath(_.int(rid))" html_quote>
+    </code>
 </h3>
 <p>
-	The goal of this page is to provide basic debugging information
-	about what is in the Catalog on a specific object. Listed below is
-	all the information that the Catalog currently contains for the
-	above specified object. This information should match what is
-	currently in the instance of that object.
+    The goal of this page is to provide basic debugging information
+    about what is in the Catalog on a specific object. Listed below is
+    all the information that the Catalog currently contains for the
+    above specified object. This information should match what is
+    currently in the instance of that object.
 </p>
 
 <p>
-	<strong>1. Metadata Contents: </strong>
-	Metadata is the information that the Catalog
-	keeps inside of its internal structure so that it can answer
-	questions quickly.  This is then returned in the "brain" that the
-	Catalog gives back during searches.
+    <strong>1. Metadata Contents: </strong>
+    Metadata is the information that the Catalog
+    keeps inside of its internal structure so that it can answer
+    questions quickly.  This is then returned in the "brain" that the
+    Catalog gives back during searches.
 </p>
 <table title="Metadata Contents" 
-	class="table table-sm table-striped table-hover objectItems">
-	<dtml-in expr="getMetadataForRID(_.int(rid)).items()">
-		<dtml-if name="sequence-start">
-			<thead class="thead-light">
-				<tr>
-					<th width="25%">Key</th>
-					<th width="70%">Value</th>
-				</tr>
-			</thead>
-			<tbody>
-		</dtml-if>
-		<tr>
-			<td>&dtml-sequence-key;</td>
-			<td>&dtml-sequence-item;</td>
-		</tr>
-	</dtml-in>
-	</tbody>
+    class="table table-sm table-striped table-hover objectItems">
+    <dtml-in expr="getMetadataForRID(_.int(rid)).items()">
+        <dtml-if name="sequence-start">
+            <thead class="thead-light">
+                <tr>
+                    <th width="25%">Key</th>
+                    <th width="70%">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        </dtml-if>
+        <tr>
+            <td>&dtml-sequence-key;</td>
+            <td>&dtml-sequence-item;</td>
+        </tr>
+    </dtml-in>
+    </tbody>
 </table>
 
 <p>
-	<strong>2. Index Contents: </strong>
-	The following table gives information that is
-	contained in the various indexes of the Catalog. In the case of
-	Keyword or Text indexes, the results are returned as a tuple, and will 
-	show as '(one, two, three)', rather than in a more normal way.
+    <strong>2. Index Contents: </strong>
+    The following table gives information that is
+    contained in the various indexes of the Catalog. In the case of
+    Keyword or Text indexes, the results are returned as a tuple, and will 
+    show as '(one, two, three)', rather than in a more normal way.
 </p>
 <table title="Index Contents" 
-	class="table table-sm table-striped table-hover objectItems">
-	<dtml-in expr="getIndexDataForRID(_.int(rid)).items()">
-		<dtml-if name="sequence-start">
-			<thead class="thead-light">
-				<tr>
-					<th width="25%">Key</th>
-					<th width="70%">Value</th>
-				</tr>
-			</thead>
-			<tbody>
-		</dtml-if>
-		<tr>
-			<td>&dtml-sequence-key;</td>
-			<td>&dtml-sequence-item;</td>
-		</tr>
-	</dtml-in>
-	</tbody>
+    class="table table-sm table-striped table-hover objectItems">
+    <dtml-in expr="getIndexDataForRID(_.int(rid)).items()">
+        <dtml-if name="sequence-start">
+            <thead class="thead-light">
+                <tr>
+                    <th width="25%">Key</th>
+                    <th width="70%">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        </dtml-if>
+        <tr>
+            <td>&dtml-sequence-key;</td>
+            <td>&dtml-sequence-item;</td>
+        </tr>
+    </dtml-in>
+    </tbody>
 </table>

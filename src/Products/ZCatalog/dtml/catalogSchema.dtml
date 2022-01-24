@@ -4,54 +4,54 @@
 
 <main class="container-fluid">
 
-	<p class="form-help">
-		This list defines what per object meta data the Catalog will store. 
-		When objects get cataloged, the values of any attributes they may have 
-		which match a name in this list will get stored in a table in the 
-		Catalog.  The Catalog then uses this information to create result 
-		objects that are returned whenever the catalog is searched. It is 
-		important to understand that when the Catalog is searched, it returns 
-		a list of result objects, <em>not the cataloged objects themselves</em>, 
-		so if you want to use the value of an object's attribute in the result 
-		of a search, that attribute must be in this list.
-		<br />
-		It is generally a good idea to keep this list lightweight. It is 
-		useful, for example, to keep the 'summary' meta data of a text 
-		document (like the first 200 characters) but <i>not</i> the text 
-		content in it's entirety (it is useful in this example to <em>index</em> 
-		the text contents, which is configured in the <strong>Indexes</strong> View 
-		tab). This way, the summary data may be shown in the search results.
-	</p>
+    <p class="form-help">
+        This list defines what per object meta data the Catalog will store. 
+        When objects get cataloged, the values of any attributes they may have 
+        which match a name in this list will get stored in a table in the 
+        Catalog.  The Catalog then uses this information to create result 
+        objects that are returned whenever the catalog is searched. It is 
+        important to understand that when the Catalog is searched, it returns 
+        a list of result objects, <em>not the cataloged objects themselves</em>, 
+        so if you want to use the value of an object's attribute in the result 
+        of a search, that attribute must be in this list.
+        <br />
+        It is generally a good idea to keep this list lightweight. It is 
+        useful, for example, to keep the 'summary' meta data of a text 
+        document (like the first 200 characters) but <i>not</i> the text 
+        content in it's entirety (it is useful in this example to <em>index</em> 
+        the text contents, which is configured in the <strong>Indexes</strong> View 
+        tab). This way, the summary data may be shown in the search results.
+    </p>
 
-	<form action="&dtml-URL1;">
+    <form action="&dtml-URL1;">
 
-		<dtml-in schema sort=sequence-item>
-			<div class="form-check">
-				<input type="checkbox" class="form-check-input" id="&dtml-sequence-item;" name="names:list" value="&dtml-sequence-item;" />
-				<label class="form-check-label" for="&dtml-sequence-item;">&dtml-sequence-item;</label>
-			</div>
-			<dtml-if sequence-end>
-				<div class="zmi-controls">
-					<input class="btn btn-primary" type="submit" name="manage_delColumn:method" value="Delete" /> 
-				</div>
-			</dtml-if>
-		<dtml-else>
-			<div class="alert alert-info">There are currently no metadata elements.</div>
-		</dtml-in>
+        <dtml-in schema sort=sequence-item>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="&dtml-sequence-item;" name="names:list" value="&dtml-sequence-item;" />
+                <label class="form-check-label" for="&dtml-sequence-item;">&dtml-sequence-item;</label>
+            </div>
+            <dtml-if sequence-end>
+                <div class="zmi-controls">
+                    <input class="btn btn-primary" type="submit" name="manage_delColumn:method" value="Delete" /> 
+                </div>
+            </dtml-if>
+        <dtml-else>
+            <div class="alert alert-info">There are currently no metadata elements.</div>
+        </dtml-in>
 
-		<div class="form-group my-4">
-			<div class="input-group">
-				<div class="input-group-prepend">
-					<span class="input-group-text">Add Metadata</span>
-				</div>
-				<input class="form-control" type="text" name="name" value="" />
-				<div class="input-group-append">
-					<input class="btn btn-primary" type="submit" name="manage_addColumn:method" value="Add" />
-				</div>
-			</div>
-		</div>
+        <div class="form-group my-4">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Add Metadata</span>
+                </div>
+                <input class="form-control" type="text" name="name" value="" />
+                <div class="input-group-append">
+                    <input class="btn btn-primary" type="submit" name="manage_addColumn:method" value="Add" />
+                </div>
+            </div>
+        </div>
 
-	</form>
+    </form>
 
 </main>
 

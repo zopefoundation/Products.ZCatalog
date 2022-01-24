@@ -3,160 +3,160 @@
 
 <main class="container-fluid">
 
-	<dtml-let filterpath="REQUEST.get('filterpath', '')"
-		results="searchResults(path=filterpath) if filterpath else searchAll()">
-		<dtml-if results>
-			<dtml-if "'path' in this().indexes()">
-				<form action="&dtml-URL;" class="row" title="Path filter">
-					<div class="form-row col-12 px-3">
-						<div class="input-group form-inline">
-							<div class="input-group-prepend">
-								<button type="submit" class="btn btn-secondary">Set Path Filter</button>
-							</div>
-								<input type="text" class="form-control text-monospace" name="filterpath" value="&dtml-filterpath;" placeholder="/path">
-						</div>
-					</div>
-				</form>
-			<dtml-else>
-				<p class="help-text">
-					The path filter is <span style="color:red;">disabled</span>. To enable the path filter, add a PathIndex called "path" to this catalog.
-				</p>
-			</dtml-if>
+    <dtml-let filterpath="REQUEST.get('filterpath', '')"
+        results="searchResults(path=filterpath) if filterpath else searchAll()">
+        <dtml-if results>
+            <dtml-if "'path' in this().indexes()">
+                <form action="&dtml-URL;" class="row" title="Path filter">
+                    <div class="form-row col-12 px-3">
+                        <div class="input-group form-inline">
+                            <div class="input-group-prepend">
+                                <button type="submit" class="btn btn-secondary">Set Path Filter</button>
+                            </div>
+                                <input type="text" class="form-control text-monospace" name="filterpath" value="&dtml-filterpath;" placeholder="/path">
+                        </div>
+                    </div>
+                </form>
+            <dtml-else>
+                <p class="help-text">
+                    The path filter is <span style="color:red;">disabled</span>. To enable the path filter, add a PathIndex called "path" to this catalog.
+                </p>
+            </dtml-if>
 
-			<h2 class="zmi-title mt-4">Objects in this catalog</h2>
+            <h2 class="zmi-title mt-4">Objects in this catalog</h2>
 
-			<form action="&dtml-URL1;" name="objectItems" id="objectItems">
-				<p class="help-text">
-					The catalog <em>&dtml-id;</em> contains 
-					<span class="badge badge-success">
-						<dtml-var results fmt=collection-length thousands_commas> 
-					</span>
-					record(s)
-					<dtml-if filterpath>
-						in the path <code>&dtml-filterpath;</code>
-					</dtml-if>
-				</p>
-				<nav class="zmi-find-results nav mb-3">
-					<div class="col-6 text-left pl-1">
-						<dtml-in results previous size=20 start=query_start >
-							<a class="btn btn-primary"
-								href="&dtml-URL;?query_start=&dtml-previous-sequence-start-number;&filterpath=&dtml-filterpath;">
-								<i class="fas fa-chevron-left mr-2"></i>
-								Previous <dtml-var previous-sequence-size> entries
-							</a>
-						</dtml-in>
-					</div>
-					<div class="col-6 text-right pr-1">
-						<dtml-in results next size=20 start=query_start >
-							<a class="btn btn-primary"
-								href="&dtml-URL;?query_start=&dtml-next-sequence-start-number;&filterpath=&dtml-filterpath;">
-								Next <dtml-var next-sequence-size> entries
-								<i class="fas fa-chevron-right ml-2"></i>
-							</a>
-						</dtml-in>
-					</div>
-				</nav>
-				<table class="table table-sm table-striped table-hover objectItems">
-					<dtml-in results size=20 start=query_start >
-						<dtml-if name="sequence-start">
-							<thead class="thead-light">
-								<tr>
-									<th scope="col" class="zmi-object-check text-right">
-										<input type="checkbox" id="checkAll" onclick="checkbox_all();" />
-									</th>
-									<th scope="col" class="zmi-object-id">
-										Object Identifier
-									</th>
-									<th scope="col">
-										Type
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-						</dtml-if>
-						<tr>
-							<td class="zmi-object-check text-right" onclick="$(this).children('input').trigger('click');">
-								<input class="checkbox-list-item" type="checkbox" name="urls:list" value="&dtml-getPath;"
-									onclick="event.stopPropagation();select_objectitem($(this));" />
-							</td>
-							<td class="zmi-object-id">
-								<a href="#" onclick="showItem('&dtml-URL1;/manage_objectInformation?rid=&dtml-getRID;')">
-									&dtml-getPath;
-								</a>
-							</td>
-							<td>
-								<dtml-if expr="has_key('meta_type') and meta_type">
-									<dtml-var name="meta_type" size="15" html_quote>
-								<dtml-else>
-									<em>Unknown</em>
-								</dtml-if>
-							</td>
-						</tr>
-					</dtml-in>
-					</tbody>
-				</table>
-				<div class="zmi-controls">
-					<input class="btn btn-primary" type="submit" value=" Remove " name="manage_uncatalogObject:method" />
-					<input class="btn btn-primary" type="submit" value=" Update " name="manage_catalogObject:method" />
-				</div>
-			</form>
-		<dtml-else>
-			<p class="helo-text">
-				There are no objects in the Catalog.
-			</p>
-		</dtml-if>
-	</dtml-let>
+            <form action="&dtml-URL1;" name="objectItems" id="objectItems">
+                <p class="help-text">
+                    The catalog <em>&dtml-id;</em> contains 
+                    <span class="badge badge-success">
+                        <dtml-var results fmt=collection-length thousands_commas> 
+                    </span>
+                    record(s)
+                    <dtml-if filterpath>
+                        in the path <code>&dtml-filterpath;</code>
+                    </dtml-if>
+                </p>
+                <nav class="zmi-find-results nav mb-3">
+                    <div class="col-6 text-left pl-1">
+                        <dtml-in results previous size=20 start=query_start >
+                            <a class="btn btn-primary"
+                                href="&dtml-URL;?query_start=&dtml-previous-sequence-start-number;&filterpath=&dtml-filterpath;">
+                                <i class="fas fa-chevron-left mr-2"></i>
+                                Previous <dtml-var previous-sequence-size> entries
+                            </a>
+                        </dtml-in>
+                    </div>
+                    <div class="col-6 text-right pr-1">
+                        <dtml-in results next size=20 start=query_start >
+                            <a class="btn btn-primary"
+                                href="&dtml-URL;?query_start=&dtml-next-sequence-start-number;&filterpath=&dtml-filterpath;">
+                                Next <dtml-var next-sequence-size> entries
+                                <i class="fas fa-chevron-right ml-2"></i>
+                            </a>
+                        </dtml-in>
+                    </div>
+                </nav>
+                <table class="table table-sm table-striped table-hover objectItems">
+                    <dtml-in results size=20 start=query_start >
+                        <dtml-if name="sequence-start">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col" class="zmi-object-check text-right">
+                                        <input type="checkbox" id="checkAll" onclick="checkbox_all();" />
+                                    </th>
+                                    <th scope="col" class="zmi-object-id">
+                                        Object Identifier
+                                    </th>
+                                    <th scope="col">
+                                        Type
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        </dtml-if>
+                        <tr>
+                            <td class="zmi-object-check text-right" onclick="$(this).children('input').trigger('click');">
+                                <input class="checkbox-list-item" type="checkbox" name="urls:list" value="&dtml-getPath;"
+                                    onclick="event.stopPropagation();select_objectitem($(this));" />
+                            </td>
+                            <td class="zmi-object-id">
+                                <a href="#" onclick="showItem('&dtml-URL1;/manage_objectInformation?rid=&dtml-getRID;')">
+                                    &dtml-getPath;
+                                </a>
+                            </td>
+                            <td>
+                                <dtml-if expr="has_key('meta_type') and meta_type">
+                                    <dtml-var name="meta_type" size="15" html_quote>
+                                <dtml-else>
+                                    <em>Unknown</em>
+                                </dtml-if>
+                            </td>
+                        </tr>
+                    </dtml-in>
+                    </tbody>
+                </table>
+                <div class="zmi-controls">
+                    <input class="btn btn-primary" type="submit" value=" Remove " name="manage_uncatalogObject:method" />
+                    <input class="btn btn-primary" type="submit" value=" Update " name="manage_catalogObject:method" />
+                </div>
+            </form>
+        <dtml-else>
+            <p class="helo-text">
+                There are no objects in the Catalog.
+            </p>
+        </dtml-if>
+    </dtml-let>
 
 </main>
 
 <script>
 //<!--
-	// +++++++++++++++++++++++++++
-	// Item  Selection
-	// +++++++++++++++++++++++++++
-	function checkbox_all() {
-		var checkboxes = document.getElementsByClassName('checkbox-list-item');
-		// Toggle Highlighting CSS-Class
-		if (document.getElementById('checkAll').checked) {
-			$('table.objectItems tbody tr').addClass('checked');
-		} else {
-			$('table.objectItems tbody tr').removeClass('checked');
-		};
-		// Set Checkbox like checkAll-Box
-		for (i = 0; i < checkboxes.length; i++) {
-			checkboxes[i].checked = document.getElementById('checkAll').checked;
-		}
-	};
-	function select_objectitem(ob) {
-		ob.parent().parent().toggleClass('checked');
-		if ( !zmicontrols_visible() ) {
-			$('form#objectItems').addClass('selected');
-		}
-		// Anything selected?
-		var checkboxes = document.getElementsByClassName('checkbox-list-item');
-		var selected = false;
-		for (i = 0; i < checkboxes.length; i++) {
-			if ( checkboxes[i].checked ) {
-			selected = true;
-			break;
-			}
-		}
-		if ( !selected ) {
-			$('form#objectItems').removeClass('selected');
-			console.log('form#objectItems removed .selected');
-		}
-	};
-	function showItem( url ) {
-		$('#zmi-modal').modal('show');
-		$('#zmi-modal').modal({ focus: true });
-		// Load Modal Form by AJAX
-		$('#zmi-modal .modal-body').load( url );
-		// Clean up Modal DOM on Close
-		$('#zmi-modal').on('hide.bs.modal', function (event) {
-			$('#zmi-modal .modal-header h2').remove();
-			$('#zmi-modal .modal-body').empty();
-		});
-	};
+    // +++++++++++++++++++++++++++
+    // Item  Selection
+    // +++++++++++++++++++++++++++
+    function checkbox_all() {
+        var checkboxes = document.getElementsByClassName('checkbox-list-item');
+        // Toggle Highlighting CSS-Class
+        if (document.getElementById('checkAll').checked) {
+            $('table.objectItems tbody tr').addClass('checked');
+        } else {
+            $('table.objectItems tbody tr').removeClass('checked');
+        };
+        // Set Checkbox like checkAll-Box
+        for (i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = document.getElementById('checkAll').checked;
+        }
+    };
+    function select_objectitem(ob) {
+        ob.parent().parent().toggleClass('checked');
+        if ( !zmicontrols_visible() ) {
+            $('form#objectItems').addClass('selected');
+        }
+        // Anything selected?
+        var checkboxes = document.getElementsByClassName('checkbox-list-item');
+        var selected = false;
+        for (i = 0; i < checkboxes.length; i++) {
+            if ( checkboxes[i].checked ) {
+            selected = true;
+            break;
+            }
+        }
+        if ( !selected ) {
+            $('form#objectItems').removeClass('selected');
+            console.log('form#objectItems removed .selected');
+        }
+    };
+    function showItem( url ) {
+        $('#zmi-modal').modal('show');
+        $('#zmi-modal').modal({ focus: true });
+        // Load Modal Form by AJAX
+        $('#zmi-modal .modal-body').load( url );
+        // Clean up Modal DOM on Close
+        $('#zmi-modal').on('hide.bs.modal', function (event) {
+            $('#zmi-modal .modal-header h2').remove();
+            $('#zmi-modal .modal-body').empty();
+        });
+    };
 //-->
 </script>
 
@@ -166,17 +166,17 @@
 </script>
 
 <style>
-	/* OBJECT CLASS ZCatalog: Neutralize Zope Overwrites of zmi.base.css, L891 */
-	@media (min-width: 577px) {
-		body.zmi-ZCatalog {
-			min-width: unset !important;
-		}
-		body.zmi-ZCatalog:not(.zmi-manage_catalogFind) main.container-fluid {
-			width: unset !important;;
-			margin-right: auto;
-			margin-left: auto;
-		}
-	}
+    /* OBJECT CLASS ZCatalog: Neutralize Zope Overwrites of zmi.base.css, L891 */
+    @media (min-width: 577px) {
+        body.zmi-ZCatalog {
+            min-width: unset !important;
+        }
+        body.zmi-ZCatalog:not(.zmi-manage_catalogFind) main.container-fluid {
+            width: unset !important;;
+            margin-right: auto;
+            margin-left: auto;
+        }
+    }
 
 </style>
 
