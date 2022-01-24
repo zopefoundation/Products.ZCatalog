@@ -1,103 +1,67 @@
-<dtml-var manage_page_header>
+<h3 class="mt-2">
+    Catalog record at 
+    <code>
+        <dtml-var expr="getpath(_.int(rid))" html_quote>
+    </code>
+</h3>
+<p>
+    The goal of this page is to provide basic debugging information
+    about what is in the Catalog on a specific object. Listed below is
+    all the information that the Catalog currently contains for the
+    above specified object. This information should match what is
+    currently in the instance of that object.
+</p>
 
-<main class="container-fluid">
-
-<table width="100%" borders="0" cellspacing="2" cellpadding="0">
-<tr bgcolor="#000000">
-  <td colspan="2">&nbsp;</td>
-</tr>
-<tr>
-  <td colspan="2">&nbsp;</td>
-</tr>
-<tr class="location-bar">
-  <td colspan="2" align="left">
-  <div class="std-text">
-  <h2>Catalog record at <dtml-var expr="getpath(_.int(rid))" html_quote></h2>
-  </div>
-  </td>
-</tr>
-<tr>
-  <td colspan="2" align="left">
-  <p class="form-help">
-  The goal of this page is to provide basic debugging information
-  about what is in the Catalog on a specific object.  Listed below is
-  all the information that the Catalog currently contains for the
-  above specified object.  This information should match what is
-  currently in the instance of that object.
-  </td>
-</tr>
-</table>
-<hr />
-<table width="100%" borders="0" cellspacing="2" cellpadding="0">
-<tr class="section-bar">
-  <td colspan="3" align="left">
-  <div class="form-label"><h3>Metadata Contents</h3></div>
-  </td>
-</tr>
-<tr>
-  <td colspan="3" align="left">
-  <p class="form-help">Metadata is the information that the Catalog
-  keeps inside of its internal structure so that it can answer
-  questions quickly.  This is then returned in the "brain" that the
-  Catalog gives back during searches.</p><br />
-  </td>
-</tr>
-<dtml-in expr="getMetadataForRID(_.int(rid)).items()">
-<dtml-if name="sequence-start">
-<tr class="list-header">
-  <td align="left" width="5%" bgcolor="#ffffff">&nbsp;</td>
-  <td align="left" width="25%" valign="top" class="list-item">Key</td>
-  <td align="left" width="70%" valign="top" class="list-item">Value</td>
-</dtml-if>
-<dtml-if name="sequence-odd"><tr class="row-hilite">
-<dtml-else><tr></dtml-if>
-  <td width="32" bgcolor="#ffffff">&nbsp;</td>
-  <td align="left" valign="top" class="form-element">
-    &dtml-sequence-key;
-  </td>
-  <Td align="left" valign="top" class="form-element">
-    &dtml-sequence-item;
-  </td>
-</tr>
-</dtml-in>
-</table>
-<hr />
-
-
-<table width="100%" borders="0" cellspacing="2" cellpadding="0">
-<tr class="section-bar">
-  <td colspan="3" align="left">
-  <div class="form-label"><h3>Index Contents</h3></div>
-  </td>
-</tr>
-<tr>
-  <td colspan="3" align="left">
-  <p class="form-help">The following table gives information that is
-contained in the various indexes of the Catalog. In the case of
-Keyword or Text indexes, the results are returned as a tuple, and will 
-show as '(one, two, three)', rather than in a more normal way.</p><br />
-  </td>
-</tr>
-<dtml-in expr="getIndexDataForRID(_.int(rid)).items()">
-<dtml-if name="sequence-start">
-<tr class="list-header">
-  <td align="left" width="5%" bgcolor="#ffffff">&nbsp;</td>
-  <td align="left" width="25%" valign="top" class="list-item">Key</td>
-  <td align="left" width="70%" valign="top" class="list-item">Value</td>
-</dtml-if>
-<dtml-if name="sequence-odd"><tr class="row-hilite">
-<dtml-else><tr></dtml-if>
-  <td width="32" bgcolor="#ffffff">&nbsp;</td>
-  <td align="left" valign="top" class="form-element">
-    &dtml-sequence-key;
-  </td>
-  <td align="left" valign="top" class="form-element">
-    &dtml-sequence-item;
-  </td>
-</tr>
-</dtml-in>
+<p>
+    <strong>1. Metadata Contents: </strong>
+    Metadata is the information that the Catalog
+    keeps inside of its internal structure so that it can answer
+    questions quickly.  This is then returned in the "brain" that the
+    Catalog gives back during searches.
+</p>
+<table title="Metadata Contents" 
+    class="table table-sm table-striped table-hover objectItems">
+    <dtml-in expr="getMetadataForRID(_.int(rid)).items()">
+        <dtml-if name="sequence-start">
+            <thead class="thead-light">
+                <tr>
+                    <th width="25%">Key</th>
+                    <th width="70%">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        </dtml-if>
+        <tr>
+            <td>&dtml-sequence-key;</td>
+            <td>&dtml-sequence-item;</td>
+        </tr>
+    </dtml-in>
+    </tbody>
 </table>
 
-</main>
-
-<dtml-var manage_page_footer>
+<p>
+    <strong>2. Index Contents: </strong>
+    The following table gives information that is
+    contained in the various indexes of the Catalog. In the case of
+    Keyword or Text indexes, the results are returned as a tuple, and will 
+    show as '(one, two, three)', rather than in a more normal way.
+</p>
+<table title="Index Contents" 
+    class="table table-sm table-striped table-hover objectItems">
+    <dtml-in expr="getIndexDataForRID(_.int(rid)).items()">
+        <dtml-if name="sequence-start">
+            <thead class="thead-light">
+                <tr>
+                    <th width="25%">Key</th>
+                    <th width="70%">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        </dtml-if>
+        <tr>
+            <td>&dtml-sequence-key;</td>
+            <td>&dtml-sequence-item;</td>
+        </tr>
+    </dtml-in>
+    </tbody>
+</table>
