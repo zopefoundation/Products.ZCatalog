@@ -13,6 +13,8 @@
 
 import unittest
 
+from ZPublisher.HTTPRequest import record
+
 
 class TestIndexQuery(unittest.TestCase):
 
@@ -98,3 +100,14 @@ class TestIndexQuery(unittest.TestCase):
                           self._makeOne,
                           request, 'path',
                           ('query', 'operator'))
+
+    def test_param_record(self):
+        path = record()
+        path.query = ['foo']
+        path.level = 0
+        path.operator = 'and'
+        request = {'path': path}
+        parser = self._makeOne(request, 'path', ('query', 'level', 'operator'))
+        self.assertEqual(parser.get('keys'), ['foo'])
+        self.assertEqual(parser.get('level'), 0)
+        self.assertEqual(parser.get('operator'), 'and')
