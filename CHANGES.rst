@@ -4,7 +4,8 @@ Changelog
 5.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Avoid error in search when the parameter received by ``IndexQuery`` is a ``record``.
+  (`plone/Products.CMFPlone#3007 <https://github.com/plone/Products.CMFPlone/issues/3007>`_)
 
 
 5.3 (2021-01-29)
