@@ -11,6 +11,9 @@
 #
 ##############################################################################
 
+from ZPublisher.HTTPRequest import record
+
+
 _marker = object()
 
 
@@ -65,7 +68,7 @@ class IndexQuery(object):
         param = request[iid]
         keys = None
 
-        if isinstance(param, dict):
+        if isinstance(param, (dict, record)):
             # query is a dictionary containing all parameters
             query = param.get('query', ())
             if isinstance(query, (tuple, list)):
