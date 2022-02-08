@@ -4,6 +4,9 @@ Changelog
 6.2 (unreleased)
 ----------------
 
+- Avoid error in search when the parameter received by ``IndexQuery`` is a ``record``.
+  (`plone/Products.CMFPlone#3007 <https://github.com/plone/Products.CMFPlone/issues/3007>`_)
+
 - Refactored and improved ZMI templates
   (`#128 <https://github.com/zopefoundation/Products.ZCatalog/pull/128>`_)
 
