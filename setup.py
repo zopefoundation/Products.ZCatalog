@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name='Products.ZCatalog',
-    version='6.2.dev0',
+    version='6.2',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     project_urls={
         'Issue Tracker': 'https://github.com/zopefoundation/'
