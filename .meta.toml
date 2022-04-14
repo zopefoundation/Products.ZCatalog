@@ -2,14 +2,14 @@
 # https://github.com/zopefoundation/meta/tree/master/config/zope-product
 [meta]
 template = "zope-product"
-commit-id = "dff30b80f91fd1b4e68f2a73f7de721d9559de17"
+commit-id = "3a251aab94eff9cf2aa2fd87d7266593251e4b76"
 
 [python]
-with-appveyor = false
 with-pypy = false
 with-legacy-python = true
-with-docs = false
 with-sphinx-doctests = false
+with-windows = false
+with-future-python = false
 
 [coverage]
 fail-under = 87
@@ -18,10 +18,13 @@ fail-under = 87
 testenv-commands-pre = [
     "{envbindir}/buildout -nc {toxinidir}/buildout.cfg buildout:directory={envdir} buildout:develop={toxinidir} install test",
     ]
+use-flake8 = true
 
 [manifest]
 additional-rules = [
     "recursive-include src *.dtml",
     "recursive-include src *.gif",
     "recursive-include src *.zpt",
+    "recursive-include src *.txt",
+    "recursive-include src *.zcml",
     ]
