@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name='Products.ZCatalog',
-    version='5.4.dev0',
+    version='5.4',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     license='ZPL 2.1',
     description="Zope's indexing and search solution.",

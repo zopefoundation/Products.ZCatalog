@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.4 (unreleased)
+5.4 (2022-04-14)
 ----------------
 
 - Avoid error in search when the parameter received by ``IndexQuery`` is a ``record``.
