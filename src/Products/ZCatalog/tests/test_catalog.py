@@ -964,6 +964,28 @@ class TestCatalogSortMulti(unittest.TestCase):
         self.batch_test(catalog, reference, sort_on=('first', 'num'),
                         sort_order='reverse')
 
+    def test_sort_on_two_reverse_with_limit(self):
+        catalog = self._make_one()
+        for num in range(-10, 0):
+            obj = Dummy(num)
+            obj.att1 = "att1foo"
+            obj.att2 = "att2"
+            catalog.catalogObject(obj, repr(num))
+        a = catalog(
+            att2='att2',
+            sort_on=('att1', 'num'),
+            sort_order='reverse',
+            sort_limit=20,
+        )
+        self.assertEqual(
+            [x.num for x in a[:10]],
+            [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10],
+        )
+        self.assertEqual(
+            [x.num for x in a[10:]],
+            [99, 98, 97, 96, 95, 94, 93, 92, 91, 90],
+        )
+
     def test_sort_on_two_reverse_neither(self):
         catalog = self._make_one()
 

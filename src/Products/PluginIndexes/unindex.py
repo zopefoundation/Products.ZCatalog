@@ -479,15 +479,6 @@ class UnIndex(SimpleItem):
 
                     return cached
 
-        if not record.keys and not_parm:
-            # convert into indexed format
-            not_parm = list(map(self._convert, not_parm))
-            # we have only a 'not' query
-            record.keys = [k for k in index.keys() if k not in not_parm]
-        else:
-            # convert query arguments into indexed format
-            record.keys = list(map(self._convert, record.keys))
-
         # Range parameter
         range_parm = record.get('range', None)
         if range_parm:
@@ -502,6 +493,26 @@ class UnIndex(SimpleItem):
             # see if any usage params are sent to field
             opr = record.usage.lower().split(':')
             opr, opr_args = opr[0], opr[1:]
+
+        # not query
+        if not record.keys and not_parm:
+            # convert into indexed format
+            not_parm = list(map(self._convert, not_parm))
+            # we have only a 'not' query
+            # shortcut/optimization if we have no 'opr' (i.e. no range)
+            if resultset is not None and opr is None:
+                i_not_parm = self._apply_not(not_parm, resultset)
+                if i_not_parm:
+                    return difference(resultset, i_not_parm)
+            record.keys = list(index)
+            for parm in not_parm:
+                try:
+                    record.keys.remove(parm)
+                except ValueError:
+                    pass
+        else:
+            # convert query arguments into indexed format
+            record.keys = list(map(self._convert, record.keys))
 
         if opr == 'range':  # range search
             if 'min' in opr_args:

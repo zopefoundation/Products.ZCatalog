@@ -289,7 +289,7 @@ class ICatalogBrain(Interface):
 
 
 class IProgressHandler(Interface):
-    """ A handler to log progress informations for long running
+    """ A handler to log progress information for long running
         operations.
     """
 

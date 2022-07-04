@@ -2,22 +2,27 @@
 # https://github.com/zopefoundation/meta/tree/master/config/zope-product
 [meta]
 template = "zope-product"
-commit-id = "dff30b80f91fd1b4e68f2a73f7de721d9559de17"
+commit-id = "efb3f62f0f2d8deea657bae8db49a191698e62ef"
 
 [python]
-with-appveyor = false
 with-pypy = false
 with-legacy-python = true
-with-docs = false
 with-sphinx-doctests = false
+with-windows = false
+with-future-python = false
 
 [coverage]
-fail-under = 87
+fail-under = 85
 
 [manifest]
 additional-rules = [
     "include buildout4.cfg",
     "recursive-include src *.dtml",
     "recursive-include src *.gif",
+    "recursive-include src *.txt",
+    "recursive-include src *.zcml",
     "recursive-include src *.zpt",
     ]
+
+[tox]
+use-flake8 = true

@@ -1,11 +1,38 @@
 Changelog
 =========
 
-6.1 (unreleased)
+6.3 (unreleased)
 ----------------
 
-- Fix case where multiple indexes with similar name seperated by ``_`` were interpreted as options.
+- Nothing changed yet.
+
+
+6.2 (2022-04-08)
+----------------
+
+- Avoid error in search when the parameter received by ``IndexQuery`` is a ``record``.
+  (`plone/Products.CMFPlone#3007 <https://github.com/plone/Products.CMFPlone/issues/3007>`_)
+
+- Refactored and improved ZMI templates
+  (`#128 <https://github.com/zopefoundation/Products.ZCatalog/pull/128>`_)
+
+
+6.1 (2021-11-09)
+----------------
+
+- Improve performance of simple ``not`` queries on large catalogs.
+  (`#124 <https://github.com/zopefoundation/Products.ZCatalog/pull/124>`_)
+
+- Fix case where multiple indexes with similar name separated by ``_``
+  were interpreted as options.
   (`#78 <https://github.com/zopefoundation/Products.ZCatalog/issues/78>`_)
+
+- Fix reversed sorting by multiple index by forcing the
+  ``_sort_iterate_resultset`` sorting method when we have more than one sorting
+  index.
+  (`#108 <https://github.com/zopefoundation/Products.ZCatalog/issues/108>`_)
+
+- Add support for Python 3.10.
 
 
 6.0 (2020-10-08)
