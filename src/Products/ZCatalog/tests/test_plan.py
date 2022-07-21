@@ -186,6 +186,12 @@ class TestReports(unittest.TestCase):
 
 class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
+    def assertRegex(self, *args, **kwargs):
+        if six.PY2:
+            return self.assertRegexpMatches(*args, **kwargs)
+        else:
+            return super(TestCatalogPlan, self).assertRegex(*args, **kwargs)
+
     def setUp(self):
         cleanup.CleanUp.setUp(self)
         self.cat = Catalog('catalog')
@@ -263,18 +269,15 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         )
 
         self.assertEqual([b.getPath() for b in zcat.search(query1)], ["2"])
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'date':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'num':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'numbers':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
@@ -288,18 +291,15 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         # `date', `num`, and `numbers` are all involved to filter the
         #  results(limit flag) despite in the last query search whitin
         #  `num` and `date` wasn't done
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'date':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'num':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             zcat.getCatalogPlan(),
             r"(?ms).*'numbers':\s*\([0-9\.]+, [0-9\.]+, True\)"
         )
