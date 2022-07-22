@@ -4,7 +4,8 @@ Changelog
 6.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Improve performance stability. Fix catalog plan for unused index in a query.
+  (`#138 <https://github.com/zopefoundation/Products.ZCatalog/pull/138>`_)
 
 
 6.2 (2022-04-08)

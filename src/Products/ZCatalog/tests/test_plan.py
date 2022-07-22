@@ -16,6 +16,7 @@ import os.path
 import time
 import unittest
 
+import six
 from six.moves._thread import LockType
 
 from zope.testing import cleanup
@@ -27,6 +28,7 @@ from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.PathIndex.PathIndex import PathIndex
 from Products.PluginIndexes.UUIDIndex.UUIDIndex import UUIDIndex
 from Products.ZCatalog.Catalog import Catalog
+from Products.ZCatalog.plan import MAX_DISTINCT_VALUES
 from Products.ZCatalog.ZCatalog import ZCatalog
 
 
@@ -184,6 +186,12 @@ class TestReports(unittest.TestCase):
 
 class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
+    def assertRegex(self, *args, **kwargs):
+        if six.PY2:
+            return self.assertRegexpMatches(*args, **kwargs)
+        else:
+            return super(TestCatalogPlan, self).assertRegex(*args, **kwargs)
+
     def setUp(self):
         cleanup.CleanUp.setUp(self)
         self.cat = Catalog('catalog')
@@ -223,6 +231,87 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         plan_str = zcat.getCatalogPlan()
         self.assertIn('queryplan = {', plan_str)
         self.assertIn('index1', plan_str)
+
+    def test_getCatalogPlan_partial(self):
+        zcat = ZCatalog("catalog")
+        cat = zcat._catalog
+
+        class SlowFieldIndex(FieldIndex):
+            def query_index(self, record, resultset=None):
+                time.sleep(0.1)
+                return super(SlowFieldIndex, self).query_index(
+                    record, resultset)
+
+        class SlowerDateRangeIndex(DateRangeIndex):
+            def query_index(self, record, resultset=None):
+                time.sleep(0.2)
+                return super(SlowerDateRangeIndex, self).query_index(
+                    record, resultset)
+
+        cat.addIndex("num", SlowFieldIndex("num"))
+        cat.addIndex("numbers", KeywordIndex("numbers"))
+        cat.addIndex("path", PathIndex("getPhysicalPath"))
+        cat.addIndex("date", SlowerDateRangeIndex("date", "start", "end"))
+
+        for i in range(MAX_DISTINCT_VALUES * 2):
+            obj = Dummy(i)
+            zcat.catalog_object(obj, str(i))
+
+        query1 = {"num": 2, "numbers": 3, "date": "2013-07-03"}
+        # query with no result, because of `numbers`
+        query2 = {"num": 2, "numbers": -1, "date": "2013-07-03"}
+
+        # without a plan index are orderd alphabetically by default
+        self.assertEqual(zcat._catalog.getCatalogPlan(query1).plan(), None)
+        self.assertEqual(
+            cat._sorted_search_indexes(query1),
+            ["date", "num", "numbers"]
+        )
+
+        self.assertEqual([b.getPath() for b in zcat.search(query1)], ["2"])
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'date':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'num':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'numbers':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+
+        # after first search field are orderd by speed
+        self.assertEqual(
+            cat.getCatalogPlan(query2).plan(), ["numbers", "num", "date"])
+
+        self.assertEqual([b.getPath() for b in zcat.search(query2)], [])
+
+        # `date', `num`, and `numbers` are all involved to filter the
+        #  results(limit flag) despite in the last query search whitin
+        #  `num` and `date` wasn't done
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'date':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'num':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+        self.assertRegex(
+            zcat.getCatalogPlan(),
+            r"(?ms).*'numbers':\s*\([0-9\.]+, [0-9\.]+, True\)"
+        )
+        self.assertEqual(
+            cat.getCatalogPlan(query2).plan(), ["numbers", "num", "date"]
+        )
+
+        # search again doesn't change the index order
+        self.assertEqual([b.getPath() for b in zcat.search(query1)], ["2"])
+        self.assertEqual(
+            cat.getCatalogPlan(query2).plan(), ["numbers", "num", "date"]
+        )
 
     def test_plan_empty(self):
         plan = self._makeOne()
