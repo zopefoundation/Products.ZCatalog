@@ -249,7 +249,7 @@ class CatalogPlan(object):
             if isinstance(query.get(name), dict) and "not" in query[name]
         ]
         if notkeys:
-            key = [name for name in keys if name not in notkeys]
+            key = [name for name in key if name not in notkeys]
             key.extend([(name, "not") for name in notkeys])
         # Workaround: Python 2.x accepted different types as sort key
         # for the sorted builtin. Python 3 only sorts on identical types.
