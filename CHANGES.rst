@@ -7,6 +7,9 @@ Changelog
 - Improve performance stability. Fix catalog plan for unused index in a query.
   (`#138 <https://github.com/zopefoundation/Products.ZCatalog/pull/138>`_)
 
+- Improve performance stability. Fix catalog plan for not query.
+  (`#139 <https://github.com/zopefoundation/Products.ZCatalog/pull/139>`_)
+
 
 6.2 (2022-04-08)
 ----------------

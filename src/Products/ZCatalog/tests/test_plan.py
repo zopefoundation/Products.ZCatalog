@@ -313,6 +313,49 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
             cat.getCatalogPlan(query2).plan(), ["numbers", "num", "date"]
         )
 
+    def test_not_query(self):
+        # not query is generally slower, force this behavior for testing
+        class SlowNotFieldIndex(FieldIndex):
+            def query_index(self, record, resultset=None):
+                if getattr(record, 'not', None):
+                    time.sleep(0.1)
+                return super(SlowNotFieldIndex, self).query_index(
+                    record, resultset)
+
+        zcat = ZCatalog("catalog")
+        cat = zcat._catalog
+        cat.addIndex(
+            'num1', SlowNotFieldIndex('num1', extra={"indexed_attrs": "num"}))
+        cat.addIndex(
+            'num2', SlowNotFieldIndex('num2', extra={"indexed_attrs": "num"}))
+        for i in range(100):
+            obj = Dummy(i)
+            zcat.catalog_object(obj, str(i))
+
+        query1 = {"num1": {"not": 2}, "num2": 3}
+        query2 = {"num1": 2, "num2": {'not': 5}}
+
+        # without a plan index are orderd alphabetically by default
+        for query in [query1, query2]:
+            self.assertEqual(zcat._catalog.getCatalogPlan(query).plan(), None)
+            self.assertEqual(
+                cat._sorted_search_indexes(query),
+                ["num1", "num2"]
+            )
+
+        self.assertEqual([b.getPath() for b in zcat.search(query1)], ['3'])
+        self.assertEqual([b.getPath() for b in zcat.search(query2)], ['2'])
+        # although there are the same fields, the plans are different, and the
+        # slower `not` query put the field as second in the plan
+        self.assertEqual(cat.getCatalogPlan(query1).plan(), ["num2", "num1"])
+        self.assertEqual(cat.getCatalogPlan(query2).plan(), ["num1", "num2"])
+
+        # search again doesn't change the order
+        self.assertEqual([b.getPath() for b in zcat.search(query1)], ['3'])
+        self.assertEqual([b.getPath() for b in zcat.search(query2)], ['2'])
+        self.assertEqual(cat.getCatalogPlan(query1).plan(), ["num2", "num1"])
+        self.assertEqual(cat.getCatalogPlan(query2).plan(), ["num1", "num2"])
+
     def test_plan_empty(self):
         plan = self._makeOne()
         self.assertEqual(plan.plan(), None)

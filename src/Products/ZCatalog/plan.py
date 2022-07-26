@@ -244,7 +244,13 @@ class CatalogPlan(object):
                 # repr() is an easy way to do this without imposing
                 # restrictions on the types of values.
                 key.append((name, repr(v)))
-
+        notkeys = [
+            name for name in key
+            if isinstance(query.get(name), dict) and "not" in query[name]
+        ]
+        if notkeys:
+            key = [name for name in key if name not in notkeys]
+            key.extend([(name, "not") for name in notkeys])
         # Workaround: Python 2.x accepted different types as sort key
         # for the sorted builtin. Python 3 only sorts on identical types.
         tuple_keys = set(key) - set(
