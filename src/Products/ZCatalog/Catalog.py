@@ -10,7 +10,7 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-
+import heapq
 import logging
 from bisect import bisect
 from collections import defaultdict
@@ -822,7 +822,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     sort_index, sort_index_length, sort_spec,
                     second_indexes_key_map):
         # Limit / sort results using N-Best algorithm
-        # This is faster for large sets then a full sort
+        # This is faster for large sets than a full sort
         # And uses far less memory
         index_key_map = sort_index.documentToKeyMap()
         keys = []
@@ -848,27 +848,16 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                     worst = keys[0]
             result.reverse()
         else:
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    full_key = (key, )
-                    for km in second_indexes_key_map:
-                        full_key += (km[did], )
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    actual_result_count -= 1
-                else:
-                    if n >= limit and key <= worst:
-                        continue
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, (full_key, did, self.__getitem__))
-                    if n == limit:
-                        del keys[0], result[0]
-                    else:
-                        n += 1
-                    worst = keys[0]
-            result = multisort(result, sort_spec)
+            # we have multi index sorting
+            result, actual_result_count = self._multi_index_nbest(
+                actual_result_count,
+                result,
+                rs,
+                limit,
+                sort_index,
+                sort_spec,
+                second_indexes_key_map,
+                reverse=True)
 
         return (actual_result_count, 0, result)
 
@@ -877,11 +866,11 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                             sort_index, sort_index_length, sort_spec,
                             second_indexes_key_map):
         # Limit / sort results using N-Best algorithm in reverse (N-Worst?)
-        index_key_map = sort_index.documentToKeyMap()
-        keys = []
-        n = 0
-        best = None
         if sort_index_length == 1:
+            index_key_map = sort_index.documentToKeyMap()
+            keys = []
+            n = 0
+            best = None
             for did in rs:
                 try:
                     key = index_key_map[did]
@@ -900,29 +889,124 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                         n += 1
                     best = keys[-1]
         else:
-            for did in rs:
-                try:
-                    key = index_key_map[did]
-                    full_key = (key, )
-                    for km in second_indexes_key_map:
-                        full_key += (km[did], )
-                except KeyError:
-                    # This document is not in the sort key index, skip it.
-                    actual_result_count -= 1
-                else:
-                    if n >= limit and key >= best:
-                        continue
-                    i = bisect(keys, key)
-                    keys.insert(i, key)
-                    result.insert(i, (full_key, did, self.__getitem__))
-                    if n == limit:
-                        del keys[-1], result[-1]
-                    else:
-                        n += 1
-                    best = keys[-1]
-            result = multisort(result, sort_spec)
+            # we have multi index sorting
+            result, actual_result_count = self._multi_index_nbest(
+                actual_result_count,
+                result,
+                rs,
+                limit,
+                sort_index,
+                sort_spec,
+                second_indexes_key_map,
+                reverse=False
+            )
 
         return (actual_result_count, 0, result)
+
+    def _multi_index_nbest(self, actual_result_count, result,
+                           result_set, limit, sort_index, sort_spec,
+                           second_indexes_key_map, reverse=True):
+        """
+        Example:
+            Limit = 2
+            Sorton = (last_name, num)
+            SortOrder = smallest first
+        Example data:
+            meier 3
+            lopez 4
+            meier 2
+            smith 1
+
+        Expected sort result:
+            lopez 4
+            meier 2
+
+        Even if the two first data sets suffice for the requirement limit=2 the third dataset have to be take into account
+        when sorting on both indexes.
+
+        For multiple indexes the strategy is :
+        1) For the first index get the index_values for all documents
+            Result :
+            ['meier', 'lopez', 'meier', 'smith']
+
+        2) Sort the index_values using heapq to get the 'limit' largest/smallest index_values
+            Result :
+            ['lopez', 'meier']
+
+        3) Find all documents having index_values 'lopez' or 'meier'
+            meier 3
+            lopez 4
+            meier 2
+
+        4) Get the index_value for the other search indexes
+
+        5) Sort these documents on all indexes.
+
+        """
+
+        # ToDo Shortcut for limit>="all"
+
+        # Step 1)
+        # All index_values as a non unique list
+        index_values = []
+        # get the mapping of document ID to index value
+        index_key_map = sort_index.documentToKeyMap()
+
+        # get index values for all document IDs (did) of the result set
+        for did in result_set:
+            # get the index value of the current document id
+            try:
+                index_value = index_key_map[did]
+            except KeyError:
+                # This document is not in the sort key index, skip it.
+                # ToDo: Is this the correct/intended behavior???
+                actual_result_count -= 1
+            else:
+                # We found a valid document
+                index_values.append(index_value)
+
+        # Step 2)
+        # Get the 'limit' smallest/largest of index_values
+        if reverse:
+            limited_index_values = heapq.nlargest(limit, index_values)
+        else:
+            limited_index_values = heapq.nsmallest(limit, index_values)
+            # we have to revert the results since the following code expect
+            # the index_values in descending order
+            limited_index_values.reverse()
+
+        # Step 3)
+
+        # get the first index_value
+        last_index_value = limited_index_values[0]
+        # store all belonging documents
+        all_documents_for_sorting = list(sort_index._index[last_index_value])
+        # for all aother index values
+        for idx, current_index_value in enumerate(limited_index_values[1:]):
+            # Duplicate checking
+            if last_index_value != current_index_value:
+                # We have a fresh index_value
+                # store all belonging documents
+                all_documents_for_sorting += list(sort_index._index[current_index_value])
+                # remenber the index_value for duplicate checking
+                last_index_value = current_index_value
+
+        # Step 4) Get the index_values for the other search indexes
+        # The sort_set includes the list of index_values per document
+        sort_set = []
+        for did in  all_documents_for_sorting:
+            # get the primary index_value
+            idx = index_key_map[did]
+            # add the secondary index values
+            full_key = (idx, )
+            for km in second_indexes_key_map:
+                    full_key += (km[did], )
+            sort_set.append((full_key, did, self.__getitem__))
+
+        # Step 5) Sort after the secondary indexes.
+        result = multisort(sort_set, sort_spec)
+
+        return result, actual_result_count
 
     def sortResults(self, rs, sort_index,
                     reverse=False, limit=None, merge=True,

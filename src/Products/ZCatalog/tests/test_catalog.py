@@ -55,6 +55,23 @@ class Dummy(ExtensionClass.Base):
         return ['col3']
 
 
+class Name(ExtensionClass.Base):
+
+    first = 'first'
+    last = 'last'
+    num = 'num'
+    # to grep all the names in the index
+    all = 'all'
+
+    def __init__(self, num, first_name, last_name):
+        self.num = num
+        self.first = first_name
+        self.last = last_name
+
+    def __of__(self, parent):
+        return self
+
+
 class MultiFieldIndex(FieldIndex):
 
     def getIndexQueryNames(self):
@@ -722,22 +739,230 @@ class TestCatalogSortBatch(unittest.TestCase):
         a = catalog(att2='att2')
         self.assertEqual(len(a), upper)
 
+
+class TestCatalogSortMulti(unittest.TestCase):
+
+    upper = 20
+
+    def _make_one(self):
+        names = [
+            (0, 'bert', 'meier'),
+            (1, 'ethel', 'lopez'),
+            (2, 'abel', 'meier'),
+            (3, 'cinder', 'meier'),
+            (4, 'abel', 'meier'),
+            (5, 'cinder', 'lopez'),
+            (6, 'ethel', 'meier'),
+            (7, 'dolores', 'smith'),
+            (8, 'bert', 'smith'),
+            (9, 'fran', 'lopez'),
+            (10, 'dolores', 'lopez'),
+            (11, 'dolores', 'lopez'),
+            (12, 'ethel', 'meier'),
+            (13, 'ethel', 'smith'),
+            (14, 'geralt', 'meier'),
+            (15, 'bert', 'smith'),
+            (16, 'abel', 'lopez'),
+            (17, 'cinder', 'lopez'),
+            (18, 'ethel', 'smith'),
+            (19, 'geralt', 'smith')
+        ]
+
+        self.map = {
+            'n': 'num',
+            'f': 'first',
+            'l': 'last',
+        }
+
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.lexicon = PLexicon('lexicon')
+        # firstname index
+        first = FieldIndex('first')
+        catalog.addIndex('first', first)
+
+        # lastname index
+        last = FieldIndex('last')
+        catalog.addIndex('last', last)
+
+        # id index
+        num = FieldIndex('num')
+        catalog.addIndex('num', num)
+
+        # Add columns. This is important to get a num-value in the brain.
+        catalog.addColumn('num')
+        catalog.addColumn('first')
+        catalog.addColumn('last')
+
+        # all index
+        all = FieldIndex('all')
+        catalog.addIndex('all', all)
+
+        for i in range(self.upper):
+            num = names[i][0]
+            first = names[i][1]
+            last = names[i][2]
+            name = Name(num, first, last)
+            catalog.catalogObject(name, str(num))
+
+        return catalog.__of__(Name('foo', 'foo', 'foo'))
+
+    def print_results(self, results, order='nfl'):
+        # Helper function to print result sets
+        out = []
+        for result in results:
+            line = []
+            for i in order:
+                line.append(getattr(result, self.map[i]))
+            out.append(tuple(line))
+        import pprint
+        pprint.pprint(out)
+
+    def check_result_limit(self, result, reference, N, order):
+        self.assertEqual(len(result), N)
+
+        for x in range(N):
+            for idx, col in enumerate(order):
+                self.assertEqual(getattr(result[x], col), reference[x][idx])
+
+    def check_result_batch(self, batch, reference, b_start, b_size, order):
+
+        def msg():
+            # produce readable assert message
+            import pprint
+            assert_str = \
+                '\nb_start : %s\n' % b_start + \
+                'b_size : %s\n' % b_size + \
+                'reference : %s\n' % pprint.pformat(reference) + \
+                'batch : %s\n' % pprint.pformat(batch)
+            return assert_str
+
+        # check if the length of the batch fits
+        # this "if" is not call msg without need
+        if len(batch) != b_size:
+            self.assertEqual(len(batch), b_size, msg())
+
+        def msg2(line, column):
+            # produce readable assert message
+            import pprint
+            batch_lines = []
+            reference_lines = []
+            for batch_idx, x in enumerate(range(b_start, b_start + b_size)):
+                batch_line = []
+                reference_line = []
+                for idx, col in enumerate(order):
+                    batch_line.append(getattr(batch[batch_idx], col))
+                    reference_line.append(reference[x][idx])
+                batch_lines.append(batch_line)
+                reference_lines.append(reference_line)
+
+            assert_str = \
+                '\nline ; %s\n' % line + \
+                'column ; %s\n' % column + \
+                'b_start : %s\n' % b_start + \
+                'b_size : %s\n' % b_size + \
+                'reference : %s\n' % pprint.pformat(reference) + \
+                'batch : %s\n' % pprint.pformat(batch_lines) + \
+                'expected : %s\n' % pprint.pformat(reference_lines)
+
+            return assert_str
+
+        # Compare the reference with the result line for line,
+        # attribute for attribute
+        for batch_idx, x in enumerate(range(b_start, b_start + b_size)):
+            for idx, col in enumerate(order):
+                result = getattr(batch[batch_idx], col)
+                expected = reference[x][idx]
+                # this "if" is not call msg2 without need
+                if result != expected:
+                    self.assertEqual(result, expected, msg2(batch_idx, col))
+
+    def batch_test(self, catalog, reference, sort_on=None,
+                   sort_order=None, sort_limit=None):
+
+        sort_params = {}
+        if sort_on:
+            sort_params['sort_on'] = sort_on
+        if sort_order:
+            sort_params['sort_order'] = sort_order
+        if sort_limit:
+            sort_params['sort_limit'] = sort_limit
+
+        limit = self.upper
+        if sort_limit and sort_limit <= self.upper:
+            limit = sort_limit
+        else:
+            limit = self.upper
+        # test without batching
+        a = catalog(all='all', **sort_params)
+        self.check_result_limit(a, reference, limit, sort_on)
+
+        # test with batching in all combinations
+        # for b_start for all posible starting positions
+        for b_start in range(self.upper):
+            # for b_size for all possible batch sozes
+            for b_size in range(1, self.upper - b_start):
+                # query the catalog
+                a = catalog(all='all', b_start=b_start,
+                            b_size=b_size, **sort_params)
+                # cheeck the results against the reference
+                self.check_result_batch(a, reference, b_start, b_size, sort_on)
+
     def test_sort_on_two(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1')
-        self.assertEqual(len(a), upper)
-        for x in range(self.upper):
-            self.assertEqual(a[x].num, x)
+
+        reference = [
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith')
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'))
 
     def test_sort_on_two_reverse(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order='reverse')
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+
+        reference = [
+            ('geralt', 19, 'smith'),
+            ('geralt', 14, 'meier'),
+            ('fran', 9, 'lopez'),
+            ('ethel', 18, 'smith'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 1, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('cinder', 17, 'lopez'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('bert', 15, 'smith'),
+            ('bert', 8, 'smith'),
+            ('bert', 0, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('abel', 4, 'meier'),
+            ('abel', 2, 'meier')
+        ]
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order='reverse')
 
     def test_sort_on_two_reverse_with_limit(self):
         catalog = self._make_one()
@@ -763,133 +988,402 @@ class TestCatalogSortBatch(unittest.TestCase):
 
     def test_sort_on_two_reverse_neither(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order=('', ''))
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+
+        reference = [
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', ''))
 
     def test_sort_on_two_reverse_first(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order=('reverse', ''))
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+
+        reference = [
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('reverse', ''))
 
     def test_sort_on_two_reverse_second(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order=('', 'reverse'))
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+
+        reference = [
+            ('abel', 16, 'lopez'),
+            ('abel', 4, 'meier'),
+            ('abel', 2, 'meier'),
+            ('bert', 15, 'smith'),
+            ('bert', 8, 'smith'),
+            ('bert', 0, 'meier'),
+            ('cinder', 17, 'lopez'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('dolores', 11, 'lopez'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 1, 'lopez'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 19, 'smith'),
+            ('geralt', 14, 'meier')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', 'reverse'))
 
     def test_sort_on_two_reverse_both(self):
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order=('reverse', 'reverse'))
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+
+        reference = [
+            ('geralt', 19, 'smith'),
+            ('geralt', 14, 'meier'),
+            ('fran', 9, 'lopez'),
+            ('ethel', 18, 'smith'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 1, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('cinder', 17, 'lopez'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('bert', 15, 'smith'),
+            ('bert', 8, 'smith'),
+            ('bert', 0, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('abel', 4, 'meier'),
+            ('abel', 2, 'meier')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('reverse', 'reverse'))
 
     def test_sort_on_two_reverse_too_many(self):
+        # IMHO THis case have to fail!
         catalog = self._make_one()
-        upper = self.upper
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_order=('', '', 'reverse', ''))
-        self.assertEqual(len(a), upper)
-        for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+
+        reference = [
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', '', 'reverse'))
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1', sort_limit=10)
-        self.assertEqual(len(a), 10)
-        for x in range(9):
-            self.assertTrue(a[x].num < a[x + 1].num)
+
+        reference = [
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order=('', ''), sort_limit=10)
 
     def test_sort_on_two_small_limit_reverse(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_limit=10, sort_order='reverse')
-        self.assertEqual(len(a), 10)
-        for x in range(9):
-            self.assertTrue(a[x].num > a[x + 1].num)
+
+        reference = [
+            ('geralt', 19, 'smith'),
+            ('geralt', 14, 'meier'),
+            ('fran', 9, 'lopez'),
+            ('ethel', 18, 'smith'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 1, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('cinder', 17, 'lopez'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('bert', 15, 'smith'),
+            ('bert', 8, 'smith'),
+            ('bert', 0, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('abel', 4, 'meier'),
+            ('abel', 2, 'meier')
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order='reverse', sort_limit=10)
 
     def test_sort_on_two_big_limit(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_limit=self.upper * 3)
-        self.assertEqual(len(a), 100)
-        for x in range(99):
-            self.assertTrue(a[x].num < a[x + 1].num)
+
+        reference = [
+            ('abel', 2, 'meier'),
+            ('abel', 4, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('bert', 0, 'meier'),
+            ('bert', 8, 'smith'),
+            ('bert', 15, 'smith'),
+            ('cinder', 3, 'meier'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 17, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('ethel', 1, 'lopez'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 18, 'smith'),
+            ('fran', 9, 'lopez'),
+            ('geralt', 14, 'meier'),
+            ('geralt', 19, 'smith')]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_limit=self.upper * 3)
 
     def test_sort_on_two_big_limit_reverse(self):
         catalog = self._make_one()
-        a = catalog(sort_on=('att1', 'num'), att1='att1',
-                    sort_limit=self.upper * 3, sort_order='reverse')
-        self.assertEqual(len(a), 100)
-        for x in range(99):
-            self.assertTrue(a[x].num > a[x + 1].num)
+
+        reference = [
+            ('geralt', 19, 'smith'),
+            ('geralt', 14, 'meier'),
+            ('fran', 9, 'lopez'),
+            ('ethel', 18, 'smith'),
+            ('ethel', 13, 'smith'),
+            ('ethel', 12, 'meier'),
+            ('ethel', 6, 'meier'),
+            ('ethel', 1, 'lopez'),
+            ('dolores', 11, 'lopez'),
+            ('dolores', 10, 'lopez'),
+            ('dolores', 7, 'smith'),
+            ('cinder', 17, 'lopez'),
+            ('cinder', 5, 'lopez'),
+            ('cinder', 3, 'meier'),
+            ('bert', 15, 'smith'),
+            ('bert', 8, 'smith'),
+            ('bert', 0, 'meier'),
+            ('abel', 16, 'lopez'),
+            ('abel', 4, 'meier'),
+            ('abel', 2, 'meier')
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('first', 'num'),
+                        sort_order='reverse', sort_limit=self.upper * 3)
 
     def test_sort_on_three(self):
-        def extra(catalog):
-            col2 = FieldIndex('col2')
-            catalog.addIndex('col2', col2)
-        catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1')
-        self.assertEqual(len(a), self.upper)
-        for x in range(self.upper):
-            self.assertEqual(a[x].num, x)
+        catalog = self._make_one()
+
+        reference = [
+            ('lopez', 'abel', 16),
+            ('lopez', 'cinder', 5),
+            ('lopez', 'cinder', 17),
+            ('lopez', 'dolores', 10),
+            ('lopez', 'dolores', 11),
+            ('lopez', 'ethel', 1),
+            ('lopez', 'fran', 9),
+            ('meier', 'abel', 2),
+            ('meier', 'abel', 4),
+            ('meier', 'bert', 0),
+            ('meier', 'cinder', 3),
+            ('meier', 'ethel', 6),
+            ('meier', 'ethel', 12),
+            ('meier', 'geralt', 14),
+            ('smith', 'bert', 8),
+            ('smith', 'bert', 15),
+            ('smith', 'dolores', 7),
+            ('smith', 'ethel', 13),
+            ('smith', 'ethel', 18),
+            ('smith', 'geralt', 19)
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'))
 
     def test_sort_on_three_reverse(self):
-        def extra(catalog):
-            col2 = FieldIndex('col2')
-            catalog.addIndex('col2', col2)
-        catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-                    sort_order='reverse')
-        self.assertEqual(len(a), self.upper)
-        for x in range(self.upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+        catalog = self._make_one()
+
+        reference = [
+            ('smith', 'geralt', 19),
+            ('smith', 'ethel', 18),
+            ('smith', 'ethel', 13),
+            ('smith', 'dolores', 7),
+            ('smith', 'bert', 15),
+            ('smith', 'bert', 8),
+            ('meier', 'geralt', 14),
+            ('meier', 'ethel', 12),
+            ('meier', 'ethel', 6),
+            ('meier', 'cinder', 3),
+            ('meier', 'bert', 0),
+            ('meier', 'abel', 4),
+            ('meier', 'abel', 2),
+            ('lopez', 'fran', 9),
+            ('lopez', 'ethel', 1),
+            ('lopez', 'dolores', 11),
+            ('lopez', 'dolores', 10),
+            ('lopez', 'cinder', 17),
+            ('lopez', 'cinder', 5),
+            ('lopez', 'abel', 16)
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_order='reverse')
 
     def test_sort_on_three_reverse_last(self):
-        def extra(catalog):
-            col2 = FieldIndex('col2')
-            catalog.addIndex('col2', col2)
-        catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-                    sort_order=('', '', 'reverse'))
-        self.assertEqual(len(a), self.upper)
-        for x in range(self.upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+        catalog = self._make_one()
+
+        reference = [
+            ('lopez', 'abel', 16),
+            ('lopez', 'cinder', 17),
+            ('lopez', 'cinder', 5),
+            ('lopez', 'dolores', 11),
+            ('lopez', 'dolores', 10),
+            ('lopez', 'ethel', 1),
+            ('lopez', 'fran', 9),
+            ('meier', 'abel', 4),
+            ('meier', 'abel', 2),
+            ('meier', 'bert', 0),
+            ('meier', 'cinder', 3),
+            ('meier', 'ethel', 12),
+            ('meier', 'ethel', 6),
+            ('meier', 'geralt', 14),
+            ('smith', 'bert', 15),
+            ('smith', 'bert', 8),
+            ('smith', 'dolores', 7),
+            ('smith', 'ethel', 18),
+            ('smith', 'ethel', 13),
+            ('smith', 'geralt', 19)
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_order=('', '', 'reverse'))
 
     def test_sort_on_three_small_limit(self):
-        def extra(catalog):
-            col2 = FieldIndex('col2')
-            catalog.addIndex('col2', col2)
-        catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-                    sort_limit=10)
-        self.assertEqual(len(a), 10)
-        for x in range(9):
-            self.assertTrue(a[x].num < a[x + 1].num)
+        catalog = self._make_one()
+
+        reference = [
+            ('lopez', 'abel', 16),
+            ('lopez', 'cinder', 5),
+            ('lopez', 'cinder', 17),
+            ('lopez', 'dolores', 10),
+            ('lopez', 'dolores', 11),
+            ('lopez', 'ethel', 1),
+            ('lopez', 'fran', 9),
+            ('meier', 'abel', 2),
+            ('meier', 'abel', 4),
+            ('meier', 'bert', 0),
+            ('meier', 'cinder', 3),
+            ('meier', 'ethel', 6),
+            ('meier', 'ethel', 12),
+            ('meier', 'geralt', 14),
+            ('smith', 'bert', 8),
+            ('smith', 'bert', 15),
+            ('smith', 'dolores', 7),
+            ('smith', 'ethel', 13),
+            ('smith', 'ethel', 18),
+            ('smith', 'geralt', 19)
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_limit=10)
 
     def test_sort_on_three_big_limit(self):
-        def extra(catalog):
-            col2 = FieldIndex('col2')
-            catalog.addIndex('col2', col2)
-        catalog = self._make_one(extra)
-        a = catalog(sort_on=('att1', 'col2', 'num'), att1='att1',
-                    sort_limit=self.upper * 3)
-        self.assertEqual(len(a), 100)
-        for x in range(99):
-            self.assertTrue(a[x].num < a[x + 1].num)
+        catalog = self._make_one()
+
+        reference = [
+            ('lopez', 'abel', 16),
+            ('lopez', 'cinder', 5),
+            ('lopez', 'cinder', 17),
+            ('lopez', 'dolores', 10),
+            ('lopez', 'dolores', 11),
+            ('lopez', 'ethel', 1),
+            ('lopez', 'fran', 9),
+            ('meier', 'abel', 2),
+            ('meier', 'abel', 4),
+            ('meier', 'bert', 0),
+            ('meier', 'cinder', 3),
+            ('meier', 'ethel', 6),
+            ('meier', 'ethel', 12),
+            ('meier', 'geralt', 14),
+            ('smith', 'bert', 8),
+            ('smith', 'bert', 15),
+            ('smith', 'dolores', 7),
+            ('smith', 'ethel', 13),
+            ('smith', 'ethel', 18),
+            ('smith', 'geralt', 19)
+        ]
+
+        self.batch_test(catalog, reference, sort_on=('last', 'first', 'num'),
+                        sort_limit=self.upper * 3)
 
 
 class TestUnCatalog(unittest.TestCase):
@@ -901,11 +1395,11 @@ class TestUnCatalog(unittest.TestCase):
         catalog = Catalog()
         catalog.lexicon = PLexicon('lexicon')
         att1 = FieldIndex('att1')
-        att2 = ZCTextIndex('att2', caller=catalog,
+        att2 = ZCTextIndex('last', caller=catalog,
                            index_factory=OkapiIndex, lexicon_id='lexicon')
         att3 = KeywordIndex('att3')
         catalog.addIndex('att1', att1)
-        catalog.addIndex('att2', att2)
+        catalog.addIndex('last', att2)
         catalog.addIndex('att3', att3)
 
         for x in range(0, self.upper):
@@ -925,7 +1419,7 @@ class TestUnCatalog(unittest.TestCase):
     def test_uncatalog_text_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
-        a = catalog(att2='att2')
+        a = catalog(att2='last')
         self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
 
     def test_uncatalog_keyword_index(self):
