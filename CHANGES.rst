@@ -1,7 +1,7 @@
 Changelog
 =========
 
-6.3 (unreleased)
+6.3 (2022-08-03)
 ----------------
 
 - Improve performance stability. Fix catalog plan for unused index in a query.
