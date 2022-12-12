@@ -18,6 +18,7 @@ jobs:
       matrix:
         os:
         - ["ubuntu", "ubuntu-20.04"]
+        - ["macos", "macos-latest"]
         config:
         # [Python version, tox env]
         - ["3.9",   "lint"]
@@ -30,10 +31,16 @@ jobs:
         - ["3.10",  "py310"]
         - ["3.11",  "py311"]
         - ["3.9",   "coverage"]
+        exclude:
+          - { os: ["macos", "macos-latest"], config: ["3.9",   "lint"] }
+          - { os: ["macos", "macos-latest"], config: ["3.9",   "coverage"] }
+          # macOS/Python 3.11 is set up for universal2 architecture
+          # which causes build and package selection issues.
+          - { os: ["macos", "macos-latest"], config: ["3.11",  "py311"] }
 
     runs-on: ${{ matrix.os[1] }}
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-    name: ${{ matrix.config[1] }}
+    name: ${{ matrix.os[0] }}-${{ matrix.config[1] }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
