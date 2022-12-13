@@ -4,7 +4,9 @@ Changelog
 6.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Make ``test_getCatalogPlan_partial`` test more stable.
+  On Mac you would sometimes get a different query plan.
+  (`#140 <https://github.com/zopefoundation/Products.ZCatalog/issues/140>`_)
 
 
 6.3 (2022-08-03)

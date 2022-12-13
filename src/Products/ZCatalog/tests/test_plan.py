@@ -238,13 +238,13 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
         class SlowFieldIndex(FieldIndex):
             def query_index(self, record, resultset=None):
-                time.sleep(0.1)
+                time.sleep(0.05)
                 return super(SlowFieldIndex, self).query_index(
                     record, resultset)
 
         class SlowerDateRangeIndex(DateRangeIndex):
             def query_index(self, record, resultset=None):
-                time.sleep(0.2)
+                time.sleep(0.4)
                 return super(SlowerDateRangeIndex, self).query_index(
                     record, resultset)
 
