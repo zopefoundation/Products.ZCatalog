@@ -1,7 +1,7 @@
 Changelog
 =========
 
-6.4 (unreleased)
+6.4 (2022-12-13)
 ----------------
 
 - Make ``test_getCatalogPlan_partial`` test more stable.
