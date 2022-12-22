@@ -161,8 +161,8 @@ class TopicIndex(Persistent, SimpleItem):
     def addFilteredSet(self, filter_id, typeFilteredSet, expr):
         # Add a FilteredSet object.
         if filter_id in self.filteredSets:
-            raise KeyError(('A FilteredSet with this name already '
-                            'exists: {0}'.format(filter_id)))
+            raise KeyError('A FilteredSet with this name already '
+                           'exists: {}'.format(filter_id))
         self.filteredSets[filter_id] = factory(
             filter_id, typeFilteredSet, expr)
 
@@ -170,14 +170,14 @@ class TopicIndex(Persistent, SimpleItem):
         # Delete the FilteredSet object specified by 'filter_id'.
         if filter_id not in self.filteredSets:
             raise KeyError(
-                'no such FilteredSet:  {0}'.format(filter_id))
+                f'no such FilteredSet:  {filter_id}')
         del self.filteredSets[filter_id]
 
     def clearFilteredSet(self, filter_id):
         # Clear the FilteredSet object specified by 'filter_id'.
         f = self.filteredSets.get(filter_id, None)
         if f is None:
-            raise KeyError('no such FilteredSet: {0}'.format(filter_id))
+            raise KeyError(f'no such FilteredSet: {filter_id}')
         f.clear()
 
     def manage_addFilteredSet(self, filter_id, typeFilteredSet, expr, URL1,

@@ -408,8 +408,8 @@ class UnIndex(SimpleItem):
         rid = frozenset(params)
 
         # unique index identifier
-        iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
-                                    self.id, self.getCounter())
+        iid = '_{}_{}_{}'.format(self.__class__.__name__,
+                                 self.id, self.getCounter())
         return (iid, rid)
 
     def _apply_index(self, request, resultset=None):

@@ -30,7 +30,7 @@ class ZDummy(ExtensionClass.Base):
         self.num = num
 
     def title(self):
-        return '{0:d}'.format(self.num)
+        return f'{self.num:d}'
 
 
 class Dummy(ExtensionClass.Base):
@@ -294,13 +294,13 @@ class TestCatalog(unittest.TestCase):
         a = catalog.uniqueValuesFor('att1')
         self.assertEqual(
             len(a), 1,
-            'bad number of unique values {0}'.format(a)
+            f'bad number of unique values {a}'
         )
 
     def testUniqueValuesForContent(self):
         catalog = self._make_one()
         a = catalog.uniqueValuesFor('att1')
-        self.assertEqual(a[0], 'att1', 'bad content {0}'.format(a[0]))
+        self.assertEqual(a[0], 'att1', f'bad content {a[0]}')
 
     # hasuid
     # recordify
@@ -342,7 +342,7 @@ class TestCatalog(unittest.TestCase):
         a = catalog(att1='att1')
         self.assertEqual(
             len(a), self.upper,
-            'length should be {0}, its {1}'.format(self.upper, len(a))
+            f'length should be {self.upper}, its {len(a)}'
         )
 
     def test_query_empty(self):
@@ -364,7 +364,7 @@ class TestCatalog(unittest.TestCase):
         a = catalog({'col1': ''})
         self.assertEqual(
             len(a), 0,
-            'length should be 0, its {0}'.format(len(a))
+            f'length should be 0, its {len(a)}'
         )
 
     def test_field_index_length(self):
@@ -438,7 +438,7 @@ class TestCatalogSortBatch(unittest.TestCase):
         catalog = self._make_one()
         query = {'att1': 'a', 'att2': 'b', 'num': 1}
         result = catalog._sorted_search_indexes(query)
-        self.assertEqual(set(result), set(['att1', 'att2', 'num']))
+        self.assertEqual(set(result), {'att1', 'att2', 'num'})
 
     def test_sorted_search_indexes_priority(self):
         # att2 and col2 don't support ILimitedResultIndex, att1 does
@@ -920,19 +920,19 @@ class TestUnCatalog(unittest.TestCase):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att1='att1')
-        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
+        self.assertEqual(len(a), 0, f'len: {len(a)}')
 
     def test_uncatalog_text_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att2='att2')
-        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
+        self.assertEqual(len(a), 0, f'len: {len(a)}')
 
     def test_uncatalog_keyword_index(self):
         catalog = self._make_one()
         self._uncatalog(catalog)
         a = catalog(att3='att3')
-        self.assertEqual(len(a), 0, 'len: {0}'.format(len(a)))
+        self.assertEqual(len(a), 0, f'len: {len(a)}')
 
     def test_bad_uncatalog(self):
         catalog = self._make_one()
@@ -978,7 +978,7 @@ class TestRangeSearch(unittest.TestCase):
                 size = r.number
                 self.assertTrue(
                     m <= size and size <= n,
-                    '{0:d} vs [{1:d},{2:d}]'.format(r.number, m, n)
+                    f'{r.number:d} vs [{m:d},{n:d}]'
                 )
 
 

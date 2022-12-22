@@ -7,7 +7,7 @@ class IndexSortingTests(Testing.ZopeTestCase.FunctionalTestCase):
     """Browser testing /manage_catalogIndexes"""
 
     def setUp(self):
-        super(IndexSortingTests, self).setUp()
+        super().setUp()
 
         Zope2.App.zcml.load_site(force=True)
 

@@ -14,11 +14,10 @@
 import os
 import os.path
 import time
+from _thread import allocate_lock
 from collections import namedtuple
 from logging import getLogger
 from os import environ
-
-from six.moves._thread import allocate_lock
 
 from Acquisition import aq_base
 from Acquisition import aq_parent
@@ -43,7 +42,7 @@ Report = namedtuple('Report', ['hits', 'duration', 'last'])
 logger = getLogger('Products.ZCatalog')
 
 
-class NestedDict(object):
+class NestedDict:
     """Holds a structure of two nested dicts."""
 
     @classmethod
@@ -151,7 +150,7 @@ class Reports(NestedDict):
     value = {}
 
 
-class CatalogPlan(object):
+class CatalogPlan:
     """Catalog plan class to measure and identify catalog queries and plan
     their execution.
     """
@@ -251,10 +250,9 @@ class CatalogPlan(object):
         if notkeys:
             key = [name for name in key if name not in notkeys]
             key.extend([(name, "not") for name in notkeys])
-        # Workaround: Python 2.x accepted different types as sort key
-        # for the sorted builtin. Python 3 only sorts on identical types.
-        tuple_keys = set(key) - set(
-            [x for x in key if not isinstance(x, tuple)])
+        # Workaround: Python only sorts on identical types.
+        tuple_keys = set(key) - {
+            x for x in key if not isinstance(x, tuple)}
 
         str_keys = set(key) - tuple_keys
         return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
@@ -266,9 +264,9 @@ class CatalogPlan(object):
 
         # sort indexes on (limited result index, mean search time)
         # skip internal ('#') bookkeeping records
-        ranking = [((value.limit, value.duration), name)
-                   for name, value in benchmark.items() if '#' not in name]
-        ranking.sort()
+        ranking = sorted(
+            [((value.limit, value.duration), name)
+             for name, value in benchmark.items() if '#' not in name])
         return [r[1] for r in ranking]
 
     def start(self):

@@ -17,7 +17,7 @@ from Products.ZCTextIndex.interfaces import IPipelineElementFactory
 
 
 @implementer(IPipelineElementFactory)
-class PipelineElementFactory(object):
+class PipelineElementFactory:
 
     def __init__(self):
         self._groups = {}

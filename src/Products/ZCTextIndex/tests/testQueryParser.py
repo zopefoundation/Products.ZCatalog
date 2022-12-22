@@ -14,10 +14,8 @@
 
 from unittest import TestCase
 
-import six
 
-
-class FakeStopWordRemover(object):
+class FakeStopWordRemover:
 
     def process(self, list):
         return [word for word in list if word != "stop"]
@@ -224,15 +222,15 @@ class TestQueryParser(TestQueryParserBase):
         # Split by UTF-8 fullwidth space
         from Products.ZCTextIndex.ParseTree import AndNode
         from Products.ZCTextIndex.ParseTree import AtomNode
-        self.expect(six.b("foo\xe3\x80\x80bar"),
+        self.expect(b"foo\xe3\x80\x80bar",
                     AndNode([AtomNode("foo"), AtomNode("bar")]))
 
     def test025(self):
         # Split by Unicode fullwidth space
         from Products.ZCTextIndex.ParseTree import AndNode
         from Products.ZCTextIndex.ParseTree import AtomNode
-        self.expect(u"foo\u3000bar",
-                    AndNode([AtomNode(u"foo"), AtomNode(u"bar")]))
+        self.expect("foo\u3000bar",
+                    AndNode([AtomNode("foo"), AtomNode("bar")]))
 
     def test101(self):
         self.failure("")

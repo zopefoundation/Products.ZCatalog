@@ -17,7 +17,7 @@ from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, name, date):
         self._name = name
@@ -30,7 +30,7 @@ class Dummy(object):
         return self._date
 
     def __str__(self):
-        return "<Dummy %s, date %s>" % (self._name, str(self._date))
+        return "<Dummy {}, date {}>".format(self._name, str(self._date))
 
 ###############################################################################
 # excerpted from the Python module docs
@@ -159,7 +159,7 @@ class DateIndexTests(unittest.TestCase):
                 result = result.keys()
             self.assertEqual(used, ('date',))
             self.assertEqual(len(result), len(expectedValues),
-                             '%s: %s | %s' % (req, result, expectedValues))
+                             '{}: {} | {}'.format(req, result, expectedValues))
             for k, v in expectedValues:
                 self.assertTrue(k in result)
 
@@ -184,9 +184,9 @@ class DateIndexTests(unittest.TestCase):
         from Products.PluginIndexes.DateIndex.DateIndex import Local
         if isinstance(dt, (float, int)):
             yr, mo, dy, hr, mn = gmtime(dt)[:5]
-        elif type(dt) is date:
+        elif isinstance(dt, date):
             yr, mo, dy, hr, mn = dt.timetuple()[:5]
-        elif type(dt) is datetime:
+        elif isinstance(dt, datetime):
             if dt.tzinfo is None:  # default behavior of index
                 dt = dt.replace(tzinfo=Local)
             yr, mo, dy, hr, mn = dt.utctimetuple()[:5]

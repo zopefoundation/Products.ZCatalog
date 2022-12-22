@@ -146,7 +146,7 @@ class IDateIndex(Interface):
     """Index for dates.
     """
 
-    index_naive_time_as_local = Bool(title=u'Index naive time as local?')
+    index_naive_time_as_local = Bool(title='Index naive time as local?')
 
 
 class IDateRangeIndex(Interface):

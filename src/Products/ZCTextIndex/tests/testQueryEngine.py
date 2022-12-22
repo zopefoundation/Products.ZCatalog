@@ -22,7 +22,7 @@ from Products.ZCTextIndex.ParseTree import QueryError
 from Products.ZCTextIndex.QueryParser import QueryParser
 
 
-class FauxIndex(object):
+class FauxIndex:
 
     def search(self, term):
         b = IIBucket()

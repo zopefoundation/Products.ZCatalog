@@ -21,7 +21,7 @@ from Products.ZCTextIndex.PipelineFactory import PipelineElementFactory
 
 
 @implementer(IPipelineElement)
-class NullPipelineElement(object):
+class NullPipelineElement:
     pass
 
 

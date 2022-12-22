@@ -26,7 +26,7 @@ from Products.ZCTextIndex.Lexicon import Splitter
 from Products.ZCTextIndex.OkapiIndex import OkapiIndex
 
 
-class IndexTest(object):
+class IndexTest:
     # Subclasses must set a class variable IndexFactory to the appropriate
     # index object constructor.
     IndexFactory = None
@@ -175,7 +175,7 @@ class TestIndexConflict(TestCase):
             self.storage.cleanup()
 
     def openDB(self):
-        n = 'fs_tmp__{0}'.format(os.getpid())
+        n = f'fs_tmp__{os.getpid()}'
         self.storage = FileStorage(n)
         self.db = DB(self.storage)
 

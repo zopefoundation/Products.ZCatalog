@@ -59,8 +59,6 @@
 
 import re
 
-import six
-
 
 def encode(wids):
     # Encode a list of wids as a string.
@@ -89,7 +87,7 @@ _prog = re.compile(r"[\x80-\xFF][\x00-\x7F]*")
 
 def decode(code):
     # Handle bytes that were not properly decoded during Python 3 conversion
-    if six.PY3 and isinstance(code, six.binary_type):
+    if isinstance(code, bytes):
         code = code.decode('latin1')
     # Decode a string into a list of wids.
     get = _decoding.get

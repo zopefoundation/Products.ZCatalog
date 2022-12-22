@@ -17,8 +17,8 @@ import logging
 import operator
 import sys
 import time
-
-from six.moves.urllib.parse import quote
+from time import process_time
+from urllib.parse import quote
 
 import transaction
 from AccessControl.class_init import InitializeClass
@@ -52,18 +52,6 @@ from Products.ZCatalog.interfaces import IZCatalog
 from Products.ZCatalog.plan import PriorityMap
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.ZCatalogIndexes import ZCatalogIndexes
-
-
-try:
-    xrange
-except NameError:
-    # Python 3 compatibility
-    xrange = range
-
-try:
-    from time import clock as process_time
-except ImportError:
-    from time import process_time
 
 
 _marker = object()
@@ -277,7 +265,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             pghandler.init('Refreshing catalog: %s' % self.absolute_url(1),
                            num_objects)
 
-        for i in xrange(num_objects):
+        for i in range(num_objects):
             if pghandler:
                 pghandler.report(i)
 
@@ -426,7 +414,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         i = 0
         if pghandler:
-            pghandler.init('reindexing {0}'.format(idxs), len(paths))
+            pghandler.init(f'reindexing {idxs}', len(paths))
 
         for p in paths:
             i += 1
@@ -661,8 +649,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             if obj is None:
                 break
             x = x + 1
-        roles = list(roles)
-        roles.sort()
+        roles = sorted(roles)
         return roles
 
     @security.protected(manage_zcatalog_entries)
@@ -717,7 +704,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         for id, ob in items:
             if pre:
-                p = "%s/%s" % (pre, id)
+                p = "{}/{}".format(pre, id)
             else:
                 p = id
 
@@ -767,7 +754,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         if REQUEST:
             script = REQUEST.script
             if path.find(script) != 0:
-                path = '%s/%s' % (script, path)
+                path = '{}/{}'.format(script, path)
             try:
                 return REQUEST.resolve_url(path)
             except Exception:
@@ -918,12 +905,12 @@ class ZCatalog(Folder, Persistent, Implicit):
             output.append('  %s: {' % repr(cid))
             for querykey, details in plan.items():
                 if isinstance(details, (frozenset, set)):
-                    output.append('    %r: %r,' % (querykey, details))
+                    output.append('    {!r}: {!r},'.format(querykey, details))
                 else:
                     output.append('    %s: {' % repr(querykey))
                     for indexname, bench in sorted(details.items()):
                         tuplebench = (round(bench[0], 4), ) + bench[1:]
-                        output.append('      %r:\n      %r,' % (
+                        output.append('      {!r}:\n      {!r},'.format(
                             indexname, tuplebench))
                     output.append('    },')
             output.append('  },')

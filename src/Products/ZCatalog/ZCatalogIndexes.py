@@ -80,7 +80,7 @@ class ZCatalogIndexes(IFAwareObjectManager, Folder, Persistent, Implicit):
         """We need to wrap the index objects because some of them
         can have security which does not work if they are unwrapped.
         This happened to ZCTextIndex objects in Plone."""
-        items = super(ZCatalogIndexes, self).manage_get_sortedObjects(
+        items = super().manage_get_sortedObjects(
             sortkey, revkey)
         for item in items:
             item['obj'] = item['obj'].__of__(self)

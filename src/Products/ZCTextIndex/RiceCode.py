@@ -38,7 +38,7 @@ Emit the lower m bits of x-1, treating x-1 as a binary value.
 import array
 
 
-class BitArray(object):
+class BitArray:
 
     def __init__(self, buf=None):
         self.bytes = array.array('B')
@@ -84,7 +84,7 @@ class BitArray(object):
         self.bitsleft = bitsleft
 
 
-class RiceCode(object):
+class RiceCode:
 
     def __init__(self, m):
         """Constructor a RiceCode for m-bit values."""

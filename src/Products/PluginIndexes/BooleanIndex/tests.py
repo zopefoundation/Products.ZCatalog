@@ -16,7 +16,7 @@ import unittest
 from BTrees.IIBTree import IISet
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, docid, truth):
         self.id = docid

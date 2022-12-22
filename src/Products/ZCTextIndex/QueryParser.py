@@ -55,7 +55,6 @@ Summarizing the default operator rules:
 - * and ? are used for globbing (i.e. prefix search), e.g. ``foo*''
 """
 import re
-import sys
 
 from zope.interface import implementer
 
@@ -63,11 +62,10 @@ from Products.ZCTextIndex import ParseTree
 from Products.ZCTextIndex.interfaces import IQueryParser
 
 
-if sys.version_info > (3, 0):
-    unicode = str
+unicode = str
 
 
-class Token(object):
+class Token:
     __slots__ = ('text', )
 
     def __init__(self, text):
@@ -120,7 +118,7 @@ _tokenizer_unicode_regex = re.compile(
 
 
 @implementer(IQueryParser)
-class QueryParser(object):
+class QueryParser:
 
     # This class is not thread-safe;
     # each thread should have its own instance
@@ -171,7 +169,7 @@ class QueryParser(object):
     def _require(self, tokentype):
         if not self._check(tokentype):
             t = self._tokens[self._index]
-            msg = "Token %r required, %r found" % (tokentype, t)
+            msg = "Token {!r} required, {!r} found".format(tokentype, t)
             raise ParseTree.ParseError(msg)
 
     def _check(self, tokentype):
@@ -245,9 +243,9 @@ class QueryParser(object):
             nodes = list(filter(None, nodes))
             if not nodes:
                 return None  # Only stopwords
-            structure = [(isinstance(nodes[i], ParseTree.NotNode), i, nodes[i])
-                         for i in range(len(nodes))]
-            structure.sort()
+            structure = sorted(
+                [(isinstance(nodes[i], ParseTree.NotNode), i, nodes[i])
+                 for i in range(len(nodes))])
             nodes = [node for (bit, index, node) in structure]
             if isinstance(nodes[0], ParseTree.NotNode):
                 raise ParseTree.ParseError(

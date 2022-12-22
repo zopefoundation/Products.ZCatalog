@@ -36,12 +36,12 @@ from Products.ZCTextIndex.ZCTextIndex import PLexicon
 from Products.ZCTextIndex.ZCTextIndex import ZCTextIndex
 
 
-class Indexable(object):
+class Indexable:
     def __init__(self, text):
         self.text = text
 
 
-class Indexable2(object):
+class Indexable2:
     def __init__(self, text1, text2):
         self.text1 = text1
         self.text2 = text2
@@ -68,7 +68,7 @@ def dummyUnrestrictedTraverse(self, path):
 
 def eq(scaled1, scaled2, epsilon=scaled_int(0.01)):
     if abs(scaled1 - scaled2) > epsilon:
-        raise AssertionError('{0} != {1}'.format(scaled1, scaled2))
+        raise AssertionError(f'{scaled1} != {scaled2}')
 
 
 # A series of text chunks to use for the re-index tests (testDocUpdate).
@@ -111,7 +111,7 @@ text = [
 # OkapiIndexTest} too.
 
 
-class ZCIndexTestsBase(object):
+class ZCIndexTestsBase:
 
     def setUp(self):
         self.lexicon = PLexicon('lexicon', '',
@@ -260,7 +260,7 @@ class ZCIndexTestsBase(object):
             self.zc_index.index_object(docid, doc)
             for w in common:
                 nbest, total = self.zc_index.query(w)
-                self.assertEqual(total, 1, 'did not find {0}'.format(w))
+                self.assertEqual(total, 1, f'did not find {w}')
             for k, v in unique.items():
                 if k == i:
                     continue
@@ -268,7 +268,7 @@ class ZCIndexTestsBase(object):
                     nbest, total = self.zc_index.query(w)
                     self.assertEqual(
                         total, 0,
-                        'did not expect to find {0}'.format(w)
+                        f'did not expect to find {w}'
                     )
 
     def testLexiconIsNotFoundRaisesLookupError(self):
@@ -283,7 +283,7 @@ class ZCIndexTestsBase(object):
     def testInvalidIndexTypeRaisesValueError(self):
         caller = LexiconHolder(self.lexicon)
 
-        class Extra(object):
+        class Extra:
             index_type = 'Some invalid index type'
         with self.assertRaises(ValueError):
             ZCTextIndex(
@@ -559,7 +559,7 @@ class OkapiIndexTests(ZCIndexTestsBase, testIndex.OkapiIndexTest):
         self.assertEqual(r[-2][0], 1)   # penultimate loser
 
 
-class QueryTestsBase(object):
+class QueryTestsBase:
 
     # Subclasses of QueryTestsBase must set a class variable IndexFactory
     # to the kind of index to be constructed.

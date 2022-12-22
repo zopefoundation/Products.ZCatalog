@@ -23,12 +23,6 @@ from Products.PluginIndexes.util import safe_callable
 
 LOG = getLogger('Zope.KeywordIndex')
 
-try:
-    basestring
-except NameError:
-    # Python 3 compatibility
-    basestring = (bytes, str)
-
 
 class KeywordIndex(UnIndex):
     """Like an UnIndex only it indexes sequences of items.
@@ -74,7 +68,7 @@ class KeywordIndex(UnIndex):
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
-            if type(oldKeywords) is not OOSet:
+            if not isinstance(oldKeywords, OOSet):
                 oldKeywords = OOSet(oldKeywords)
             newKeywords = OOSet(newKeywords)
             fdiff = difference(oldKeywords, newKeywords)
@@ -101,7 +95,7 @@ class KeywordIndex(UnIndex):
                 return ()
         if not newKeywords:
             return ()
-        elif isinstance(newKeywords, basestring):
+        elif isinstance(newKeywords, (bytes, str)):
             return (newKeywords,)
         else:
             try:

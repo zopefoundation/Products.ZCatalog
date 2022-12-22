@@ -14,6 +14,7 @@
 import logging
 from bisect import bisect
 from collections import defaultdict
+from functools import cmp_to_key
 from operator import itemgetter
 from random import randint
 
@@ -43,17 +44,6 @@ from Products.ZCatalog.plan import CatalogPlan
 from Products.ZCatalog.ProgressHandler import ZLogHandler
 from Products.ZCatalog.query import IndexQuery
 
-
-try:
-    from functools import cmp_to_key
-except ImportError:
-    cmp_to_key = None
-
-try:
-    xrange
-except NameError:
-    # Python 3 compatibility
-    xrange = range
 
 LOG = logging.getLogger('Zope.ZCatalog')
 
@@ -988,7 +978,7 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
             first_reverse = reverse[0]
         else:
             sort_spec = []
-            for i in xrange(sort_index_length):
+            for i in range(sort_index_length):
                 sort_spec.append(reverse and -1 or 1)
             first_reverse = reverse
 
@@ -1155,7 +1145,7 @@ def multisort(items, sort_spec):
 
     def comparer(left, right):
         for func, order in comparers:
-            # emulate cmp even in Python 3
+            # emulate cmp
             a = func(left[0])
             b = func(right[0])
             result = ((a > b) - (a < b))
@@ -1163,9 +1153,6 @@ def multisort(items, sort_spec):
                 return order * result
         return 0
 
-    if cmp_to_key is None:
-        items.sort(cmp=comparer)
-    else:
-        items.sort(key=cmp_to_key(comparer))
+    items.sort(key=cmp_to_key(comparer))
 
     return items

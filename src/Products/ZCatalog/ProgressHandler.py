@@ -11,7 +11,6 @@
 #
 ##############################################################################
 
-from __future__ import print_function
 
 import sys
 import time
@@ -28,7 +27,7 @@ LOG = getLogger('ProgressHandler')
 
 
 @implementer(IProgressHandler)
-class StdoutHandler(object):
+class StdoutHandler:
     """ A simple progress handler """
 
     def __init__(self, steps=100):
@@ -64,7 +63,7 @@ class StdoutHandler(object):
                              end.strftime('%Y/%m/%d %H:%M:%Sh')))
 
     def output(self, text):
-        print('%s: %s' % (self._ident, text), file=self.fp)
+        print('{}: {}'.format(self._ident, text), file=self.fp)
 
 
 class ZLogHandler(StdoutHandler):

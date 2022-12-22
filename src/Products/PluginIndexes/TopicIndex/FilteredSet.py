@@ -66,7 +66,7 @@ class FilteredSetBase(Persistent):
         self.expr = expr
 
     def __repr__(self):
-        return '{0}: ({1}) {2}'.format(
+        return '{}: ({}) {}'.format(
             self.id, self.expr,
             list(map(None, self.ids))
         )
@@ -99,4 +99,4 @@ def factory(f_id, f_type, expr):
     if f_type == 'PythonFilteredSet':
         return PythonFilteredSet(f_id, expr)
     else:
-        raise TypeError('unknown type for FilteredSets: {0}'.format(f_type))
+        raise TypeError(f'unknown type for FilteredSets: {f_type}')

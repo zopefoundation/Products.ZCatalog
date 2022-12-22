@@ -19,7 +19,7 @@ import unittest
 import transaction
 
 
-class StupidPipelineElement(object):
+class StupidPipelineElement:
 
     def __init__(self, fromword, toword):
         self.__fromword = fromword
@@ -35,7 +35,7 @@ class StupidPipelineElement(object):
         return res
 
 
-class WackyReversePipelineElement(object):
+class WackyReversePipelineElement:
 
     def __init__(self, revword):
         self.__revword = revword
@@ -52,7 +52,7 @@ class WackyReversePipelineElement(object):
         return res
 
 
-class StopWordPipelineElement(object):
+class StopWordPipelineElement:
 
     def __init__(self, stopdict={}):
         self.__stopdict = stopdict
@@ -249,7 +249,7 @@ class LexiconConflictTests(unittest.TestCase):
         from ZODB.DB import DB
         from ZODB.FileStorage import FileStorage
 
-        n = 'fs_tmp__{0}'.format(os.getpid())
+        n = f'fs_tmp__{os.getpid()}'
         self.storage = FileStorage(n)
         self.db = DB(self.storage)
 

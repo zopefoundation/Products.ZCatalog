@@ -26,7 +26,7 @@ from Products.ZCTextIndex.interfaces import INBest
 
 
 @implementer(INBest)
-class NBest(object):
+class NBest:
 
     def __init__(self, n):
         "Build an NBest object to remember the N best-scoring objects."

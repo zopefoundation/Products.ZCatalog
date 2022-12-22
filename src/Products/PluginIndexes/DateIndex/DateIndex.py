@@ -149,9 +149,9 @@ class DateIndex(UnIndex, PropertyManager):
         if t_val > MAX32:
             # t_val must be integer fitting in the 32bit range
             raise OverflowError(
-                ('{0} is not within the range of'
-                 ' indexable dates (index: {1})'.format(
-                     value, self.id)))
+                '{} is not within the range of'
+                ' indexable dates (index: {})'.format(
+                    value, self.id))
         return t_val
 
 

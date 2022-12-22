@@ -22,7 +22,7 @@ from Testing.makerequest import makerequest
 from Products.PluginIndexes.util import datetime_to_minutes
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, name, start, stop):
         self._name = name
@@ -105,7 +105,7 @@ class DateRangeIndexTests(unittest.TestCase):
 
             assert used == (index._since_field, index._until_field)
             assert len(result) == len(expectedValues), \
-                '{0}: {1} | {2}'.format(req, list(result), expectedValues)
+                f'{req}: {list(result)} | {expectedValues}'
             for k, v in expectedValues:
                 assert k in result
             return (result, used)
