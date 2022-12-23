@@ -29,7 +29,7 @@ class RequestCache(dict):
 
     def __getitem__(self, key):
         try:
-            value = super(RequestCache, self).__getitem__(key)
+            value = super().__getitem__(key)
         except KeyError as e:
             self._misses += 1
             raise e
@@ -38,11 +38,11 @@ class RequestCache(dict):
         return value
 
     def __setitem__(self, key, value):
-        super(RequestCache, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         self._sets += 1
 
     def clear(self):
-        super(RequestCache, self).clear()
+        super().clear()
         self._hits = 0
         self._misses = 0
         self._sets = 0

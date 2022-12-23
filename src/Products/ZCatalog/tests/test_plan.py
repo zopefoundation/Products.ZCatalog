@@ -15,9 +15,7 @@ import os
 import os.path
 import time
 import unittest
-
-import six
-from six.moves._thread import LockType
+from _thread import LockType
 
 from zope.testing import cleanup
 
@@ -35,7 +33,7 @@ from Products.ZCatalog.ZCatalog import ZCatalog
 HERE = __file__
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, num):
         self.num = num
@@ -47,13 +45,13 @@ class Dummy(object):
         return (self.num, self.num + 1)
 
     def getPhysicalPath(self):
-        return '/{0}'.format(self.num)
+        return f'/{self.num}'
 
     def start(self):
-        return '2013-07-{0:02d}'.format(self.num + 1)
+        return f'2013-07-{self.num + 1:02d}'
 
     def end(self):
-        return '2013-07-{0:02d}'.format(self.num + 2)
+        return f'2013-07-{self.num + 2:02d}'
 
 
 class TestNestedDict(unittest.TestCase):
@@ -187,10 +185,7 @@ class TestReports(unittest.TestCase):
 class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
 
     def assertRegex(self, *args, **kwargs):
-        if six.PY2:
-            return self.assertRegexpMatches(*args, **kwargs)
-        else:
-            return super(TestCatalogPlan, self).assertRegex(*args, **kwargs)
+        return super().assertRegex(*args, **kwargs)
 
     def setUp(self):
         cleanup.CleanUp.setUp(self)
@@ -239,13 +234,13 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         class SlowFieldIndex(FieldIndex):
             def query_index(self, record, resultset=None):
                 time.sleep(0.05)
-                return super(SlowFieldIndex, self).query_index(
+                return super().query_index(
                     record, resultset)
 
         class SlowerDateRangeIndex(DateRangeIndex):
             def query_index(self, record, resultset=None):
                 time.sleep(0.4)
-                return super(SlowerDateRangeIndex, self).query_index(
+                return super().query_index(
                     record, resultset)
 
         cat.addIndex("num", SlowFieldIndex("num"))
@@ -319,7 +314,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
             def query_index(self, record, resultset=None):
                 if getattr(record, 'not', None):
                     time.sleep(0.1)
-                return super(SlowNotFieldIndex, self).query_index(
+                return super().query_index(
                     record, resultset)
 
         zcat = ZCatalog("catalog")
@@ -405,7 +400,7 @@ class TestCatalogPlan(cleanup.CleanUp, unittest.TestCase):
         self.assertEqual(plan.benchmark['index1'].hits, 2)
         self.assertIn('index2', plan.benchmark)
         self.assertEqual(plan.benchmark['index2'].hits, 0)
-        self.assertEqual(set(plan.plan()), set(('index1', 'index2')))
+        self.assertEqual(set(plan.plan()), {'index1', 'index2'})
 
     def test_log(self):
         plan = self._makeOne(query={'index1': 1})

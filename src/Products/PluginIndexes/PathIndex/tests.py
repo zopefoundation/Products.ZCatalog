@@ -16,7 +16,7 @@
 import unittest
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, path):
         self.path = path
@@ -483,7 +483,7 @@ class PathIndexTests(unittest.TestCase):
         index = self._makeOne()
         _populateIndex(index)
         self.assertEqual(dict(index.documentToKeyMap()),
-                         dict([(k, v.path) for k, v in DUMMIES.items()]))
+                         {k: v.path for k, v in DUMMIES.items()})
 
     def test_insertEntry_empty_depth_0(self):
         index = self._makeOne()

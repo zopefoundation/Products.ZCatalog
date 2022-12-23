@@ -30,7 +30,7 @@ class ParseError(Exception):
 
 
 @implementer(IQueryParseTree)
-class ParseTreeNode(object):
+class ParseTreeNode:
 
     _nodeType = None
 
@@ -44,7 +44,7 @@ class ParseTreeNode(object):
         return self._value
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self.getValue())
+        return "{}({!r})".format(self.__class__.__name__, self.getValue())
 
     def terms(self):
         t = []

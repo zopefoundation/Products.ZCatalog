@@ -14,10 +14,7 @@
 """Plug in text index for ZCatalog with relevance ranking.
 """
 
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
+from html import escape
 
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import manage_vocabulary
@@ -51,11 +48,6 @@ from Products.ZCTextIndex.QueryParser import QueryParser
 
 index_types = {'Okapi BM25 Rank': OkapiIndex,
                'Cosine Measure': CosineIndex}
-
-try:
-    basestring
-except NameError:
-    basestring = str
 
 
 @implementer(IZCTextIndex, IQueryIndex, IPluggableIndex)
@@ -187,7 +179,7 @@ class ZCTextIndex(Persistent, Implicit, SimpleItem):
                     all_texts.append(text)
 
         # Check that we're sending only strings
-        all_texts = [t for t in all_texts if isinstance(t, basestring)]
+        all_texts = [t for t in all_texts if isinstance(t, str)]
         if all_texts:
             return self.index.index_doc(documentId, all_texts)
         return 0

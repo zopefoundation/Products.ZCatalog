@@ -17,7 +17,7 @@ from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, foo):
         self._foo = foo
@@ -92,8 +92,8 @@ class TestKeywordIndex(unittest.TestCase):
             result, used = self._index._apply_index(req)
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (list(result),
-                             list(map(lambda x: x[0], expectedValues)))
+                '{} | {}'.format(list(result),
+                                 list(map(lambda x: x[0], expectedValues)))
 
             if hasattr(result, 'keys'):
                 result = result.keys()
@@ -166,8 +166,7 @@ class TestKeywordIndex(unittest.TestCase):
         self.assertEqual(self._index.indexSize(), len(values) - 1)
 
         for k, v in values:
-            entry = self._index.getEntryForObject(k)
-            entry.sort()
+            entry = sorted(self._index.getEntryForObject(k))
             kw = sorted(set(v.foo()))
             self.assertEqual(entry, kw)
 

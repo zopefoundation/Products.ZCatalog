@@ -129,7 +129,7 @@ class DateRangeIndex(UnIndex):
         """ """
         self._edit(since_field, until_field, floor_value, ceiling_value,
                    precision_value)
-        REQUEST['RESPONSE'].redirect('{0}/manage_main'
+        REQUEST['RESPONSE'].redirect('{}/manage_main'
                                      '?manage_tabs_message=Updated'.format(
                                          REQUEST.get('URL2')))
 
@@ -249,13 +249,13 @@ class DateRangeIndex(UnIndex):
         tid = str(term)
 
         # unique index identifier
-        iid = '_{0}_{1}_{2}'.format(self.__class__.__name__,
-                                    self.id, self.getCounter())
+        iid = '_{}_{}_{}'.format(self.__class__.__name__,
+                                 self.id, self.getCounter())
         # record identifier
         if resultset is None:
-            rid = '_{0}'.format(tid)
+            rid = f'_{tid}'
         else:
-            rid = '_inverse_{0}'.format(tid)
+            rid = f'_inverse_{tid}'
 
         return (iid, rid)
 

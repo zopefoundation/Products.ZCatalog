@@ -17,8 +17,6 @@
 import re
 from random import randrange
 
-import six
-
 from BTrees.IOBTree import IOBTree
 from BTrees.Length import Length
 from BTrees.OIBTree import OIBTree
@@ -180,15 +178,11 @@ def _text2list(text):
 # Sample pipeline elements
 
 
-class Splitter(object):
+class Splitter:
 
     import re
-    if six.PY2:
-        rx = re.compile(br"(?L)\w+")
-        rxGlob = re.compile(br"(?L)\w+[\w*?]*")
-    else:
-        rx = re.compile(r"\w+")
-        rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
+    rx = re.compile(r"\w+")
+    rxGlob = re.compile(r"\w+[\w*?]*")  # See globToWordIds() above
 
     def process(self, lst):
         result = []
@@ -208,7 +202,7 @@ element_factory.registerFactory('Word Splitter',
                                 Splitter)
 
 
-class CaseNormalizer(object):
+class CaseNormalizer:
 
     def process(self, lst):
         return [w.lower() for w in lst]
@@ -223,7 +217,7 @@ element_factory.registerFactory('Stop Words',
                                 None)
 
 
-class StopWordRemover(object):
+class StopWordRemover:
 
     dict = get_stopdict().copy()
 

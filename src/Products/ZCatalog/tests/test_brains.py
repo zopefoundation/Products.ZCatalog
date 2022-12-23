@@ -49,7 +49,7 @@ class Conflicter(Happy):
         raise ConflictError
 
 
-class DummyRequest(object):
+class DummyRequest:
 
     def physicalPathToURL(self, path, relative=False):
         if not relative:

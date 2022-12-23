@@ -73,13 +73,13 @@ class TestUnIndex(unittest.TestCase):
         dummy = object()
         self.assertEqual(idx._get_object_datum(dummy, 'interesting'), _marker)
 
-        class DummyContent2(object):
+        class DummyContent2:
             interesting = 'GOT IT'
         dummy = DummyContent2()
         self.assertEqual(idx._get_object_datum(dummy, 'interesting'),
                          'GOT IT')
 
-        class DummyContent3(object):
+        class DummyContent3:
             exc = None
 
             def interesting(self):
@@ -148,7 +148,7 @@ class TestUnIndex(unittest.TestCase):
 
         self.assertEqual(index.getCounter(), 0)
 
-        class Dummy(object):
+        class Dummy:
             id = 1
             counter = 'counter'
 
@@ -168,12 +168,12 @@ class TestUnIndex(unittest.TestCase):
         self.assertEqual(index.getCounter(), 3)
 
     def test_no_type_error(self):
-        ''' Check that on Python 3.6 we do not get a TypeError when trying
+        '''Check that we do not get a TypeError when trying
         to query an index with a key that has an invalid type
         '''
         index = self._makeOne('counter')
 
-        class Dummy(object):
+        class Dummy:
             id = 1
             counter = 'test'
 
@@ -230,4 +230,4 @@ class TestUnIndex(unittest.TestCase):
                 self.assertEqual(
                     docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
                     tuple(apply(dict(idx=query))[0]),
-                    "%s: %s" % (op, r))
+                    "{}: {}".format(op, r))

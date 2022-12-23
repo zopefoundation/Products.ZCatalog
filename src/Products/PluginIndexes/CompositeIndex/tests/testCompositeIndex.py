@@ -18,11 +18,11 @@ logger = logging.getLogger('zope.testCompositeIndex')
 states = ['published', 'pending', 'private', 'intranet']
 types = ['Document', 'News', 'File', 'Image']
 default_pages = [True, False, False, False, False, False]
-subjects = list(map(lambda x: 'subject_{0}'.format(x), range(6)))
-keywords = list(map(lambda x: 'keyword_{0}'.format(x), range(6)))
+subjects = list(map(lambda x: f'subject_{x}', range(6)))
+keywords = list(map(lambda x: f'keyword_{x}', range(6)))
 
 
-class TestObject(object):
+class TestObject:
 
     def __init__(self, id, portal_type, review_state,
                  is_default_page=False, subject=(), keyword=()):
@@ -63,14 +63,14 @@ class RandomTestObject(TestObject):
         subject = random.sample(subjects, random.randint(1, len(subjects)))
         keyword = random.sample(keywords, random.randint(1, len(keywords)))
 
-        super(RandomTestObject, self).__init__(id, portal_type,
-                                               review_state, is_default_page,
-                                               subject, keyword)
+        super().__init__(id, portal_type,
+                         review_state, is_default_page,
+                         subject, keyword)
 
 
 # Pseudo ContentLayer class to support quick
 # unit tests (skip performance tests)
-class PseudoLayer(object):
+class PseudoLayer:
 
     @classmethod
     def setUp(cls):
@@ -81,7 +81,7 @@ class PseudoLayer(object):
         pass
 
 
-class CompositeIndexTestMixin(object):
+class CompositeIndexTestMixin:
 
     def setUp(self):
         self._indexes = [FieldIndex('review_state'),
@@ -192,7 +192,7 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
     @unittest.skipIf(
         sys.platform.startswith('win'),
         'Time() is not well resolved in Windows.'
-        ' In Python 3 use time.perf_count()')
+        ' Use time.perf_count()')
     def testPerformance(self):
         self.enableLog()
 
@@ -290,7 +290,7 @@ class CompositeIndexPerformanceTest(CompositeIndexTestMixin,
                         (duration2, duration1, query))
 
             # is result identical?
-            self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
+            self.assertEqual(len(res1), len(res2), '{} != {} for {}'.format(
                              len(res1), len(res2), query))
             self.assertEqual(res1, res2)
 
@@ -389,7 +389,7 @@ class CompositeIndexTest(CompositeIndexTestMixin, unittest.TestCase):
             res1 = self.defaultSearch(query)
             res2 = self.compositeSearch(query)
             # is result identical?
-            self.assertEqual(len(res1), len(res2), '{0} != {1} for {2}'.format(
+            self.assertEqual(len(res1), len(res2), '{} != {} for {}'.format(
                 len(res1), len(res2), query))
 
             self.assertEqual(res1, res2)

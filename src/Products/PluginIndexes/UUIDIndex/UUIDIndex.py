@@ -114,7 +114,7 @@ class UUIDIndex(UnIndex):
         has_attr = getattr(aq_base(obj), attr, _marker)
         if has_attr is _marker:
             return _marker
-        return super(UUIDIndex, self)._get_object_datum(obj, attr)
+        return super()._get_object_datum(obj, attr)
 
 
 manage_addUUIDIndexForm = DTMLFile('dtml/addUUIDIndex', globals())

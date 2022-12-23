@@ -19,7 +19,7 @@ from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
 
-class Dummy(object):
+class Dummy:
 
     def __init__(self, foo):
         self._foo = foo
@@ -114,7 +114,7 @@ class FieldIndexTests(unittest.TestCase):
                 result = result.keys()
             assert used == ('foo', )
             assert len(result) == len(expectedValues), \
-                '%s | %s' % (list(result), expectedValues)
+                '{} | {}'.format(list(result), expectedValues)
             for k, v in expectedValues:
                 self.assertTrue(k in result)
 

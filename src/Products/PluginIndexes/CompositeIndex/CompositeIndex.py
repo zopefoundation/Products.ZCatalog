@@ -13,10 +13,10 @@
 
 import logging
 import time
+import urllib
 from itertools import combinations
 from itertools import product
-
-from six.moves import urllib
+from time import process_time
 
 import transaction
 from Acquisition import aq_inner
@@ -31,12 +31,6 @@ from Products.PluginIndexes.interfaces import ITransposeQuery
 from Products.PluginIndexes.KeywordIndex.KeywordIndex import KeywordIndex
 from Products.PluginIndexes.unindex import _marker
 from Products.ZCatalog.query import IndexQuery
-
-
-try:
-    from time import clock as process_time
-except ImportError:
-    from time import process_time
 
 
 LOG = logging.getLogger('CompositeIndex')
@@ -136,7 +130,7 @@ class ComponentMapping(PersistentMapping):
         return list(map(self.get, self._keys))
 
 
-class Component(object):
+class Component:
 
     _attributes = ''
 
@@ -236,7 +230,7 @@ class CompositeIndex(KeywordIndex):
         else:
             # we have an existing entry for this document, and we need
             # to figure out if any of the keywords have actually changed
-            if type(oldKeywords) is not OOSet:
+            if not isinstance(oldKeywords, OOSet):
                 oldKeywords = OOSet(oldKeywords)
             newKeywords = OOSet(newKeywords)
             fdiff = difference(oldKeywords, newKeywords)
@@ -437,7 +431,7 @@ class CompositeIndex(KeywordIndex):
         # Add a component object by 'c_id'.
         if c_id in self._components:
             raise KeyError('A component with this '
-                           'name already exists: {0}'.format(c_id))
+                           'name already exists: {}'.format(c_id))
 
         self._components[c_id] = Component(c_id,
                                            c_meta_type,
@@ -447,7 +441,7 @@ class CompositeIndex(KeywordIndex):
     def delComponent(self, c_id):
         # Delete the component object specified by 'c_id'.
         if c_id not in self._components:
-            raise KeyError('no such Component:  {0}'.format(c_id))
+            raise KeyError(f'no such Component:  {c_id}')
 
         del self._components[c_id]
 
@@ -510,7 +504,7 @@ class CompositeIndex(KeywordIndex):
 
         self.clear()
 
-        class pseudoObject(object):
+        class pseudoObject:
             pass
 
         counter = 0
@@ -547,7 +541,7 @@ class CompositeIndex(KeywordIndex):
 
         if RESPONSE:
             msg = ('ComponentIndex fast reindexed '
-                   'in {0:.3f}s ({1:.3f}s cpu time)').format(tt, ct)
+                   'in {:.3f}s ({:.3f}s cpu time)').format(tt, ct)
             param = urllib.parse.urlencode({'manage_tabs_message': msg})
 
             RESPONSE.redirect(URL1 + '/manage_main?' + param)

@@ -13,8 +13,6 @@
 
 from datetime import datetime
 
-import six
-
 from DateTime.DateTime import DateTime
 
 
@@ -29,7 +27,7 @@ def safe_callable(ob):
         try:
             return bool(ob.__call__)
         except AttributeError:
-            return isinstance(ob, six.class_types)
+            return isinstance(ob, type)
 
     except AttributeError:
         return callable(ob)
@@ -55,6 +53,6 @@ def datetime_to_minutes(value, precision=1,
     if value > max_value or value < min_value:
         # value must be integer fitting in the range (default 32bit)
         raise OverflowError(
-            '{0} is not within the range of dates allowed.'.format(value))
+            f'{value} is not within the range of dates allowed.')
 
     return value

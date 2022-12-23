@@ -18,7 +18,7 @@ import unittest
 from Products.PluginIndexes.TopicIndex.TopicIndex import TopicIndex
 
 
-class Obj(object):
+class Obj:
 
     def __init__(self, id, meta_type=''):
         self.id = id
@@ -42,8 +42,7 @@ class TestBase(unittest.TestCase):
     def _search(self, query, operator, expected):
         res = self.TI._apply_index(
             {'topic': {'query': query, 'operator': operator}})
-        rows = list(res[0].keys())
-        rows.sort()
+        rows = sorted(res[0].keys())
         expected.sort()
         self.assertEqual(rows, expected, query)
         return rows

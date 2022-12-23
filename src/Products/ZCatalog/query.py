@@ -21,7 +21,7 @@ class IndexQueryParseError(Exception):
     pass
 
 
-class IndexQuery(object):
+class IndexQuery:
     """
     This class provides functionality to hide the internals of a query
     send from the Catalog/ZCatalog to an index._apply_index() method.
@@ -110,7 +110,7 @@ class IndexQuery(object):
         iid = self.id
         value = value.lower()
         if value not in self.operators:
-            raise ValueError(('index {0!r}: operator {1!r}'
+            raise ValueError(('index {!r}: operator {!r}'
                               ' is not valid').format(iid, value))
         self._operator = value
 
@@ -124,5 +124,5 @@ class IndexQuery(object):
         if key in self.options:
             setattr(self, key, value)
         else:
-            raise ValueError(('index {0!r}: option {1!r}'
+            raise ValueError(('index {!r}: option {!r}'
                               ' is not valid').format(self.id, key))

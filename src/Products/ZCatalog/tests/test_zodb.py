@@ -33,7 +33,7 @@ class ZDummy(ExtensionClass.Base):
         self.title = 'Dummy %d' % (num,)
 
 
-class ContentLayer(object):
+class ContentLayer:
 
     @classmethod
     def setUp(cls):
@@ -64,7 +64,7 @@ class ContentLayer(object):
     def _make_persistent_folder(app, obj_id):
         app.Database._setObject(obj_id, Folder(obj_id))
         result = app.Database[obj_id]
-        result.title = 'Folder %s' % (obj_id,)
+        result.title = 'Folder {}'.format(obj_id)
         return result
 
     @classmethod

@@ -35,7 +35,7 @@ class ZDummy(ExtensionClass.Base):
         self.num = num
 
     def title(self):
-        return '{0:d}'.format(self.num)
+        return f'{self.num:d}'
 
 
 class ZDummyFalse(ZDummy):
@@ -47,7 +47,7 @@ class ZDummyFalse(ZDummy):
 class DummyLenFail(ZDummy):
 
     def __init__(self, num, fail):
-        super(DummyLenFail, self).__init__(num)
+        super().__init__(num)
         self.fail = fail
 
     def __len__(self):
@@ -57,7 +57,7 @@ class DummyLenFail(ZDummy):
 class DummyNonzeroFail(ZDummy):
 
     def __init__(self, num, fail):
-        super(DummyNonzeroFail, self).__init__(num)
+        super().__init__(num)
         self.fail = fail
 
     def __nonzero__(self):
@@ -75,7 +75,7 @@ class FakeParent(Implicit):
     marker = object()
 
     def __init__(self, d):
-        super(FakeParent, self).__init__()
+        super().__init__()
         self.d = d
 
     def unrestrictedTraverse(self, path, default=marker):
@@ -99,7 +99,7 @@ class PickySecurityManager:
         raise Unauthorized(name)
 
 
-class ZCatalogBase(object):
+class ZCatalogBase:
 
     def _makeOne(self):
         from Products.ZCatalog.ZCatalog import ZCatalog
@@ -157,7 +157,7 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         self.d['11'] = DummyLenFail(11, self.fail)
         self.d['12'] = DummyNonzeroFail(12, self.fail)
 
-        class MyResponse(object):
+        class MyResponse:
             # A fake response that doesn't bomb on manage_catalogObject().
             def redirect(self, url):
                 pass
