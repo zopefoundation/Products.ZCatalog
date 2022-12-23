@@ -184,12 +184,12 @@ class DateIndexTests(unittest.TestCase):
         from Products.PluginIndexes.DateIndex.DateIndex import Local
         if isinstance(dt, (float, int)):
             yr, mo, dy, hr, mn = gmtime(dt)[:5]
-        elif isinstance(dt, date):
-            yr, mo, dy, hr, mn = dt.timetuple()[:5]
         elif isinstance(dt, datetime):
             if dt.tzinfo is None:  # default behavior of index
                 dt = dt.replace(tzinfo=Local)
             yr, mo, dy, hr, mn = dt.utctimetuple()[:5]
+        elif isinstance(dt, date):
+            yr, mo, dy, hr, mn = dt.timetuple()[:5]
         else:
             yr, mo, dy, hr, mn = dt.toZone('UTC').parts()[:5]
         value = (((yr * 12 + mo) * 31 + dy) * 24 + hr) * 60 + mn
