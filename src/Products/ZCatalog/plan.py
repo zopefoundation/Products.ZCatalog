@@ -105,7 +105,7 @@ class PriorityMap(NestedDict):
                 pmap = resolve(location)
                 cls.load_pmap(location, pmap)
             except ImportError:
-                logger.warning('could not load priority map from %s', location)
+                logger.warning(f'could not load priority map from {location}')
 
     @classmethod
     def load_from_path(cls, path):

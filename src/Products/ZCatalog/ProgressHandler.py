@@ -63,7 +63,7 @@ class StdoutHandler:
                              end.strftime('%Y/%m/%d %H:%M:%Sh')))
 
     def output(self, text):
-        print('{}: {}'.format(self._ident, text), file=self.fp)
+        print(f'{self._ident}: {text}', file=self.fp)
 
 
 class ZLogHandler(StdoutHandler):

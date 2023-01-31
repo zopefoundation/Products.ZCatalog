@@ -30,7 +30,7 @@ class Dummy:
         return self._date
 
     def __str__(self):
-        return "<Dummy {}, date {}>".format(self._name, str(self._date))
+        return f"<Dummy {self._name}, date {str(self._date)}>"
 
 ###############################################################################
 # excerpted from the Python module docs
@@ -159,7 +159,7 @@ class DateIndexTests(unittest.TestCase):
                 result = result.keys()
             self.assertEqual(used, ('date',))
             self.assertEqual(len(result), len(expectedValues),
-                             '{}: {} | {}'.format(req, result, expectedValues))
+                             f'{req}: {result} | {expectedValues}')
             for k, v in expectedValues:
                 self.assertTrue(k in result)
 

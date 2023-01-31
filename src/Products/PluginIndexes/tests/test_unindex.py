@@ -230,4 +230,4 @@ class TestUnIndex(unittest.TestCase):
                 self.assertEqual(
                     docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
                     tuple(apply(dict(idx=query))[0]),
-                    "{}: {}".format(op, r))
+                    f"{op}: {r}")

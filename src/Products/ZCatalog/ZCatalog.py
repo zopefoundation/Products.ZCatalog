@@ -704,7 +704,7 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         for id, ob in items:
             if pre:
-                p = "{}/{}".format(pre, id)
+                p = f"{pre}/{id}"
             else:
                 p = id
 
@@ -754,7 +754,7 @@ class ZCatalog(Folder, Persistent, Implicit):
         if REQUEST:
             script = REQUEST.script
             if path.find(script) != 0:
-                path = '{}/{}'.format(script, path)
+                path = f'{script}/{path}'
             try:
                 return REQUEST.resolve_url(path)
             except Exception:
@@ -905,7 +905,7 @@ class ZCatalog(Folder, Persistent, Implicit):
             output.append('  %s: {' % repr(cid))
             for querykey, details in plan.items():
                 if isinstance(details, (frozenset, set)):
-                    output.append('    {!r}: {!r},'.format(querykey, details))
+                    output.append(f'    {querykey!r}: {details!r},')
                 else:
                     output.append('    %s: {' % repr(querykey))
                     for indexname, bench in sorted(details.items()):

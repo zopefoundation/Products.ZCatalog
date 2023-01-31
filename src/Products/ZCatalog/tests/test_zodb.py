@@ -64,7 +64,7 @@ class ContentLayer:
     def _make_persistent_folder(app, obj_id):
         app.Database._setObject(obj_id, Folder(obj_id))
         result = app.Database[obj_id]
-        result.title = 'Folder {}'.format(obj_id)
+        result.title = f'Folder {obj_id}'
         return result
 
     @classmethod
