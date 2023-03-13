@@ -6,6 +6,9 @@ Changelog
 
 - Drop support for Python 2.7, 3.5, 3.6.
 
+- Fix SyntaxError on the Browse tab for DateIndex.
+  (`#144 <https://github.com/zopefoundation/Products.ZCatalog/issues/144>`_)
+
 
 6.4 (2022-12-13)
 ----------------
