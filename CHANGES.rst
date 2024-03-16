@@ -1,10 +1,11 @@
 Changelog
 =========
 
-7.1 (unreleased)
-----------------
+7.0.1 (unreleased)
+------------------
 
-- Nothing changed yet.
+- Fix TypeError on the Query Report tab.
+  (`#136 <https://github.com/zopefoundation/Products.ZCatalog/issues/136>`_)
 
 
 7.0 (2023-03-14)
