@@ -4,6 +4,8 @@ Changelog
 7.0.1 (unreleased)
 ------------------
 
+- Add support for Python 3.12.
+
 - Fix TypeError on the Query Report tab.
   (`#136 <https://github.com/zopefoundation/Products.ZCatalog/issues/136>`_)
 
