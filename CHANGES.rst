@@ -1,8 +1,8 @@
 Changelog
 =========
 
-7.0.1 (unreleased)
-------------------
+7.1 (2024-03-21)
+----------------
 
 - Add support for Python 3.12.
 
