@@ -587,8 +587,9 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
 
         return rs
 
-    def search(self, query,
-               sort_index=None, reverse=False, limit=None, merge=True, rids=False):
+    def search(
+            self, query, sort_index=None, reverse=False, limit=None,
+            merge=True, rids=False):
         """Iterate through the indexes, applying the query to each one. If
         merge is true then return a lazy result set (sorted if appropriate)
         otherwise return the raw (possibly scored) results for later merging.
@@ -1085,7 +1086,8 @@ class Catalog(Persistent, Acquisition.Implicit, ExtensionClass.Base):
                 # be nice and keep the old API intact for single sort_order
                 reverse = reverse[0]
         # Perform searches with indexes and sort_index
-        return self.search(query, sort_indexes, reverse, sort_limit, _merge, rids)
+        return self.search(
+            query, sort_indexes, reverse, sort_limit, _merge, rids)
 
     __call__ = searchResults
 
