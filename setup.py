@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name='Products.ZCatalog',
-    version='7.1.dev0',
+    version='7.2.dev0',
     url='https://github.com/zopefoundation/Products.ZCatalog',
     project_urls={
         'Issue Tracker': 'https://github.com/zopefoundation/'
@@ -49,6 +49,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],

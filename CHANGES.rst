@@ -1,10 +1,19 @@
 Changelog
 =========
 
-7.1 (unreleased)
+7.2 (unreleased)
 ----------------
 
 - Nothing changed yet.
+
+
+7.1 (2024-03-21)
+----------------
+
+- Add support for Python 3.12.
+
+- Fix TypeError on the Query Report tab.
+  (`#136 <https://github.com/zopefoundation/Products.ZCatalog/issues/136>`_)
 
 
 7.0 (2023-03-14)
