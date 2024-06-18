@@ -4,7 +4,7 @@ Changelog
 7.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Drop support for Python 3.7.
 
 
 7.1 (2024-03-21)
