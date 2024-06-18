@@ -104,7 +104,7 @@ class PriorityMap(NestedDict):
             try:
                 pmap = resolve(location)
                 cls.load_pmap(location, pmap)
-            except ImportError:
+            except ModuleNotFoundError:
                 logger.warning(f'could not load priority map from {location}')
 
     @classmethod
@@ -121,8 +121,7 @@ class PriorityMap(NestedDict):
 
     @classmethod
     def load_pmap(cls, location, pmap):
-        logger.info('loaded priority %d map(s) from %s',
-                    len(pmap), location)
+        logger.info('loaded priority %d map(s) from %s', len(pmap), location)
         # Convert the simple benchmark tuples to namedtuples
         new_plan = {}
         for cid, plan in pmap.items():
@@ -251,8 +250,7 @@ class CatalogPlan:
             key = [name for name in key if name not in notkeys]
             key.extend([(name, "not") for name in notkeys])
         # Workaround: Python only sorts on identical types.
-        tuple_keys = set(key) - {
-            x for x in key if not isinstance(x, tuple)}
+        tuple_keys = set(key) - {x for x in key if not isinstance(x, tuple)}
 
         str_keys = set(key) - tuple_keys
         return tuple(sorted(str_keys)) + tuple(sorted(tuple_keys))
@@ -264,9 +262,9 @@ class CatalogPlan:
 
         # sort indexes on (limited result index, mean search time)
         # skip internal ('#') bookkeeping records
-        ranking = sorted(
-            [((value.limit, value.duration), name)
-             for name, value in benchmark.items() if '#' not in name])
+        ranking = sorted([((value.limit, value.duration), name)
+                          for name, value in benchmark.items()
+                          if '#' not in name])
         return [r[1] for r in ranking]
 
     def start(self):
@@ -281,8 +279,7 @@ class CatalogPlan:
         start_time, stop_time = self.interim.get(name, Duration(None, None))
         self.interim[name] = Duration(start_time, current)
         dt = current - start_time
-        self.res.append(IndexMeasurement(
-            name=name, duration=dt, limit=limit))
+        self.res.append(IndexMeasurement(name=name, duration=dt, limit=limit))
 
         if name.startswith('sort_on'):
             # sort_on isn't an index. We only do time reporting on it
@@ -291,8 +288,7 @@ class CatalogPlan:
         # remember index's hits, search time and calls
         benchmark = self.benchmark
         if name not in benchmark:
-            benchmark[name] = Benchmark(duration=dt,
-                                        hits=1, limit=limit)
+            benchmark[name] = Benchmark(duration=dt, hits=1, limit=limit)
         else:
             duration, hits, limit = benchmark[name]
             duration = ((duration * hits) + dt) / float(hits + 1)
@@ -316,8 +312,7 @@ class CatalogPlan:
                     if key in self.catalog.indexes:
                         index = self.catalog.indexes[key]
                         self.benchmark[key] = Benchmark(
-                            0, 0, ILimitedResultIndex.providedBy(index)
-                        )
+                            0, 0, ILimitedResultIndex.providedBy(index))
                     else:
                         self.benchmark[key] = Benchmark(0, 0, False)
         PriorityMap.set_entry(self.cid, self.key, self.benchmark)
@@ -354,11 +349,14 @@ class CatalogPlan:
                 'query': key,
                 'counter': report.hits,
                 'duration': report.duration * 1000,
-                'last': {'duration': last.duration * 1000,
-                         'details': [dict(id=d.name,
-                                          duration=d.duration * 1000)
-                                     for d in last.details],
-                         },
+                'last': {
+                    'duration':
+                    last.duration * 1000,
+                    'details': [
+                        dict(id=d.name, duration=d.duration * 1000)
+                        for d in last.details
+                    ],
+                },
             }
             rval.append(info)
 

@@ -75,7 +75,7 @@ def _encode(w):
     b, c = divmod(w, 0x80)
     a, b = divmod(b, 0x80)
     s = chr(b) + chr(c)
-    if a < 0x80:    # no more than 21 data bits
+    if a < 0x80:  # no more than 21 data bits
         return chr(a + 0x80) + s
     a, b = divmod(a, 0x80)
     assert a < 0x80, (w, a, b, s)  # else more than 28 data bits
@@ -86,7 +86,7 @@ _prog = re.compile(r"[\x80-\xFF][\x00-\x7F]*")
 
 
 def decode(code):
-    # Handle bytes that were not properly decoded during Python 3 conversion
+    # Handle bytes that were not properly decoded during Python-3-conversion
     if isinstance(code, bytes):
         code = code.decode('latin1')
     # Decode a string into a list of wids.
