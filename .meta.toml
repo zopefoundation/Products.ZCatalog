@@ -26,3 +26,20 @@ additional-rules = [
 
 [tox]
 use-flake8 = true
+testenv-deps = [
+    "# The universal2 environment is for Python on macOS built with",
+    "# universal2 mode instead of architecture-specific. These dependencies",
+    "# must be installed separately, zc.buildout is incompatible with the",
+    "# universal2 mode and cannot install them itself.",
+    "universal2: -c {toxinidir}/constraints.txt",
+    "universal2: zope.interface",
+    "universal2: zope.security",
+    "universal2: zope.container",
+    "universal2: Persistence",
+    "universal2: Acquisition",
+    "universal2: AccessControl",
+    "universal2: zodbpickle",
+    "universal2: charset_normalizer",
+    "universal2: MarkupSafe",
+    "universal2: zope.testrunner",
+    ]
