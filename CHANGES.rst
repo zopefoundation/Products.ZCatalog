@@ -5,6 +5,8 @@ Changelog
 ----------------
 
 - Drop support for Python 3.7.
+- Avoid unnecessary loading time opening manage_catalogView
+ (`#155 <https://github.com/zopefoundation/Products.ZCatalog/issues/136>`_)
 
 
 7.1 (2024-03-21)
