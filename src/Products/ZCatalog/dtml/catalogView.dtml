@@ -27,15 +27,17 @@
 
             <form action="&dtml-URL1;" name="objectItems" id="objectItems">
                 <p class="help-text">
-                    The catalog <em>&dtml-id;</em> contains 
+                    The catalog <em>&dtml-id;</em> contains
                     <span class="badge badge-success">
-                        <dtml-var results fmt=collection-length thousands_commas> 
+                        <dtml-var results fmt=collection-length thousands_commas>
                     </span>
                     record(s)
                     <dtml-if filterpath>
                         in the path <code>&dtml-filterpath;</code>
                     </dtml-if>
                 </p>
+
+                <dtml-if filterpath>
                 <nav class="zmi-find-results nav mb-3">
                     <div class="col-6 text-left pl-1">
                         <dtml-in results previous size=20 start=query_start >
@@ -99,6 +101,12 @@
                     <input class="btn btn-primary" type="submit" value=" Remove " name="manage_uncatalogObject:method" />
                     <input class="btn btn-primary" type="submit" value=" Update " name="manage_catalogObject:method" />
                 </div>
+                <dtml-else>
+                    <p class="help-text">
+                           The path filter is Empty. Please specify a path filter to start a search ("/" for the whole catalog).
+                    </p>
+                </dtml-if>
+
             </form>
         <dtml-else>
             <p class="helo-text">
@@ -162,8 +170,6 @@
 
 
 
-//-->
-</script>
 
 <style>
     /* OBJECT CLASS ZCatalog: Neutralize Zope Overwrites of zmi.base.css, L891 */
