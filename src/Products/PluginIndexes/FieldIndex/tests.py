@@ -116,7 +116,7 @@ class FieldIndexTests(unittest.TestCase):
             assert len(result) == len(expectedValues), \
                 f'{list(result)} | {expectedValues}'
             for k, v in expectedValues:
-                self.assertTrue(k in result)
+                self.assertIn(k, result)
 
         index = self._index
 
@@ -214,7 +214,7 @@ class FieldIndexTests(unittest.TestCase):
     def testNone(self):
         # Make sure None is ignored.
         self._index.index_object(10, Dummy(None))
-        self.assertFalse(None in self._index.uniqueValues('foo'))
+        self.assertNotIn(None, self._index.uniqueValues('foo'))
         self._checkApply({'foo': None}, [])
 
     def testReindexNone(self):

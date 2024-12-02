@@ -133,7 +133,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('dogs')
         self.assertEqual(len(wids), 1)
-        self.assertTrue(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testMissingTermToWordIdsWithProcess_post_glob(self):
         """This test is for added process_post_glob"""
@@ -156,7 +156,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('fish')
         self.assertEqual(len(wids), 1)
-        self.assertTrue(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testSplitterAdaptorFold(self):
         from Products.ZCTextIndex.Lexicon import CaseNormalizer
@@ -189,7 +189,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('hsif')
         self.assertEqual(len(wids), 1)
-        self.assertTrue(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testThreeElementPipeline(self):
         from Products.ZCTextIndex.Lexicon import Splitter
@@ -202,7 +202,7 @@ class LexiconTests(unittest.TestCase):
         wids = lexicon.sourceToWordIds('cats and dogs')
         wids = lexicon.termToWordIds('hsif')
         self.assertEqual(len(wids), 1)
-        self.assertTrue(wids[0] > 0)
+        self.assertGreater(wids[0], 0)
 
     def testSplitterLocaleAwareness(self):
         import locale

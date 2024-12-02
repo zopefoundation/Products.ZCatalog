@@ -162,8 +162,10 @@ class TestBrains(unittest.TestCase):
         self.root.REQUEST = request
         self.assertEqual(b.getPath(), '/happy')
         self.assertEqual(b.getObject().REQUEST, request)
-        self.assertTrue(aq_base(b.getObject()) is
-                        aq_base(self.cat.getobject(1)))
+        self.assertIs(
+            aq_base(b.getObject()),
+            aq_base(self.cat.getobject(1))
+        )
 
     def testGetObjectHappy_catalog_as_utility(self):
         request = DummyRequest()
@@ -172,8 +174,10 @@ class TestBrains(unittest.TestCase):
         setRequest(request)
         self.assertEqual(b.getPath(), '/happy')
         self.assertEqual(b.getObject().REQUEST, request)
-        self.assertTrue(aq_base(b.getObject()) is
-                        aq_base(self.cat.getobject(1)))
+        self.assertIs(
+            aq_base(b.getObject()),
+            aq_base(self.cat.getobject(1))
+        )
         clearRequest()
 
     def testGetObjectPropagatesConflictErrors(self):

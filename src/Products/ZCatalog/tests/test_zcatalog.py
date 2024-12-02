@@ -322,8 +322,11 @@ class TestZCatalog(ZCatalogBase, unittest.TestCase):
         # provide `ZopeVersion`
         catalog.ZopeVersion = lambda *arg, **kw: 4
         vr = catalog.manage_catalogView()
-        self.assertTrue("There are no objects in the Catalog." not in vr,
-                        "catalogView wrongly reports `no objects`")
+        self.assertNotIn(
+            "There are no objects in the Catalog.",
+            vr,
+            "catalogView wrongly reports `no objects`"
+        )
 
 
 class TestAddDelColumnIndex(ZCatalogBase, unittest.TestCase):
@@ -416,7 +419,7 @@ class TestZCatalogGetObject(ZCatalogBase, unittest.TestCase):
         pickySecurityManager = PickySecurityManager(['fold'])
         setSecurityManager(pickySecurityManager)
         ob = brain.getObject()
-        self.assertFalse(ob is None)
+        self.assertIsNotNone(ob)
         self.assertEqual(ob.getId(), 'ob')
 
     # Now test _unrestrictedGetObject

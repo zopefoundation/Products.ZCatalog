@@ -116,7 +116,7 @@ class TestPersistentZCatalog(unittest.TestCase):
         ignore, cache_size_limit = self._get_zodb_info(catalog)
         # ZODB connection cache grows out of size limit and eats memory
         actual_size = self._actual_cache_size(catalog)
-        self.assertTrue(actual_size >= cache_size_limit * 1.1)
+        self.assertGreaterEqual(actual_size, cache_size_limit * 1.1)
 
     def test_maintained_search(self):
         # run big query with cache maintenance
@@ -125,4 +125,4 @@ class TestPersistentZCatalog(unittest.TestCase):
         ignore, cache_size_limit = self._get_zodb_info(catalog)
         # ZODB connection cache stays within its size limit
         actual_size = self._actual_cache_size(catalog)
-        self.assertTrue(actual_size <= cache_size_limit + threshold)
+        self.assertLessEqual(actual_size, cache_size_limit + threshold)
