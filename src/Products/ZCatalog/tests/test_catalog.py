@@ -234,7 +234,7 @@ class TestCatalog(unittest.TestCase):
 
     def test_clear(self):
         catalog = self._make_one()
-        self.assertTrue(len(catalog) > 0)
+        self.assertGreater(len(catalog), 0)
         catalog.clear()
         self.assertEqual(catalog._length(), 0)
         self.assertEqual(len(catalog), 0)
@@ -351,7 +351,7 @@ class TestCatalog(unittest.TestCase):
             col1 = FieldIndex('col1')
             catalog.addIndex('col1', col1)
         catalog = self._make_one(extra=extra)
-        self.assertTrue(len(catalog) > 0)
+        self.assertGreater(len(catalog), 0)
         all_data = catalog({})
         self.assertEqual(len(all_data), 0)
 
@@ -737,7 +737,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order='reverse')
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_reverse_with_limit(self):
         catalog = self._make_one()
@@ -768,7 +768,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_reverse_first(self):
         catalog = self._make_one()
@@ -777,7 +777,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_reverse_second(self):
         catalog = self._make_one()
@@ -786,7 +786,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_reverse_both(self):
         catalog = self._make_one()
@@ -795,7 +795,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('reverse', 'reverse'))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_reverse_too_many(self):
         catalog = self._make_one()
@@ -804,14 +804,14 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('', '', 'reverse', ''))
         self.assertEqual(len(a), upper)
         for x in range(upper - 1):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_small_limit(self):
         catalog = self._make_one()
         a = catalog(sort_on=('att1', 'num'), att1='att1', sort_limit=10)
         self.assertEqual(len(a), 10)
         for x in range(9):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_small_limit_reverse(self):
         catalog = self._make_one()
@@ -819,7 +819,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_limit=10, sort_order='reverse')
         self.assertEqual(len(a), 10)
         for x in range(9):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_big_limit(self):
         catalog = self._make_one()
@@ -827,7 +827,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_two_big_limit_reverse(self):
         catalog = self._make_one()
@@ -835,7 +835,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_limit=self.upper * 3, sort_order='reverse')
         self.assertEqual(len(a), 100)
         for x in range(99):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_three(self):
         def extra(catalog):
@@ -856,7 +856,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order='reverse')
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_three_reverse_last(self):
         def extra(catalog):
@@ -867,7 +867,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_order=('', '', 'reverse'))
         self.assertEqual(len(a), self.upper)
         for x in range(self.upper - 1):
-            self.assertTrue(a[x].num > a[x + 1].num)
+            self.assertGreater(a[x].num, a[x + 1].num)
 
     def test_sort_on_three_small_limit(self):
         def extra(catalog):
@@ -878,7 +878,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_limit=10)
         self.assertEqual(len(a), 10)
         for x in range(9):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
     def test_sort_on_three_big_limit(self):
         def extra(catalog):
@@ -889,7 +889,7 @@ class TestCatalogSortBatch(unittest.TestCase):
                     sort_limit=self.upper * 3)
         self.assertEqual(len(a), 100)
         for x in range(99):
-            self.assertTrue(a[x].num < a[x + 1].num)
+            self.assertLess(a[x].num, a[x + 1].num)
 
 
 class TestUnCatalog(unittest.TestCase):

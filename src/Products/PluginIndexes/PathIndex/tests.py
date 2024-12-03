@@ -132,7 +132,7 @@ class PathIndexTests(unittest.TestCase):
     def test_getEntryForObject_miss_w_default(self):
         index = self._makeOne()
         default = object()
-        self.assertTrue(index.getEntryForObject(1234, default) is default)
+        self.assertIs(index.getEntryForObject(1234, default), default)
 
     def test_getEntryForObject_hit(self):
         index = self._makeOne()

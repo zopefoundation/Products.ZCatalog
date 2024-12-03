@@ -36,22 +36,22 @@ class TestBooleanIndex(unittest.TestCase):
         index = self._makeOne()
         obj = Dummy(1, True)
         index._index_object(obj.id, obj, attr='truth')
-        self.assertTrue(1 in index._unindex)
-        self.assertFalse(1 in index._index)
+        self.assertIn(1, index._unindex)
+        self.assertNotIn(1, index._index)
 
     def test_index_false(self):
         index = self._makeOne()
         obj = Dummy(1, False)
         index._index_object(obj.id, obj, attr='truth')
-        self.assertTrue(1 in index._unindex)
-        self.assertFalse(1 in index._index)
+        self.assertIn(1, index._unindex)
+        self.assertNotIn(1, index._index)
 
     def test_index_missing_attribute(self):
         index = self._makeOne()
         obj = Dummy(1, True)
         index._index_object(obj.id, obj, attr='missing')
-        self.assertFalse(1 in index._unindex)
-        self.assertFalse(1 in index._index)
+        self.assertNotIn(1, index._unindex)
+        self.assertNotIn(1, index._index)
 
     def test_search_true(self):
         index = self._makeOne()

@@ -161,7 +161,7 @@ class DateIndexTests(unittest.TestCase):
             self.assertEqual(len(result), len(expectedValues),
                              f'{req}: {result} | {expectedValues}')
             for k, v in expectedValues:
-                self.assertTrue(k in result)
+                self.assertIn(k, result)
 
         cache = index.getRequestCache()
         cache.clear()
@@ -221,16 +221,16 @@ class DateIndexTests(unittest.TestCase):
         self.assertEqual(len(index), 0)
         self.assertEqual(len(index.referencedObjects()), 0)
 
-        self.assertTrue(index.getEntryForObject(1234) is None)
+        self.assertIsNone(index.getEntryForObject(1234))
         marker = []
-        self.assertTrue(index.getEntryForObject(1234, marker) is marker)
+        self.assertIs(index.getEntryForObject(1234, marker), marker)
         index.unindex_object(1234)  # shouldn't throw
 
         self.assertTrue(index.hasUniqueValuesFor('date'))
         self.assertFalse(index.hasUniqueValuesFor('foo'))
         self.assertEqual(len(list(index.uniqueValues('date'))), 0)
 
-        self.assertTrue(index._apply_index({'zed': 12345}) is None)
+        self.assertIsNone(index._apply_index({'zed': 12345}))
 
         self._checkApply(index,
                          {'date': DateTime(0)}, [])
@@ -260,9 +260,9 @@ class DateIndexTests(unittest.TestCase):
         # One empty
         self.assertEqual(len(index.referencedObjects()), len(values) - 1)
 
-        self.assertTrue(index.getEntryForObject(1234) is None)
+        self.assertIsNone(index.getEntryForObject(1234))
         marker = []
-        self.assertTrue(index.getEntryForObject(1234, marker) is marker)
+        self.assertIs(index.getEntryForObject(1234, marker), marker)
         index.unindex_object(1234)  # shouldn't throw
 
         for k, v in values:
@@ -272,7 +272,7 @@ class DateIndexTests(unittest.TestCase):
 
         self.assertEqual(
             len(list(index.uniqueValues('date'))), len(values) - 2)
-        self.assertTrue(index._apply_index({'bar': 123}) is None)
+        self.assertIsNone(index._apply_index({'bar': 123}))
 
         self._checkApply(index,
                          {'date': DateTime(0)}, values[1:2])
@@ -334,7 +334,7 @@ class DateIndexTests(unittest.TestCase):
         self._checkApply(index,
                          {'date': 1072742900}, [values[7]])
         index.index_object(7, None)
-        self.assertFalse(7 in index.documentToKeyMap().keys())
+        self.assertNotIn(7, index.documentToKeyMap().keys())
 
     def test_getCounter(self):
         from DateTime import DateTime

@@ -140,12 +140,12 @@ class DateRangeIndexTests(unittest.TestCase):
     def test_empty(self):
         empty = self._makeOne('empty')
 
-        self.assertTrue(empty.getEntryForObject(1234) is None)
+        self.assertIsNone(empty.getEntryForObject(1234))
         empty.unindex_object(1234)  # shouldn't throw
 
         self.assertFalse(list(empty.uniqueValues('foo')))
         self.assertFalse(list(empty.uniqueValues('foo', withLengths=True)))
-        self.assertTrue(empty._apply_index({'zed': 12345}) is None)
+        self.assertIsNone(empty._apply_index({'zed': 12345}))
 
         self._checkApply(empty, {'empty': 12345}, [])
 
@@ -193,14 +193,14 @@ class DateRangeIndexTests(unittest.TestCase):
         floor = index.floor_value - 1
         bad = Dummy('bad', floor, None)
         index.index_object(0, bad)
-        self.assertTrue(0 in index._always.keys())
+        self.assertIn(0, index._always.keys())
 
     def test_ceiling_date(self):
         index = self._makeOne('work', 'start', 'stop')
         ceiling = index.ceiling_value + 1
         bad = Dummy('bad', None, ceiling)
         index.index_object(1, bad)
-        self.assertTrue(1 in index._always.keys())
+        self.assertIn(1, index._always.keys())
 
     def test_datetime(self):
         from Products.PluginIndexes.DateIndex.tests import _getEastern

@@ -91,7 +91,7 @@ class UUIDIndexTests(unittest.TestCase):
             self.assertEqual(used, ('foo', ))
             self.assertEqual(len(result), len(expectedValues))
             for k, v in expectedValues:
-                self.assertTrue(k in result)
+                self.assertIn(k, result)
 
         index = self._index
 
@@ -134,7 +134,7 @@ class UUIDIndexTests(unittest.TestCase):
         values = self._values
         self.assertEqual(len(self._index), len(values))
         self.assertEqual(self._index.indexSize(), len(values))
-        self.assertTrue(self._index.getEntryForObject(10) is None)
+        self.assertIsNone(self._index.getEntryForObject(10))
         self._checkApply({'foo': 'not'}, [])
 
         self._index.unindex_object(10)  # nothrow
@@ -156,7 +156,7 @@ class UUIDIndexTests(unittest.TestCase):
     def test_none(self):
         # Make sure None is ignored.
         self._index.index_object(10, Dummy(None))
-        self.assertFalse(None in self._index.uniqueValues('foo'))
+        self.assertNotIn(None, self._index.uniqueValues('foo'))
         self._checkApply({'foo': None}, [])
 
     def test_reindex(self):
