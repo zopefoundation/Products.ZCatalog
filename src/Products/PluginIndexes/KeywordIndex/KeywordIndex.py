@@ -34,7 +34,7 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
-    empty_value =   '__empty__'
+    empty_value = '__empty__'
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
