@@ -409,11 +409,13 @@ class TestCatalog(unittest.TestCase):
 
         from Products.ZCatalog.plan import CatalogPlan
 
-        with patch.object(CatalogPlan, "plan", return_value=["field", "keywords"]):
+        with patch.object(
+                CatalogPlan, "plan", return_value=["field", "keywords"]):
             a = catalog({'keywords': {"not": ['10']}, 'field': 'foo'})
             self.assertEqual(len(a), 2)
 
-        with patch.object(CatalogPlan, "plan", return_value=["keywords", "field"]):
+        with patch.object(
+                CatalogPlan, "plan", return_value=["keywords", "field"]):
             a = catalog({'keywords': {"not": ['10']}, 'field': 'foo'})
             self.assertEqual(len(a), 2)
 

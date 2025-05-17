@@ -276,7 +276,8 @@ class TestKeywordIndex(unittest.TestCase):
 
         to_index = Dummy('')
         to_index.__delattr__('_foo')
-        # `to_index` no longer has a foo attribute, so it should be not in the index
+        # `to_index` no longer has a foo attribute, so it should be not
+        # in the index
         self._index._index_object(10, to_index, attr='foo')
         self.assertFalse(self._index._unindex.get(10))
 
