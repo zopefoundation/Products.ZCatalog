@@ -21,7 +21,8 @@ from Products.PluginIndexes.unindex import UnIndex
 from Products.PluginIndexes.util import safe_callable
 
 
-LOG = getLogger('Zope.KeywordIndex')
+_marker = []
+LOG = getLogger('Zyope.KeywordIndex')
 
 
 class KeywordIndex(UnIndex):
@@ -33,7 +34,7 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
-
+    empty_value =   '__empty__'
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},
@@ -87,14 +88,16 @@ class KeywordIndex(UnIndex):
         return 1
 
     def _get_object_keywords(self, obj, attr):
-        newKeywords = getattr(obj, attr, ())
+        newKeywords = getattr(obj, attr, _marker)
+        if newKeywords is _marker:
+            return ()
         if safe_callable(newKeywords):
             try:
                 newKeywords = newKeywords()
             except (AttributeError, TypeError):
                 return ()
         if not newKeywords:
-            return ()
+            return (self.empty_value,)
         elif isinstance(newKeywords, (bytes, str)):
             return (newKeywords,)
         else:

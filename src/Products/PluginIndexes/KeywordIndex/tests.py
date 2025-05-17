@@ -270,6 +270,14 @@ class TestKeywordIndex(unittest.TestCase):
 
         to_index = Dummy('')
         self._index._index_object(10, to_index, attr='foo')
+        # `to_index has a foo attribute, so it should be indexed, at least
+        # with the _empty_value_ marker
+        self.assertTrue(self._index._unindex.get(10))
+
+        to_index = Dummy('')
+        to_index.__delattr__('_foo')
+        # `to_index` no longer has a foo attribute, so it should be not in the index
+        self._index._index_object(10, to_index, attr='foo')
         self.assertFalse(self._index._unindex.get(10))
 
     def test_getCounter(self):
