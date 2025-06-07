@@ -401,8 +401,8 @@ class TestCatalog(unittest.TestCase):
             def __init__(self, keywords):
                 self.keywords = keywords
 
-        catalog.catalogObject(DummyKWNot(['10', '11', '12']), '1')
-        catalog.catalogObject(DummyKWNot(['11', '12']), '2')
+        catalog.catalogObject(DummyKWNot([10, 11, 12]), '1')
+        catalog.catalogObject(DummyKWNot([11, 12]), '2')
         catalog.catalogObject(DummyKWNot([]), '3')
 
         from unittest.mock import patch
@@ -411,12 +411,12 @@ class TestCatalog(unittest.TestCase):
 
         with patch.object(
                 CatalogPlan, "plan", return_value=["field", "keywords"]):
-            a = catalog({'keywords': {"not": ['10']}, 'field': 'foo'})
+            a = catalog({'keywords': {"not": [10]}, 'field': 'foo'})
             self.assertEqual(len(a), 2)
 
         with patch.object(
                 CatalogPlan, "plan", return_value=["keywords", "field"]):
-            a = catalog({'keywords': {"not": ['10']}, 'field': 'foo'})
+            a = catalog({'keywords': {"not": [10]}, 'field': 'foo'})
             self.assertEqual(len(a), 2)
 
 

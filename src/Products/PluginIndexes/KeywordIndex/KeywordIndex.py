@@ -34,7 +34,9 @@ class KeywordIndex(UnIndex):
     """
     meta_type = 'KeywordIndex'
     query_options = ('query', 'range', 'not', 'operator')
-    empty_value = '__empty__'
+    # None is used as a marker for empty values, that's is allowed with any type
+    # of values (str, int, ...).
+    empty_value = None
     manage_options = (
         {'label': 'Settings', 'action': 'manage_main'},
         {'label': 'Browse', 'action': 'manage_browse'},

@@ -584,12 +584,6 @@ class UnIndex(SimpleItem):
             # Filter duplicates
             setlist = []
             for k in record.keys:
-                if k is None:
-                    # Prevent None from being looked up. None doesn't
-                    # have a valid ordering definition compared to any
-                    # other object. BTrees 4.0+ will throw a TypeError
-                    # "object has default comparison".
-                    continue
                 try:
                     s = index.get(k, None)
                 except TypeError:
