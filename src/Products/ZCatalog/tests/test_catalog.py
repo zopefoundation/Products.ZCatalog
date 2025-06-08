@@ -406,8 +406,9 @@ class TestCatalog(unittest.TestCase):
         catalog.catalogObject(DummyKWNot([11, 12]), "2")
         catalog.catalogObject(DummyKWNot(), "3")
 
-        from Products.ZCatalog.plan import CatalogPlan
         from unittest.mock import patch
+
+        from Products.ZCatalog.plan import CatalogPlan
 
         with patch.object(
                 CatalogPlan, "plan", return_value=["field", "keywords"]):
