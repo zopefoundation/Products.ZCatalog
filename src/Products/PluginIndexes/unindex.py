@@ -451,7 +451,8 @@ class UnIndex(SimpleItem):
         # resultset from the catalog
         if not_parm and resultset is None:
             try:
-                resultset = IISet(self.aq_parent.uids.values())
+                # return all the rids in the catalog
+                resultset = IISet(aq_parent(self).paths.keys())
             except AttributeError:
                 # this is needed for tests, or where indexes are used outside
                 # of a catalog
