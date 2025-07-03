@@ -388,6 +388,38 @@ class TestCatalog(unittest.TestCase):
         a = catalog(att3='none')
         self.assertEqual(len(a), 0)
 
+    def test_keyword_index_index_not_query_order(self):
+        # Queries with empty keys used to return all.
+        from Products.ZCatalog.Catalog import Catalog
+        catalog = Catalog()
+        catalog.addIndex('keywords', KeywordIndex('keywords'))
+        catalog.addIndex('field', FieldIndex('field'))
+
+        class DummyKWNot(ExtensionClass.Base):
+            field = 'foo'
+
+            def __init__(self, keywords=None):
+                if keywords:
+                    self.keywords = keywords
+
+        catalog.catalogObject(DummyKWNot([10, 11, 12]), "1")
+        catalog.catalogObject(DummyKWNot([11, 12]), "2")
+        catalog.catalogObject(DummyKWNot(), "3")
+
+        from unittest.mock import patch
+
+        from Products.ZCatalog.plan import CatalogPlan
+
+        with patch.object(
+                CatalogPlan, "plan", return_value=["field", "keywords"]):
+            a = catalog({'keywords': {"not": [10]}, 'field': 'foo'})
+            self.assertEqual(len(a), 2)
+
+        with patch.object(
+                CatalogPlan, "plan", return_value=["keywords", "field"]):
+            a = catalog({'keywords': {"not": [10]}, 'field': 'foo'})
+            self.assertEqual(len(a), 2)
+
 
 class TestCatalogSortBatch(unittest.TestCase):
 

@@ -447,6 +447,17 @@ class UnIndex(SimpleItem):
 
         operator = record.operator
 
+        # If not is the first operator, we need to start with the full
+        # resultset from the catalog
+        if not_parm and resultset is None:
+            try:
+                # return all the rids in the catalog
+                resultset = IISet(aq_parent(self).paths.keys())
+            except AttributeError:
+                # this is needed for tests, or where indexes are used outside
+                # of a catalog
+                pass
+
         cachekey = None
         cache = self.getRequestCache()
         if cache is not None:
