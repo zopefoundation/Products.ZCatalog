@@ -4,8 +4,8 @@ Changelog
 7.2 (unreleased)
 ----------------
 
-- Fix Searches with "not" do not return records that do not contain
-  a value for the index.
+- Fix results for "not" queries in UnIndex-based indexes.
+   Depending on the query plan, the results previously could be missing records for which the index found no value.
   (`#148 <https://github.com/zopefoundation/Products.ZCatalog/issues/148>`_)
   (`#159 <https://github.com/zopefoundation/Products.ZCatalog/pull/159>`_)
 
