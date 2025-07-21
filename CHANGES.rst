@@ -1,7 +1,7 @@
 Changelog
 =========
 
-7.2 (unreleased)
+7.2 (2025-07-21)
 ----------------
 
 - Fix results for "not" queries in UnIndex-based indexes.
