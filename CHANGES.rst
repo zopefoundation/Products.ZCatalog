@@ -9,11 +9,9 @@ Changelog
   (`#148 <https://github.com/zopefoundation/Products.ZCatalog/issues/148>`_)
   (`#159 <https://github.com/zopefoundation/Products.ZCatalog/pull/159>`_)
 
-- Drop support for Python 3.8.
+- Drop support for Python 3.7, 3.8.
 
 - Add support for Python 3.13.
-
-- Drop support for Python 3.7.
 
 
 7.1 (2024-03-21)
