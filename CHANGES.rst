@@ -1,6 +1,12 @@
 Changelog
 =========
 
+7.3 (unreleased)
+----------------
+
+- Nothing changed yet.
+
+
 7.2 (2025-07-21)
 ----------------
 
