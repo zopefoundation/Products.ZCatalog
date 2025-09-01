@@ -26,6 +26,7 @@ from zope.dottedname.resolve import resolve
 from Products.PluginIndexes.interfaces import IDateRangeIndex
 from Products.PluginIndexes.interfaces import ILimitedResultIndex
 from Products.PluginIndexes.interfaces import IUniqueValueIndex
+from Products.ZCatalog.query_trace import get_tracer
 
 
 MAX_DISTINCT_VALUES = 10
@@ -166,6 +167,7 @@ class CatalogPlan:
         self.key = self.make_key(query)
         self.benchmark = {}
         self.threshold = threshold
+        self.tracer = get_tracer(catalog, query)
         self.init_timer()
 
     def get_id(self):
@@ -275,6 +277,9 @@ class CatalogPlan:
         self.interim[name] = Duration(time.time(), None)
 
     def stop_split(self, name, result=None, limit=False):
+        if self.tracer:
+            self.tracer.add_step(name, result)
+
         current = time.time()
         start_time, stop_time = self.interim.get(name, Duration(None, None))
         self.interim[name] = Duration(start_time, current)
@@ -317,6 +322,8 @@ class CatalogPlan:
                         self.benchmark[key] = Benchmark(0, 0, False)
         PriorityMap.set_entry(self.cid, self.key, self.benchmark)
         self.log()
+        if self.tracer:
+            self.tracer.log_results()
 
     def log(self):
         # result of stopwatch
