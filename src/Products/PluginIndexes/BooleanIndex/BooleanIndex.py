@@ -151,7 +151,7 @@ class BooleanIndex(UnIndex):
         elif check:
             # is the index (after removing the current entry) larger than
             # 60% of the total length? than switch the indexed value
-            if (self._index_length.value) <= ((self._length.value - 1) * 0.6):
+            if (self._index_length.value) >= ((self._length.value - 1) * 0.6):
                 self._invert_index(documentId)
                 return
 

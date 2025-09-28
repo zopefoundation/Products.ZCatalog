@@ -4,7 +4,8 @@ Changelog
 7.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix performance of removing a document from a BooleanIndex.
+  (`#20 <https://github.com/zopefoundation/Products.ZCatalog/issues/20>`_)
 
 
 7.2 (2025-07-21)
