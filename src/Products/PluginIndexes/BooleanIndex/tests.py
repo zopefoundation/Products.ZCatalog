@@ -254,8 +254,9 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertEqual(list(index._index), [2])
         self.assertEqual(list(res), [1, 3, 4])
 
-    def test_index_inversion_when_doc_removed(self):
+    def test_index_inversion_hysteresis(self):
         index = self._makeOne()
+
         # Add 4 false values and 6 true values
         for i in range(0, 10):
             obj = Dummy(i, False if i < 4 else True)
@@ -263,6 +264,7 @@ class TestBooleanIndex(unittest.TestCase):
         # The index stores the docids that are False,
         # since >= 60% of the documents are True
         self.assertFalse(index._index_value)
+
         # Now remove enough true values that >= 60% of
         # the values are False, which should invert the index.
         # Check at each step to make sure we aren't
@@ -275,6 +277,16 @@ class TestBooleanIndex(unittest.TestCase):
         self.assertFalse(index._index_value)
         index.unindex_object(6)
         self.assertTrue(index._index_value)
+
+        # Now add more true values and check that we invert back again.
+        index._index_object(10, Dummy(10, True), attr="truth")
+        self.assertTrue(index._index_value)
+        index._index_object(11, Dummy(11, True), attr="truth")
+        self.assertTrue(index._index_value)
+        index._index_object(12, Dummy(12, True), attr="truth")
+        self.assertTrue(index._index_value)
+        index._index_object(13, Dummy(13, True), attr="truth")
+        self.assertFalse(index._index_value)
 
     def test_getCounter(self):
         index = self._makeOne()
