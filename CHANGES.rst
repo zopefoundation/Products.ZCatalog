@@ -1,8 +1,8 @@
 Changelog
 =========
 
-7.3 (unreleased)
-----------------
+7.2.1 (2025-10-01)
+------------------
 
 - Fix performance of removing a document from a BooleanIndex.
   (`#20 <https://github.com/zopefoundation/Products.ZCatalog/issues/20>`_)
