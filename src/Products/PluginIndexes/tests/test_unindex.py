@@ -14,6 +14,7 @@
 import unittest
 
 from BTrees.IIBTree import difference
+from BTrees.IIBTree import IISet
 from OFS.SimpleItem import SimpleItem
 from Testing.makerequest import makerequest
 
@@ -231,3 +232,23 @@ class TestUnIndex(unittest.TestCase):
                     docs[r[0]: (r[1] + 1 if r[1] is not None else None)],
                     tuple(apply(dict(idx=query))[0]),
                     f"{op}: {r}")
+
+    def test_range_resultscan(self):
+        index = self._makeOne("idx")
+        index.query_options = "range"  # activate `range`
+        apply = index._apply_index
+
+        class Dummy:
+            def __init__(self, i):
+                self.idx = i
+
+        docs = tuple(Dummy(i) for i in range(400))
+        for doc in docs:
+            index.index_object(doc.idx, doc)
+        # Create a range query that filters down a small existing resultset
+        resultset = IISet(range(0, 5))
+        query = {"query": [1, 3], "range": "min:max"}
+        self.assertEqual(
+            (1, 2, 3),
+            tuple(apply(dict(idx=query), resultset)[0]),
+            "range with small existing resultset")

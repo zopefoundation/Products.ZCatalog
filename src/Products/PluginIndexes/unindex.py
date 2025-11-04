@@ -534,10 +534,34 @@ class UnIndex(SimpleItem):
                 hi = max(record.keys)
             else:
                 hi = None
-            if hi:
-                setlist = index.values(lo, hi)
+
+            # If there is an existing resultset which is much smaller than the index,
+            # there's a good chance it's less work to check each result
+            # for a value matching the range instead of scanning the index.
+            if resultset is not None and len(resultset) * self._unindex.max_leaf_size < len(self._index):
+                _unindex = self._unindex
+                items = ((rid, _unindex.get(rid, None)) for rid in resultset)
+                if lo is not None and hi is not None:
+                    s = IISet((rid for rid, value in items if value is not None and
+                        value >= lo and value <= hi
+                    ))
+                elif lo is not None:
+                    s = IISet((rid for rid, value in items if value is not None and
+                        value >= lo
+                    ))
+                elif hi is not None:
+                    s = IISet((rid for rid, value in items if value is not None and
+                        value <= hi
+                    ))
+                else:
+                    s = IISet((rid for rid, value in items if value is not None))
+                setlist = [s]
             else:
-                setlist = index.values(lo)
+                # Scan the index for values in the range
+                if hi:
+                    setlist = index.values(lo, hi)
+                else:
+                    setlist = index.values(lo)
 
             # If we only use one key, intersect and return immediately
             if len(setlist) == 1:
