@@ -2,7 +2,7 @@
 # https://github.com/zopefoundation/meta/tree/master/config/zope-product
 [meta]
 template = "zope-product"
-commit-id = "a0de4e93"
+commit-id = "ad3bfb10"
 
 [python]
 with-pypy = false
@@ -22,10 +22,9 @@ additional-rules = [
     "recursive-include src *.txt",
     "recursive-include src *.zcml",
     "recursive-include src *.zpt",
-    ]
+]
 
 [tox]
-use-flake8 = true
 testenv-deps = [
     "cffi >= 1.17.0rc1",
     "# The universal2 environment is for Python on macOS built with",
@@ -42,4 +41,4 @@ testenv-deps = [
     "universal2: charset_normalizer",
     "universal2: MarkupSafe",
     "universal2: zope.testrunner",
-    ]
+]
