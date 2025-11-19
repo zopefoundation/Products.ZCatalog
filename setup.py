@@ -71,4 +71,5 @@ setup(
         'zope.schema',
         'zope.testing',
     ],
+    include_package_data=True,
 )
