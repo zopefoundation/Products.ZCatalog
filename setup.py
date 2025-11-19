@@ -12,7 +12,6 @@
 #
 ##############################################################################
 
-from setuptools import find_packages
 from setuptools import setup
 
 
@@ -32,9 +31,6 @@ setup(
     long_description=(open('README.rst').read()
                       + '\n'
                       + open('CHANGES.rst').read()),
-    packages=find_packages('src'),
-    namespace_packages=['Products'],
-    package_dir={'': 'src'},
     classifiers=[
         "Development Status :: 6 - Mature",
         "Environment :: Web Environment",
@@ -44,18 +40,17 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
     keywords='Zope catalog index search data',
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=[
-        'setuptools',
         'AccessControl >= 4.0a4',
         'Acquisition',
         'BTrees',
@@ -76,6 +71,4 @@ setup(
         'zope.schema',
         'zope.testing',
     ],
-    include_package_data=True,
-    zip_safe=False,
 )
