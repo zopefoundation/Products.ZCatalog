@@ -4,7 +4,11 @@ Changelog
 7.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Switch to PEP 420 native namespace.
+
+- Add support for Python 3.14.
+
+- Drop support for Python 3.9.
 
 
 7.2.1 (2025-10-01)
