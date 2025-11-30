@@ -4,6 +4,8 @@ Changelog
 7.4 (unreleased)
 ----------------
 
+- Move package metadata from setup.py to pyproject.toml.
+
 
 7.3 (2025-11-22)
 ----------------
