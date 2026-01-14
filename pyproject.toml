@@ -7,7 +7,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-
 [project]
 name = "Products.ZCatalog"
 version = "7.4.dev0"
