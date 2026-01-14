@@ -57,7 +57,7 @@ jobs:
       run: uvx --with tox-uv tox -e ${{ matrix.config[1] }}
     - name: Test (macOS)
       if: ${{ startsWith(runner.os, 'Mac') }}
-      run: uvx --with tox-uv tox -e ${{ matrix.config[1] }}-universal2
+      run: uvx --with tox-uv tox -e ${{ matrix.config[1] }}
     - name: Coverage
       if: matrix.config[1] == 'coverage'
       run: |
