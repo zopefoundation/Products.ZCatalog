@@ -965,9 +965,11 @@ def expr_match(ob, ed):
     r = 0
     try:
         r = e.eval(md)
+    except Exception:
+        pass
     finally:
         pop()
-        return r
+    return r
 
 
 def mtime_match(ob, t, q):

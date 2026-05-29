@@ -4,6 +4,9 @@ Changelog
 7.4 (unreleased)
 ----------------
 
+- Fix ``SyntaxWarning: 'return' in a 'finally' block`` in Python 3.14.
+  (`#166 <https://github.com/zopefoundation/Products.ZCatalog/issues/166>`_)
+
 - Move package metadata from setup.py to pyproject.toml.
 
 
