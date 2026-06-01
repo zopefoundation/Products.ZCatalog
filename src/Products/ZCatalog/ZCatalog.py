@@ -962,11 +962,8 @@ class td(RestrictedDTML, TemplateDict):  # NOQA
 def expr_match(ob, ed):
     e, md, push, pop = ed
     push(InstanceDict(ob, md))
-    r = 0
     try:
         r = e.eval(md)
-    except Exception:
-        pass
     finally:
         pop()
     return r
