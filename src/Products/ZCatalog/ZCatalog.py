@@ -962,12 +962,11 @@ class td(RestrictedDTML, TemplateDict):  # NOQA
 def expr_match(ob, ed):
     e, md, push, pop = ed
     push(InstanceDict(ob, md))
-    r = 0
     try:
         r = e.eval(md)
     finally:
         pop()
-        return r
+    return r
 
 
 def mtime_match(ob, t, q):
