@@ -4,6 +4,10 @@ Changelog
 7.4 (unreleased)
 ----------------
 
+- Add support for Python 3.15.
+
+- Switch to PyPI Trusted Publishing.
+
 - Fix ``SyntaxWarning: 'return' in a 'finally' block`` in Python 3.14.
   (`#166 <https://github.com/zopefoundation/Products.ZCatalog/issues/166>`_)
 
