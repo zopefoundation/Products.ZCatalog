@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Products.ZCatalog"
-version = "7.4.dev0"
+version = "7.4"
 description = "Zope's indexing and search solution."
 license = "ZPL-2.1"
 classifiers = [
