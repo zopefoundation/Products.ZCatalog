@@ -612,6 +612,11 @@ class ZCatalog(Folder, Persistent, Implicit):
 
         Search terms can be passed as a query or as keyword arguments.
         """
+        # Check if the query is empty
+        if not kw:
+            LOG.warning("Empty query: No search parameters provided.")
+            raise ValueError("Empty query: No search parameters provided.") 
+            
         return self._catalog.searchResults(query, **kw)
 
     security.declareProtected(search_zcatalog, '__call__')
