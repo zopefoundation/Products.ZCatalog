@@ -13,10 +13,10 @@
   <tr>
     <th colspan="2">Edit FilteredSet</th>
   </tr>
-   
+
   <tr>
     <th>FilteredSet Id</th>
-    <td> 
+    <td>
       &dtml-getId;
     </td>
   </tr>
@@ -33,9 +33,9 @@
     </td>
   </tr>
 
-  <tr> 
+  <tr>
     <td colspan="2" align="center">
-      <input class="form-element" type="submit" value=" Save " /> 
+      <input class="form-element" type="submit" value=" Save " />
     </td>
   </tr>
 

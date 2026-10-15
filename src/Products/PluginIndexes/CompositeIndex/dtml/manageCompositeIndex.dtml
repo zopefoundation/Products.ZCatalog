@@ -44,7 +44,7 @@ Distinct values: <dtml-var indexSize>
     </td>
   </tr>
   <tr>
-    <td colspan="5">&nbsp;</td> 
+    <td colspan="5">&nbsp;</td>
   </tr>
   <tr>
     <td>&nbsp;</td>
@@ -60,15 +60,15 @@ Distinct values: <dtml-var indexSize>
     </td>
     <td align="left" valign="top">
       <input type="text" name="c_attributes:string" size="60"  value=""/><br/>
-    </td>  
+    </td>
   </tr>
   <tr>
     <td>&nbsp;</td>
     <td colspan="4">
       <div class="form-element">
-	<input class="form-element" type="submit" name="manage_addComponent:method" value=" Add " /> 
+	<input class="form-element" type="submit" name="manage_addComponent:method" value=" Add " />
       </div>
-    </td>  
+    </td>
   </tr>
   <dtml-else>
 
@@ -95,7 +95,7 @@ Distinct values: <dtml-var indexSize>
 </form>
 <form action="&dtml-URL1;/" name="fastBuild" method="post">
 <p class="form-help">
-Build composite index directly based on catalog brains and corresponding attribute values from matching field and keyword indexes.   
+Build composite index directly based on catalog brains and corresponding attribute values from matching field and keyword indexes.
 </p>
  <input class="form-element" type="submit" name="manage_fastBuild:method" value=" fast build " />
 

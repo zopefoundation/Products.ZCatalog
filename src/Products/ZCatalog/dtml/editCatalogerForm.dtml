@@ -12,7 +12,7 @@ unindex itself to.
 <p>
 
 <span class="form-label">
-Use Catalog: 
+Use Catalog:
 </span>
 <input name="default" value="&dtml-default_catalog;">
 <br>

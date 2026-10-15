@@ -89,7 +89,7 @@
                             <tr tal:repeat="ob_dict obs">
                                 <tal:obj define="ob nocall:ob_dict/obj">
                                     <td class="zmi-object-check text-right" onclick="$(this).children('input').trigger('click');">
-                                        <input type="checkbox" class="checkbox-list-item" name="ids:list" tal:attributes="value ob_dict/id" 
+                                        <input type="checkbox" class="checkbox-list-item" name="ids:list" tal:attributes="value ob_dict/id"
                                         onclick="event.stopPropagation();select_objectitem($(this));" />
                                     </td>
                                     <td>
@@ -97,7 +97,7 @@
                                         <small tal:define="sourcenames ob/getIndexSourceNames"
                                         tal:condition="python: len(sourcenames) != 1 or sourcenames[0] != ob_dict['id']"
                                         tal:on-error="string:(${ob_dict/title|nothing})">
-                                            (indexed attributes: <span tal:replace="python: ', '.join(sourcenames)"/>)       
+                                            (indexed attributes: <span tal:replace="python: ', '.join(sourcenames)"/>)
                                         </small>
                                     </td>
                                     <td class="text-left" tal:content="ob/meta_type"></td>
@@ -148,4 +148,3 @@
 </script>
 
 <tal:footer replace="structure here/manage_page_footer" />
-
