@@ -6,8 +6,8 @@
 
 
 <p class="form-help">
-<strong>Field Indexes</strong> treat the value of an objects attributes 
-atomically, and can be used, for example, to track only a certain subset 
+<strong>Field Indexes</strong> treat the value of an objects attributes
+atomically, and can be used, for example, to track only a certain subset
 of object values, such as 'meta_type'.
 </p>
 
@@ -53,8 +53,8 @@ of object values, such as 'meta_type'.
     </td>
     <td align="left" valign="top">
     <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
+    <input class="form-element" type="submit" name="submit"
+     value=" Add " />
     </div>
     </td>
   </tr>

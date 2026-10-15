@@ -26,7 +26,7 @@
     <dtml-call "REQUEST.set('fs',_['sequence-item'])">
       <tr>
 
-        <td align="center"> 
+        <td align="center">
         <input type="checkbox" name="filter_ids:list" value="<dtml-var "fs.getId()" html_quote>">
         </td>
 
@@ -50,21 +50,21 @@
 
         <td align="center" valign="top">
         <div class="form-label">
-         <dtml-var "_.len(fs.getIds())"> 
+         <dtml-var "_.len(fs.getIds())">
         </div>
         </td>
-        
+
       </tr>
 
     </dtml-in>
 
-    <tr> 
+    <tr>
       <td colspan="5" align="center">
-        <input class="form-element" type="submit" name="manage_delFilteredSet:method" 
-         value=" Remove " /> 
+        <input class="form-element" type="submit" name="manage_delFilteredSet:method"
+         value=" Remove " />
 
-        <input class="form-element" type="submit" name="manage_clearFilteredSet:method" 
-         value=" Clear " /> 
+        <input class="form-element" type="submit" name="manage_clearFilteredSet:method"
+         value=" Clear " />
 
 
       </td>
@@ -113,7 +113,7 @@
     </td>
   </tr>
 
-  
+
   <tr>
     <td align="left" valign="top">
     <div class="form-label">
@@ -129,8 +129,8 @@
     </td>
     <td align="left" valign="top">
     <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
+    <input class="form-element" type="submit" name="submit"
+     value=" Add " />
     </div>
     </td>
   </tr>

@@ -27,9 +27,9 @@
 
             <form action="&dtml-URL1;" name="objectItems" id="objectItems">
                 <p class="help-text">
-                    The catalog <em>&dtml-id;</em> contains 
+                    The catalog <em>&dtml-id;</em> contains
                     <span class="badge badge-success">
-                        <dtml-var results fmt=collection-length thousands_commas> 
+                        <dtml-var results fmt=collection-length thousands_commas>
                     </span>
                     record(s)
                     <dtml-if filterpath>

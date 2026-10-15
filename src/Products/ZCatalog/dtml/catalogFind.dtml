@@ -79,7 +79,7 @@
 		</div>
 
 		<div class="zmi-controls">
-			<input type="hidden" name="search_sub:int" value="1" checked="checked" /> 
+			<input type="hidden" name="search_sub:int" value="1" checked="checked" />
 			<input class="btn btn-primary" type="submit" name="btn_submit" value="Find and Catalog" />
 		</div>
 

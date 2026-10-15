@@ -8,14 +8,14 @@
       For ZCatalog, this means using subtransactions can signficantly
       reduce the memory requirements needed to index huge amounts of
       text all at once.</p>
-    
+
     <p class="form-help">If enabled, subtransactions will reduce the memory
       requirements of ZCatalog, but <em>at the expense of speed</em>.
       If you choose to enable subtransactions, you can adjust how often
       ZCatalog commits a subtransactions by adjusting the
       <em>threshold</em> below.</p>
 
-    <h3>Subtransactions are 
+    <h3>Subtransactions are
       <dtml-if threshold>
 	<font color="green"><b>Enabled</b></font>
       <dtml-else>
@@ -25,11 +25,11 @@
     <form action="&dtml-URL1;" method="POST">
     <div class="form-element">
       <dtml-if threshold>
-	<input class="form-element" type="submit" 
+	<input class="form-element" type="submit"
          name="manage_subbingToggle:method"
 	 value="Disable" /> Subtransactions
       <dtml-else>
-	<input class="form-element" type="submit" 
+	<input class="form-element" type="submit"
          name="manage_subbingToggle:method"
 	 value="Enable" /> Subtransactions
       </dtml-if>
@@ -59,7 +59,7 @@
     <ul>
       <dtml-in index_objects sort=id>
       <li>
-	<dtml-var "_.len(_['sequence-item'])"> 
+	<dtml-var "_.len(_['sequence-item'])">
 	object are indexed in <b><dtml-var "_['sequence-item'].id" html_quote></b>
       </li>
       </dtml-in>
