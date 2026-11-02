@@ -3,7 +3,7 @@
 
 <main class="container-fluid">
 
-    <p class="form-help"> 
+    <p class="form-help">
         The <strong>query report</strong> shows catalog queries that perform slowly.
         For each index there's an additional entry for the time the intersection of
         the index result with the result by the other indexes took. These are marked
@@ -64,18 +64,18 @@
 
     <form action="manage_editCatalogReport" method="post" class="mt-5">
         <p class="help-text">
-            <strong>Settings:</strong> 
+            <strong>Settings:</strong>
             Threshold in seconds
         </p>
         <div class="form-group row">
             <div class="col-12">
                 <input id="long_query_time" class="form-control" name="long_query_time:float"
                     title="Threshold in seconds" type="number" step="0.1"
-                    value="&dtml-long_query_time;" placeholder="0.1" 
+                    value="&dtml-long_query_time;" placeholder="0.1"
                 />
                 <small><em>
-                    Only queries whose execution takes longer than the 
-                    configured threshold in seconds are considered 
+                    Only queries whose execution takes longer than the
+                    configured threshold in seconds are considered
                     being slow. (Default value is 0.1 seconds).
                 </em></small>
             </div>

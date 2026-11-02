@@ -40,8 +40,8 @@ and pre-calculated result sets offer a better performance.
     </td>
     <td align="left" valign="top">
     <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
+    <input class="form-element" type="submit" name="submit"
+     value=" Add " />
     </div>
     </td>
   </tr>

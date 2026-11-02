@@ -3,11 +3,11 @@
 <main class="container-fluid">
 
 	<dtml-var "manage_form_title(this(), _, form_title='Add ZCTextIndex')">
-	
+
 	<p class="form-help">
-		<em>Text Indexes</em> break text up into individual words, and 
-		are often referred to as full-text indexes. Text indexes 
-		sort results by score, meaning they return hits in order 
+		<em>Text Indexes</em> break text up into individual words, and
+		are often referred to as full-text indexes. Text indexes
+		sort results by score, meaning they return hits in order
 		from the most relevant to the least relevant.
 	</p>
 
@@ -57,7 +57,7 @@
 		</div>
 
 		<div class="zmi-controls">
-			<input class="btn btn-primary" type="submit" name="submit" value="Add" /> 
+			<input class="btn btn-primary" type="submit" name="submit" value="Add" />
 		</div>
 
 

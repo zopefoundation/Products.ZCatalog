@@ -1,6 +1,6 @@
 CompositeIndex README
 
-  Overview 
+  Overview
 
      CompositeIndex is a plugin index for the ZCatalog. Indexes containing
      more than one attribute to index an object are called “composite
@@ -14,7 +14,7 @@ CompositeIndex README
      Catalog queries containing attributes managed by CompositeIndex
      are transparently catched and transformed seamlessly into a
      CompositeIndex query. In particular, large sites with a
-     combination of additional indexes (FieldIndex, KeywordIndex, BooleanIndex) 
+     combination of additional indexes (FieldIndex, KeywordIndex, BooleanIndex)
      and lots of content (>100k) will profit. The expected performance
      enhancement for combined index queries is about a factor of >2-3.
 
@@ -34,5 +34,5 @@ CompositeIndex README
      composite keys. The loading of large sets and the following
      expensive computation of the intersection is therefore obsolete.
 
-     IMPORTANT: CompositeIndex can only be used as an add-on not as 
+     IMPORTANT: CompositeIndex can only be used as an add-on not as
      a replacement for field, keyword and boolean indexes.

@@ -14,7 +14,7 @@ objects for those where a given date falls within the range.
 <table cellspacing="0" cellpadding="2" border="0">
  <tr>
   <td align="left" valign="top">
-  <div class="form-label"> 
+  <div class="form-label">
   Id
   </div>
   </td>
@@ -24,7 +24,7 @@ objects for those where a given date falls within the range.
  </tr>
  <tr>
   <td align="left" valign="top">
-  <div class="form-label"> 
+  <div class="form-label">
   Since field
   </div>
   </td>
@@ -34,7 +34,7 @@ objects for those where a given date falls within the range.
  </tr>
  <tr>
   <td align="left" valign="top">
-  <div class="form-label"> 
+  <div class="form-label">
   Until field
   </div>
   </td>
@@ -44,7 +44,7 @@ objects for those where a given date falls within the range.
  </tr>
  <tr>
   <td align="left" valign="top">
-  <div class="form-label"> 
+  <div class="form-label">
   Floor value
   </div>
   </td>
@@ -54,7 +54,7 @@ objects for those where a given date falls within the range.
  </tr>
  <tr>
   <td align="left" valign="top">
-  <div class="form-label"> 
+  <div class="form-label">
   Ceiling value
   </div>
   </td>
@@ -77,8 +77,8 @@ objects for those where a given date falls within the range.
     </td>
     <td align="left" valign="top">
     <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
+    <input class="form-element" type="submit" name="submit"
+     value=" Add " />
     </div>
     </td>
   </tr>
@@ -86,4 +86,3 @@ objects for those where a given date falls within the range.
 </form>
 
 <dtml-var manage_page_footer>
-

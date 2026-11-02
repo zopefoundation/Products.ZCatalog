@@ -6,8 +6,8 @@
 
 
 <p class="form-help">
-<strong>Keyword Indexes</strong> index a sequence of objects that act as 
-'keywords' for an object.  A Keyword Index will return any objects 
+<strong>Keyword Indexes</strong> index a sequence of objects that act as
+'keywords' for an object.  A Keyword Index will return any objects
 that have one or more keywords specified in a search query.
 </p>
 
@@ -52,8 +52,8 @@ that have one or more keywords specified in a search query.
     </td>
     <td align="left" valign="top">
     <div class="form-element">
-    <input class="form-element" type="submit" name="submit" 
-     value=" Add " /> 
+    <input class="form-element" type="submit" name="submit"
+     value=" Add " />
     </div>
     </td>
   </tr>

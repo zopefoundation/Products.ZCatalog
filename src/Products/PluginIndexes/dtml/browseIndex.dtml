@@ -38,7 +38,7 @@ The index "&dtml-getId;" contains <dtml-var items fmt=collection-length thousand
                                 (_['sequence-key'] ) % 60,
                                 0, 'UTC')">
           <dtml-else>
-            &dtml-sequence-key; 
+            &dtml-sequence-key;
           </dtml-if>
         </td>
         <td>

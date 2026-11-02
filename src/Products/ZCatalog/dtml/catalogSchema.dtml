@@ -5,21 +5,21 @@
 <main class="container-fluid">
 
     <p class="form-help">
-        This list defines what per object meta data the Catalog will store. 
-        When objects get cataloged, the values of any attributes they may have 
-        which match a name in this list will get stored in a table in the 
-        Catalog.  The Catalog then uses this information to create result 
-        objects that are returned whenever the catalog is searched. It is 
-        important to understand that when the Catalog is searched, it returns 
-        a list of result objects, <em>not the cataloged objects themselves</em>, 
-        so if you want to use the value of an object's attribute in the result 
+        This list defines what per object meta data the Catalog will store.
+        When objects get cataloged, the values of any attributes they may have
+        which match a name in this list will get stored in a table in the
+        Catalog.  The Catalog then uses this information to create result
+        objects that are returned whenever the catalog is searched. It is
+        important to understand that when the Catalog is searched, it returns
+        a list of result objects, <em>not the cataloged objects themselves</em>,
+        so if you want to use the value of an object's attribute in the result
         of a search, that attribute must be in this list.
         <br />
-        It is generally a good idea to keep this list lightweight. It is 
-        useful, for example, to keep the 'summary' meta data of a text 
-        document (like the first 200 characters) but <i>not</i> the text 
-        content in it's entirety (it is useful in this example to <em>index</em> 
-        the text contents, which is configured in the <strong>Indexes</strong> View 
+        It is generally a good idea to keep this list lightweight. It is
+        useful, for example, to keep the 'summary' meta data of a text
+        document (like the first 200 characters) but <i>not</i> the text
+        content in it's entirety (it is useful in this example to <em>index</em>
+        the text contents, which is configured in the <strong>Indexes</strong> View
         tab). This way, the summary data may be shown in the search results.
     </p>
 
@@ -32,7 +32,7 @@
             </div>
             <dtml-if sequence-end>
                 <div class="zmi-controls">
-                    <input class="btn btn-primary" type="submit" name="manage_delColumn:method" value="Delete" /> 
+                    <input class="btn btn-primary" type="submit" name="manage_delColumn:method" value="Delete" />
                 </div>
             </dtml-if>
         <dtml-else>

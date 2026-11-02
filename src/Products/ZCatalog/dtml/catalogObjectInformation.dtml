@@ -1,5 +1,5 @@
 <h3 class="mt-2">
-    Catalog record at 
+    Catalog record at
     <code>
         <dtml-var expr="getpath(_.int(rid))" html_quote>
     </code>
@@ -19,7 +19,7 @@
     questions quickly.  This is then returned in the "brain" that the
     Catalog gives back during searches.
 </p>
-<table title="Metadata Contents" 
+<table title="Metadata Contents"
     class="table table-sm table-striped table-hover objectItems">
     <dtml-in expr="getMetadataForRID(_.int(rid)).items()">
         <dtml-if name="sequence-start">
@@ -43,10 +43,10 @@
     <strong>2. Index Contents: </strong>
     The following table gives information that is
     contained in the various indexes of the Catalog. In the case of
-    Keyword or Text indexes, the results are returned as a tuple, and will 
+    Keyword or Text indexes, the results are returned as a tuple, and will
     show as '(one, two, three)', rather than in a more normal way.
 </p>
-<table title="Index Contents" 
+<table title="Index Contents"
     class="table table-sm table-striped table-hover objectItems">
     <dtml-in expr="getIndexDataForRID(_.int(rid)).items()">
         <dtml-if name="sequence-start">
